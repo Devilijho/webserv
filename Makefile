@@ -1,26 +1,20 @@
-sources = main.cpp
 
-objects = $(sources:.cpp=.o)
+CXX = c++
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
-cc = c++
+NAME = identifier
 
-cflags = -Wall -Wextra -Werror -std=c++98
-
-NAME = webserv
-
-$(NAME): $(objects)
-	$(cc) $(cflags) -o $(NAME) $(objects)
+SRCS = main.cpp server.cpp
 
 all: $(NAME)
 
-%.o: %.cpp
-	$(cc) $(cflags) -c $< -o $@
+$(NAME):
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(NAME)
 
 clean:
-	rm -f ${objects}
+	rm -f $(NAME)
 
 fclean: clean
-	rm -f $(NAME)
 
 re: fclean all
 
