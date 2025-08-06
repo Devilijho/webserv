@@ -6,6 +6,9 @@
 #include <fstream>
 #include "ServerConfig.hpp"
 
+
+// Convierte archivos .conf → estructuras C++ utilizables
+// Es el ÚNICO punto de contacto para configuración
 class ConfigParser
 {
 	private:
@@ -32,10 +35,10 @@ class ConfigParser
 		bool parseLocationBlock(std::ifstream &file, LocationConfig &location);
 
 		// Utility functions
-		std::string trim(const std::string &str);
-		std::vector<std::string> split(const std::string &str, char delimiter);
-		bool isValidMethod(const std::string &method); // Part C: HTTP method validation
-		bool isValidPort(int port);					   // Part A: port validation for bind()
+		std::string trim(const std::string& str);                    // Quita espacios
+		std::vector<std::string> split(const std::string& str, char delimiter);  // Divide strings
+		bool isValidMethod(const std::string& method);               // Part C: HTTP method validation
+		bool isValidPort(int port);                                  // Part A: port validation for bind()
 };
 
 #endif
