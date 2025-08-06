@@ -1,4 +1,4 @@
-sources = main.cpp CGI/CGI.cpp
+sources = main.cpp CGI/CGIHandler.cpp
 
 objects = $(sources:.cpp=.o)
 

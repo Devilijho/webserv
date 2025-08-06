@@ -1,4 +1,4 @@
-#include "CGI/CGI.hpp"
+#include "CGI/CGIHandler.hpp"
 
 int	main(void)
 {

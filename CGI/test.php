@@ -1,6 +1,6 @@
 <?php
 echo "Content-Type: text/html\r\n\r\n";
-echo "<h1>✅ PHP CGI Test</h1>";
+echo "<h1> PHP CGI Test</h1>";
 echo "<p>Hello, world!</p>";
 
 // Show request method
@@ -21,7 +21,7 @@ echo "</pre>";
 
 // If POST, read the body
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-	echo "<h2>📥 POST Data</h2>";
+	echo "<h2> POST Data</h2>";
 	$postData = file_get_contents("php://input");
 	echo "<pre>$postData</pre>";
 }
