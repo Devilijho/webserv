@@ -8,6 +8,7 @@
 // Foward declaration
 struct LocationConfig;
 
+//  - Configuración del servidor completo:
 struct ServerConfig
 {
 	// Data needed by Part A (sockets)
@@ -31,6 +32,7 @@ struct ServerConfig
 	const LocationConfig *findLocation(const std::string &path) const;
 };
 
+//  - Configuración de rutas específicas:
 struct LocationConfig
 {
 	// Data needed by Part C (request handling)
