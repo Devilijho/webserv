@@ -51,7 +51,7 @@ int	handle_static_request(CGIHandlerData &data)
 		return (ERROR);
 	oss << data.staticFile.rdbuf();
 	data.staticFileContent = oss.str();
-	std::cout << data.staticFileContent << std::endl;
+	data.staticFile.close();
 	return (OK);
 }
 
