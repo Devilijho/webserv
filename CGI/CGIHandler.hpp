@@ -22,12 +22,16 @@
 
 struct CGIHandlerData
 {
+	std::vector<std::string> args_str;
+	std::vector<std::string> env_str;
 	std::vector<char *> args;
 	std::vector<char *> env;
+
+	std::string	fileName;
 	int	fd[2];
 };
 
-int	handle_dynamic_request(CGIHandlerData &Data);
-int	handle_static_request(std::string fileName);
-int	setData(CGIHandlerData &Data);
+int	handle_dynamic_request(CGIHandlerData &data);
+int	handle_static_request(CGIHandlerData &data);
+int	setData(CGIHandlerData &data);
 int	htpp_request(void);

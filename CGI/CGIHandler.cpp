@@ -1,5 +1,4 @@
 #include "CGIHandler.hpp"
-#include <vector>
 
 /*check if its either a static request (html) or needs the cgi (phpCGI)*/
 	/*else return an error */
@@ -10,34 +9,38 @@ int	htpp_request(void)
 
 	setData(data);
 	if (1)
-		return (handle_dynamic_request(data));
+		return (handle_static_request(data));
 	else if (2)
-		return (handle_static_request("index.html"));
+		return (handle_dynamic_request(data));
 	else
 		return (BAD_REQUEST);
 }
 
 int	setData(CGIHandlerData &data)
 {
-	std::vector<std::string> vars = {CGI_INTERPRETER_PATH, "/Users/devilijho/Workplace/webserv/CGI/test.php", NULL};
-	std::vector<std::string> env = {
-		"REQUEST_METHOD=GET",
-		"SCRIPT_FILENAME=/Users/devilijho/Workplace/webserv/CGI/test.php",
-		"REDIRECT_STATUS=200",
-		"CONTENT_LENGTH=0",
-		"HTTP_USER_AGENT=SANTI",
-		"SERVER_PROTOCOL=HTTP/1.1",
-		"QUERY_STRING=TESTTESTTEST",
-		NULL};
+	data.args_str.push_back(CGI_INTERPRETER_PATH);
+	data.args_str.push_back("/Users/devilijho/Workplace/webserv/CGI/test.php");
+	data.env_str.push_back("REQUEST_METHOD=GET");
+	data.env_str.push_back("SCRIPT_FILENAME=/Users/devilijho/Workplace/webserv/CGI/test.php");
+	data.env_str.push_back("REDIRECT_STATUS=200");
+	data.env_str.push_back("CONTENT_LENGTH=0");
+	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
+	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	data.env_str.push_back("QUERY_STRING=TESTTESTTEST");
+	for (unsigned long i = 0; i < data.args_str.size(); i++)
+		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
+	for (unsigned long i = 0; i < data.env_str.size(); i++)
+		data.env.push_back(const_cast<char *>(data.env_str[i].c_str()));
+	data.args.push_back(nullptr);
+	data.env.push_back(nullptr);
 
-	for (int i = vars.size() ; i > 0; i--)
-		data.args.push_back(vars[i].c_str());
+	data.fileName = "index.html";
 	return (SUCCESS);
 }
 
-int	handle_static_request(std::string fileName)
+int	handle_static_request(CGIHandlerData &data)
 {
-	if (open(fileName.c_str(), O_RDWR) == -1)
+	if (open(data.fileName.c_str(), O_RDWR) == -1)
 		return (ERROR);
 
 	return (OK);
@@ -46,19 +49,21 @@ int	handle_static_request(std::string fileName)
 int	handle_dynamic_request(CGIHandlerData &data)
 {
 	pid_t pid = fork();
-	if (pid == -1 || pipe(data.fd) == 1)
+	int		child_status = SUCCESS;
+	int		return_value;
+
+	if (pid == -1 || pipe(data.fd) == ERROR)
 		return (ERROR);
 	else if (pid == 0)
 	{
-
-		std::cout << data.args[1] << std::endl;
 		close(data.fd[0]);
 		dup2(data.fd[1], STDOUT_FILENO);
-		execve(CGI_INTERPRETER_PATH, data.args, data.env);
-		exit(0);
+		child_status = execve(CGI_INTERPRETER_PATH, data.args.data(), data.env.data());
+		exit(child_status);
 	}
 	else
-		wait(&pid);
+		waitpid(pid,&child_status, 0);
 	dup2(STDIN_FILENO, data.fd[0]);
-	return (OK);
+	return_value = WEXITSTATUS(child_status);
+	return (return_value);
 }

@@ -5,18 +5,17 @@ sources =	main.cpp \
 objects = $(sources:.cpp=.o)
 
 cc = c++
+
 cflags = -Wall -Wextra -Werror -std=c++98
 
 NAME = webserv
 
 $(NAME): $(objects)
-
 	$(cc) $(cflags) -o $(NAME) $(objects)
 
 all: $(NAME)
 
 %.o: %.cpp
-
 	$(cc) $(cflags) -c $< -o $@
 
 clean:
