@@ -7,35 +7,33 @@ ConfigParser::~ConfigParser() {}
 
 bool ConfigParser::parseFile(const std::string &filename)
 {
-	std::cout << "ConfigParser: Loading " << filename << std::endl;
+    std::cout << "ConfigParser: Loading " << filename << std::endl;
 
-	// TEMPORARY CONFIGURATION for other parts to start working
-	ServerConfig defaultServer;
-	defaultServer.port = 8080;
-	defaultServer.host = "0.0.0.0";
-	defaultServer.root = "./www";
-	defaultServer.index = "index.html";
-	defaultServer.client_max_body_size = 1000000;
+    // Use constructor defaults and override only what's needed for development
+    ServerConfig defaultServer;  // Uses constructor: port=8080, host="localhost", etc.
 
-	// Default error pages
-	defaultServer.error_pages[404] = "./errors/404.html";
-	defaultServer.error_pages[500] = "./errors/500.html";
+    // Override ONLY for development (accept external connections)
+    defaultServer.host = "0.0.0.0";
 
-	// Default location
-	LocationConfig rootLocation;
-	rootLocation.path = "/";
-	rootLocation.methods.push_back("GET");
-	rootLocation.methods.push_back("POST");
-	rootLocation.autoindex = true;
+    // Add configurations NOT in constructor
+    defaultServer.error_pages[404] = "./errors/404.html";
+    defaultServer.error_pages[500] = "./errors/500.html";
 
-	defaultServer.locations.push_back(rootLocation);
+    // Create default root location
+    LocationConfig rootLocation;  // Uses constructor: autoindex=false
+    rootLocation.path = "/";
+    rootLocation.methods.push_back("GET");
+    rootLocation.methods.push_back("POST");
+    rootLocation.autoindex = true;  // Override for root location
 
-	_servers.clear();
-	_servers.push_back(defaultServer);
-	_is_parsed = true;
+    defaultServer.locations.push_back(rootLocation);
 
-	std::cout << "ConfigParser: Default config loaded (real parsing TODO)" << std::endl;
-	return true;
+    _servers.clear();
+    _servers.push_back(defaultServer);
+    _is_parsed = true;
+
+    std::cout << "ConfigParser: Default config loaded (real parsing TODO)" << std::endl;
+    return true;
 }
 
 const std::vector<ServerConfig> &ConfigParser::getServers() const
