@@ -1,11 +1,3 @@
-#include "CGI/CGIHandler.hpp"
-
-// int	main(void)
-// {
-// 	int returnValue = htpp_request();
-// 	std::cout << "REQUEST RETURN VALUE : " << returnValue << std::endl;
-// 	return (0);
-// }
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
@@ -18,7 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "CGI/CGIHandler.hpp"
 #include "server.hpp"
+
+// int	main(void)
+// {
+// 	int returnValue = htpp_request();
+// 	std::cout << "REQUEST RETURN VALUE : " << returnValue << std::endl;
+// 	return (0);
+// }
 
 int main()
 {
