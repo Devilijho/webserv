@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <vector>
 
 #define	OK 200
 #define BAD_REQUEST 400
@@ -19,14 +20,14 @@
 // #define CGI_INTERPRETER_PATH "/usr/bin/php-cgi"
 #define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
 
-typedef struct s_CGIHandlerData
+struct CGIHandlerData
 {
-	char **args;
-	char **env;
+	std::vector<char *> args;
+	std::vector<char *> env;
 	int	fd[2];
-}				t_CGIHandlerData;
+};
 
-int	handle_dynamic_request(t_CGIHandlerData &Data);
+int	handle_dynamic_request(CGIHandlerData &Data);
 int	handle_static_request(std::string fileName);
-int	setData(t_CGIHandlerData &Data);
+int	setData(CGIHandlerData &Data);
 int	htpp_request(void);
