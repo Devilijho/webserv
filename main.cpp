@@ -1,20 +1,20 @@
 #include "CGI/CGIHandler.hpp"
 #include "server.hpp"
 
-int main(void)
-{
-	return (SUCCESS);
-}
-
-//SANTI MAIN
-// int	main(void)
+// int main(void)
 // {
-// 	int returnValue = htpp_request();
-// 	if (returnValue == 0)
-// 		returnValue = OK;
-// 	std::cout << "REQUEST RETURN VALUE : " << returnValue << std::endl;
-// 	return (0);
+// 	return (SUCCESS);
 // }
+
+// SANTI MAIN
+int	main(void)
+{
+	int returnValue = htpp_request();
+	if (returnValue == 0)
+		returnValue = OK;
+	std::cout << "REQUEST RETURN VALUE : " << returnValue << std::endl;
+	return (0);
+}
 
 //PIERRE MAIN
 // int main()

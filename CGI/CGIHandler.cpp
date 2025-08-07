@@ -1,4 +1,5 @@
 #include "CGIHandler.hpp"
+#include <unistd.h>
 
 /*check if its either a static request (html) or needs the cgi (phpCGI)*/
 	/*else return an error */
@@ -15,6 +16,8 @@ int	htpp_request(void)
 	else
 		return (BAD_REQUEST);
 }
+
+/*Sets data, this is temporary since the paths and values used are hard coded :) */
 
 int	setData(CGIHandlerData &data)
 {
@@ -34,15 +37,21 @@ int	setData(CGIHandlerData &data)
 	data.args.push_back(nullptr);
 	data.env.push_back(nullptr);
 
-	data.fileName = "index.html";
+	data.staticFileName = "CGI/index.html";
 	return (SUCCESS);
 }
 
 int	handle_static_request(CGIHandlerData &data)
 {
-	if (open(data.fileName.c_str(), O_RDWR) == -1)
-		return (ERROR);
+	std::string buffer;
+	std::ostringstream oss;
 
+	data.staticFile.open(data.staticFileName);
+	if (data.staticFile.is_open() == false)
+		return (ERROR);
+	oss << data.staticFile.rdbuf();
+	data.staticFileContent = oss.str();
+	std::cout << data.staticFileContent << std::endl;
 	return (OK);
 }
 
@@ -63,7 +72,6 @@ int	handle_dynamic_request(CGIHandlerData &data)
 	}
 	else
 		waitpid(pid,&child_status, 0);
-	dup2(STDIN_FILENO, data.fd[0]);
 	return_value = WEXITSTATUS(child_status);
 	return (return_value);
 }

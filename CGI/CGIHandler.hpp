@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string>
@@ -8,6 +9,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <vector>
+#include <sstream>
 
 #define	OK 200
 #define BAD_REQUEST 400
@@ -27,7 +29,10 @@ struct CGIHandlerData
 	std::vector<char *> args;
 	std::vector<char *> env;
 
-	std::string	fileName;
+	std::ifstream staticFile;
+	std::string staticFileContent;
+	std::string	staticFileName;
+
 	int	fd[2];
 };
 
