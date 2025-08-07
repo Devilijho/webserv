@@ -1,9 +1,3 @@
-
-
-
-
-
-
 #pragma once
 
 #include <iostream>
@@ -37,5 +31,5 @@ class Server
 		~Server();
 
 		bool start();
-		
+
 };

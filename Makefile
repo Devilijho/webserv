@@ -1,6 +1,8 @@
 sources =	main.cpp \
 			server.cpp \
 			CGI/CGIHandler.cpp \
+			config/ConfigParser.cpp \
+			config/ServerConfig.cpp
 
 objects = $(sources:.cpp=.o)
 
