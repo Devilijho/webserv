@@ -6,7 +6,7 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/08 15:54:11 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/08 17:18:43 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,12 +47,52 @@ bool Server::loadConfig(const std::string& configFile) //check les methodes de C
 	return true;
 }
 
+
+bool Server::setupSocket()
+{
+	server_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (server_fd < 0)
+		return perror("socket"), false;
+
+	fcntl(server_fd, F_SETFL, O_NONBLOCK); // Socket no bloqueante
+
+	int opt = 1;
+	setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+	struct sockaddr_in addr;
+	std::memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = INADDR_ANY;
+	addr.sin_port = htons(port);
+
+	if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+		perror("bind");
+		return false;
+	}
+
+	if (listen(server_fd, 10) < 0) {
+		perror("listen");
+		return false;
+	}
+
+	return true;
+}
+
 void Server::addServerSocketToPoll()
 {
 	struct pollfd server_pollfd;
 	server_pollfd.fd = server_fd;
 	server_pollfd.events = POLLIN;
 	poll_fds.push_back(server_pollfd);
+}
+
+
+void Server::handleClientConnection(size_t index)
+{
+	int client_fd = poll_fds[index].fd;
+	handleClient(client_fd);
+	close(client_fd);
+	poll_fds.erase(poll_fds.begin() + index);
 }
 
 void Server::eventLoop()
@@ -77,46 +117,6 @@ void Server::eventLoop()
 			}
 		}
 	}
-}
-
-void Server::handleClientConnection(size_t index)
-{
-	int client_fd = poll_fds[index].fd;
-	handleClient(client_fd);
-	close(client_fd);
-	poll_fds.erase(poll_fds.begin() + index);
-}
-
-
-bool Server::setupSocket() {
-	server_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (server_fd < 0) {
-		perror("socket");
-		return false;
-	}
-
-	fcntl(server_fd, F_SETFL, O_NONBLOCK); // Socket no bloqueante
-
-	int opt = 1;
-	setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-	struct sockaddr_in addr;
-	std::memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(port);
-
-	if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-		perror("bind");
-		return false;
-	}
-
-	if (listen(server_fd, 10) < 0) {
-		perror("listen");
-		return false;
-	}
-
-	return true;
 }
 
 void Server::acceptClient()
