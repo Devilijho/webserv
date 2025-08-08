@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../config/ConfigParser.hpp"
+#include "../config/ServerConfig.hpp"
 #include <fstream>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -19,7 +21,9 @@
 #define SUCCESS 0
 #define ERROR 1
 
+//Linux
 // #define CGI_INTERPRETER_PATH "/usr/bin/php-cgi"
+//MacOS
 #define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
 
 struct CGIHandlerData
@@ -38,5 +42,5 @@ struct CGIHandlerData
 
 int	handle_dynamic_request(CGIHandlerData &data);
 int	handle_static_request(CGIHandlerData &data);
-int	setData(CGIHandlerData &data);
-int	htpp_request(void);
+int	setData(CGIHandlerData &data, ServerConfig &dataServer);
+int	htpp_request(ServerConfig &dataServer);

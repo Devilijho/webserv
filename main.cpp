@@ -1,16 +1,18 @@
 #include "CGI/CGIHandler.hpp"
 #include "config/ConfigParser.hpp"
+#include "config/ServerConfig.hpp"
 #include "server.hpp"
 
 int	main(void)
 {
 	Server server(8080);
-	ConfigParser defaultConfig;
+	ConfigParser parserConfig;
+	ServerConfig serverConfig;
 
-	if (!server.start()) {
-		return 1;
-	}
+	// if (!server.start()) {
+	// 	return 1;
+	// }
 
-	htpp_request();
+	std::cout << "request return value : " << htpp_request(serverConfig) << std::endl;
 	return (0);
 }
