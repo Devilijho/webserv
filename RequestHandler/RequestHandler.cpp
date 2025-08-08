@@ -24,15 +24,15 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.requestMethod = "POST";
 	data.staticFileName = "RequestHandler/index.html";
-	data.dynamicFileName = "RequestHandler/test.php";
+	data.dynamicFileName = "test.php";
 	std::ostringstream clientBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
 
 	data.args_str.push_back(CGI_INTERPRETER_PATH);
-	data.args_str.push_back("/Users/devilijho/Workplace/webserv/" + data.dynamicFileName);
+	data.args_str.push_back(FILES_PATH + data.dynamicFileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
-	data.env_str.push_back("SCRIPT_FILENAME=/Users/devilijho/Workplace/webserv/" + data.dynamicFileName);
+	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + FILES_PATH + data.dynamicFileName);
 	data.env_str.push_back("REDIRECT_STATUS=200");
 	data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
@@ -81,7 +81,7 @@ int	handle_dynamic_request(RequestHandlerData &data)
 	else if (pid == 0)
 	{
 		close(data.fd[0]);
-		dup2(data.fd[1], STDOUT_FILENO);
+		// dup2(data.fd[1], STDOUT_FILENO);
 		child_status = execve(CGI_INTERPRETER_PATH, data.args.data(), data.env.data());
 		_exit(child_status);
 	}
