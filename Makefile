@@ -8,7 +8,7 @@ objects = $(sources:.cpp=.o)
 
 cc = c++
 
-cflags = -Wall -Wextra -Werror -std=c++98
+cflags = -Wall -Wextra -Werror -std=c++98 -I.. -I../config -I../CGI
 
 NAME = webserv
 

@@ -6,7 +6,7 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/06 15:17:58 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/08 12:42:45 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,12 @@ Server::~Server() {
 
 bool Server::start()
 {
+	if (!config.parseFile("default.conf") || !config.isValid())
+    {
+        std::cerr << "Invalid configuration. Stopping." << std::endl;
+        return false;
+    }
+	
 	if (!setupSocket())
 		return false;
 
@@ -33,19 +39,23 @@ bool Server::start()
 
 	std::cout << "Servidor escuchando en puerto " << port << std::endl;
 
-	while (true) {
+	while (true)
+	{
 		int ret = poll(&poll_fds[0], poll_fds.size(), -1);
-		if (ret < 0) {
+		if (ret < 0)
+		{
 			perror("poll");
 			break;
 		}
 
-		for (size_t i = 0; i < poll_fds.size(); ++i) {
-			if (poll_fds[i].revents & POLLIN) {
-				if (poll_fds[i].fd == server_fd) {
-					acceptClient(); // Nueva conexión
-				}
-				else {
+		for (size_t i = 0; i < poll_fds.size(); ++i)
+		{
+			if (poll_fds[i].revents & POLLIN)
+			{
+				if (poll_fds[i].fd == server_fd)
+					acceptClient();
+				else
+				{
 					handleClient(poll_fds[i].fd);
 					close(poll_fds[i].fd);
 					poll_fds.erase(poll_fds.begin() + i);
@@ -89,7 +99,8 @@ bool Server::setupSocket() {
 	return true;
 }
 
-void Server::acceptClient() {
+void Server::acceptClient()
+{
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
 	int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
@@ -116,10 +127,10 @@ void Server::handleClient(int client_fd) {
 		return;
 	}
 
-	std::string request(buffer);
-	std::cout << "Pedido recibido:\n" << request << std::endl;
+	std::string raw_request(buffer);
+	std::cout << "Pedido recibido:\n" << raw_request << std::endl;
 
-	std::string response = createResponse(request);
+	std::string response = buildHttpResponse(raw_request);
 
 	send(client_fd, response.c_str(), response.length(), 0);
 }
@@ -130,15 +141,48 @@ std::string Server::toString(int value) {
 	return oss.str();
 }
 
-std::string Server::createResponse(const std::string& request) {
-    (void)request;
 
-    std::string body = "Hello from webserv!";
-    std::string response =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: " + toString(body.size()) + "\r\n"
-        "\r\n" + body;
+std::string Server::buildHttpResponse(const std::string &raw_request)
+{
+    // 1. Parse the request
+    Request req(raw_request);
 
-    return response;
+    // 2. Match to a server config
+    const ServerConfig &srv = config.getServers()[0]; // For now, just use the first server
+
+    const LocationConfig *loc = srv.findLocation(req.getPath());
+    if (!loc)
+    {
+        // Return 404
+        std::ifstream errFile(srv.error_pages.at(404).c_str());
+        std::stringstream errBuf;
+        errBuf << errFile.rdbuf();
+        std::string body = errBuf.str();
+        return "HTTP/1.1 404 Not Found\r\nContent-Length: " + toString(body.size()) +
+               "\r\nContent-Type: text/html\r\n\r\n" + body;
+    }
+
+    // 3. Decide static vs dynamic
+    CGIHandlerData data;
+    setData(data); // Will set env vars & args, you might want to adapt this based on req
+
+    if (req.getPath().find(".php") != std::string::npos)
+    {
+        // Dynamic
+        int status = handle_dynamic_request(data);
+        std::string body = (status == 0) ? "PHP executed!" : "CGI Error";
+        return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
+               "\r\nContent-Type: text/plain\r\n\r\n" + body;
+    }
+    else
+    {
+        // Static
+        if (handle_static_request(data) != OK)
+        {
+            return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
+        }
+        std::string body = data.staticFileContent;
+        return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
+               "\r\nContent-Type: text/html\r\n\r\n" + body;
+    }
 }

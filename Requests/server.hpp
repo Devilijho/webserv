@@ -12,18 +12,24 @@
 #include <sys/socket.h>
 #include <poll.h>
 
+#include "ConfigParser.hpp"
+#include "ServerConfig.hpp"
+#include "CGIHandler.hpp"
+#include "Request.hpp"
+
 class Server
 {
 	private:
 		int server_fd;
 		int port;
 		std::vector<pollfd> poll_fds;
+		ConfigParser config;
 
 		bool setupSocket();
 		void acceptClient();
 		void handleClient(int client_fd);
 		std::string toString(int value);
-		std::string createResponse(const std::string& request);
+		std::string buildHttpResponse(const std::string &raw_request);
 
 
 	public:
