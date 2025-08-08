@@ -22,9 +22,9 @@
 #define ERROR 1
 
 //Linux
-// #define CGI_INTERPRETER_PATH "/usr/bin/php-cgi"
+#define CGI_INTERPRETER_PATH "/usr/bin/php-cgi"
 //MacOS
-#define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
+// #define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
 
 struct RequestHandlerData
 {

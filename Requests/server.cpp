@@ -27,7 +27,7 @@ bool Server::start()
         std::cerr << "Invalid configuration. Stopping." << std::endl;
         return false;
     }
-	
+
 	if (!setupSocket())
 		return false;
 
