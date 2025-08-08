@@ -13,7 +13,7 @@ int	htpp_request(ServerConfig &dataServer)
 	else if (data.requestMethod == "GET")
 		return (handle_static_request(data));
 	else if (data.requestMethod == "DELETE")
-		return (OK); // not implemented yet
+		return (ERROR); // not implemented yet
 	else
 		return (BAD_REQUEST);
 }
@@ -22,10 +22,14 @@ int	htpp_request(ServerConfig &dataServer)
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
+	data.requestMethod = "POST";
+	data.staticFileName = "RequestHandler/index.html";
+	data.dynamicFileName = "RequestHandler/test.php";
+
 	data.args_str.push_back(CGI_INTERPRETER_PATH);
-	data.args_str.push_back("/Users/devilijho/Workplace/webserv/CGI/test.php");
-	data.env_str.push_back("REQUEST_METHOD=GET");
-	data.env_str.push_back("SCRIPT_FILENAME=/Users/devilijho/Workplace/webserv/CGI/test.php");
+	data.args_str.push_back("/Users/devilijho/Workplace/webserv/" + data.dynamicFileName);
+	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
+	data.env_str.push_back("SCRIPT_FILENAME=/Users/devilijho/Workplace/webserv/" + data.dynamicFileName);
 	data.env_str.push_back("REDIRECT_STATUS=200");
 	data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
@@ -41,7 +45,6 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.args.push_back(nullptr);
 	data.env.push_back(nullptr);
 
-	data.staticFileName = "CGI/index.html";
 	return (SUCCESS);
 }
 
@@ -59,7 +62,7 @@ int	handle_static_request(RequestHandlerData &data)
 	oss << data.staticFile.rdbuf();
 	data.staticFileContent = oss.str();
 	data.staticFile.close();
-	return (OK);
+	return (SUCCESS);
 }
 
 /*Executes a script such as PHP with phpCGI, returns the output trough a pipe*/

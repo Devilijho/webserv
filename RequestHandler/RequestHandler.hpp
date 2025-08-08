@@ -37,6 +37,8 @@ struct RequestHandlerData
 	std::string staticFileContent;
 	std::string	staticFileName;
 
+	std::string dynamicFileName;
+
 	std::string requestMethod;
 
 	int	fd[2];
