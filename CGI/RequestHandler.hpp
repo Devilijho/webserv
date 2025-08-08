@@ -26,7 +26,7 @@
 //MacOS
 #define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
 
-struct CGIHandlerData
+struct RequestHandlerData
 {
 	std::vector<std::string> args_str;
 	std::vector<std::string> env_str;
@@ -37,10 +37,12 @@ struct CGIHandlerData
 	std::string staticFileContent;
 	std::string	staticFileName;
 
+	std::string requestMethod;
+
 	int	fd[2];
 };
 
-int	handle_dynamic_request(CGIHandlerData &data);
-int	handle_static_request(CGIHandlerData &data);
-int	setData(CGIHandlerData &data, ServerConfig &dataServer);
+int	handle_dynamic_request(RequestHandlerData &data);
+int	handle_static_request(RequestHandlerData &data);
+int	setData(RequestHandlerData &data, ServerConfig &dataServer);
 int	htpp_request(ServerConfig &dataServer);

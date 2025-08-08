@@ -1,25 +1,26 @@
-#include "CGIHandler.hpp"
-#include <string>
+#include "RequestHandler.hpp"
 
 /*check if its either a static request (html) or needs the cgi (phpCGI)
 else return an error */
 
 int	htpp_request(ServerConfig &dataServer)
 {
-	CGIHandlerData data;
+	RequestHandlerData data;
 
 	setData(data, dataServer);
-	if (1)
+	if (data.requestMethod == "POST")
 		return (handle_dynamic_request(data));
-	else if (2)
+	else if (data.requestMethod == "GET")
 		return (handle_static_request(data));
+	else if (data.requestMethod == "DELETE")
+		return (OK); // not implemented yet
 	else
 		return (BAD_REQUEST);
 }
 
 /*Sets data, this is temporary since the paths and values used are hard coded :) */
 
-int	setData(CGIHandlerData &data, ServerConfig &dataServer)
+int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.args_str.push_back(CGI_INTERPRETER_PATH);
 	data.args_str.push_back("/Users/devilijho/Workplace/webserv/CGI/test.php");
@@ -47,7 +48,7 @@ int	setData(CGIHandlerData &data, ServerConfig &dataServer)
 /*Finds the static file (html, css, ico), reads its content at returns it trough a pipe to
 the server (not yet but easy to implement)*/
 
-int	handle_static_request(CGIHandlerData &data)
+int	handle_static_request(RequestHandlerData &data)
 {
 	std::string buffer;
 	std::ostringstream oss;
@@ -63,7 +64,7 @@ int	handle_static_request(CGIHandlerData &data)
 
 /*Executes a script such as PHP with phpCGI, returns the output trough a pipe*/
 
-int	handle_dynamic_request(CGIHandlerData &data)
+int	handle_dynamic_request(RequestHandlerData &data)
 {
 	pid_t pid = fork();
 	int		child_status = SUCCESS;

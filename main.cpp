@@ -1,4 +1,4 @@
-#include "CGI/CGIHandler.hpp"
+#include "CGI/RequestHandler.hpp"
 #include "config/ConfigParser.hpp"
 #include "config/ServerConfig.hpp"
 #include "server.hpp"
