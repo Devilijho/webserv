@@ -22,7 +22,7 @@ int	htpp_request(ServerConfig &dataServer)
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
-	data.requestMethod = "GET";
+	data.requestMethod = "POST";
 	data.staticFileName = "RequestHandler/index.html";
 	data.dynamicFileName = "RequestHandler/test.php";
 	std::ostringstream clientBodysize;

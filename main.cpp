@@ -9,9 +9,9 @@ int	main(void)
 	ConfigParser parserConfig;
 	ServerConfig serverConfig;
 
-	// if (!server.start()) {
-	// 	return 1;
-	// }
+	if (!server.start()) {
+		return 1;
+	}
 
 	std::cout << "request return value : " << htpp_request(serverConfig) << std::endl;
 	return (0);

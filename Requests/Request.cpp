@@ -15,18 +15,18 @@
 #include <iostream>
 
 Request::Request(const std::string& raw_request) {
-    parse(raw_request);
+	parse(raw_request);
 }
 
 void Request::parse(const std::string& raw_request) {
-    std::istringstream stream(raw_request);
-    std::string line;
+	std::istringstream stream(raw_request);
+	std::string line;
 
-    // Parse request line: METHOD PATH HTTP_VERSION
-    if (std::getline(stream, line)) {
-        std::istringstream line_stream(line);
-        line_stream >> method >> path >> http_version;
-    }
+	// Parse request line: METHOD PATH HTTP_VERSION
+	if (std::getline(stream, line)) {
+		std::istringstream line_stream(line);
+		line_stream >> method >> path >> http_version;
+	}
 
     // Parse headers
     while (std::getline(stream, line) && line != "\r" && !line.empty()) {
