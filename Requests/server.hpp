@@ -12,9 +12,9 @@
 #include <sys/socket.h>
 #include <poll.h>
 
-#include "ConfigParser.hpp"
-#include "ServerConfig.hpp"
-#include "CGIHandler.hpp"
+#include "../config/ConfigParser.hpp"
+#include "../config/ServerConfig.hpp"
+#include "../RequestHandler/RequestHandler.hpp"
 #include "Request.hpp"
 
 class Server

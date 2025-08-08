@@ -6,7 +6,7 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/08 12:42:45 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/08 14:43:50 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,19 +141,23 @@ std::string Server::toString(int value) {
 	return oss.str();
 }
 
+std::string Server::buildHttpResponse(const std::string &raw_request) {
+    // --- Parse method and path from raw_request manually ---
+    // Very simple HTTP request parser, improve as needed
+    std::istringstream req_stream(raw_request);
+    std::string method, path, protocol;
+    req_stream >> method >> path >> protocol;
+    if (method.empty() || path.empty()) {
+        return "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
+    }
 
-std::string Server::buildHttpResponse(const std::string &raw_request)
-{
-    // 1. Parse the request
-    Request req(raw_request);
+    // 2. Match to a server config (simplified)
+    const ServerConfig &srv = config.getServers()[0];
 
-    // 2. Match to a server config
-    const ServerConfig &srv = config.getServers()[0]; // For now, just use the first server
-
-    const LocationConfig *loc = srv.findLocation(req.getPath());
-    if (!loc)
-    {
-        // Return 404
+    // 3. Check if path matches a location (simplified)
+    const LocationConfig *loc = srv.findLocation(path);
+    if (!loc) {
+        // Return 404 page
         std::ifstream errFile(srv.error_pages.at(404).c_str());
         std::stringstream errBuf;
         errBuf << errFile.rdbuf();
@@ -162,27 +166,39 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
                "\r\nContent-Type: text/html\r\n\r\n" + body;
     }
 
-    // 3. Decide static vs dynamic
-    CGIHandlerData data;
-    setData(data); // Will set env vars & args, you might want to adapt this based on req
+    // 4. Prepare RequestHandlerData
+    RequestHandlerData data;
+    data.requestMethod = method;
+    data.staticFileName = srv.root + path; // Example, adjust for your config
 
-    if (req.getPath().find(".php") != std::string::npos)
-    {
-        // Dynamic
-        int status = handle_dynamic_request(data);
-        std::string body = (status == 0) ? "PHP executed!" : "CGI Error";
-        return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
-               "\r\nContent-Type: text/plain\r\n\r\n" + body;
-    }
-    else
-    {
-        // Static
-        if (handle_static_request(data) != OK)
-        {
-            return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n";
+    // 5. Set environment and args for CGI / static
+    setData(data, const_cast<ServerConfig&>(srv));  // may want to adjust setData to not hardcode paths
+
+    int status = 0;
+    std::string body;
+
+    if (path.find(".php") != std::string::npos && (method == "GET" || method == "POST")) {
+        status = handle_dynamic_request(data);
+        if (status != 0) {
+            body = "CGI Error";
+            return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: " + toString(body.size()) +
+                   "\r\nContent-Type: text/plain\r\n\r\n" + body;
         }
-        std::string body = data.staticFileContent;
+        // After fix: handle_dynamic_request should fill data.staticFileContent with CGI output
+        body = data.staticFileContent;
         return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
                "\r\nContent-Type: text/html\r\n\r\n" + body;
+    } else if (method == "GET") {
+        status = handle_static_request(data);
+        if (status != 0) {
+            return "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
+        }
+        body = data.staticFileContent;
+        return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
+               "\r\nContent-Type: text/html\r\n\r\n" + body;
+    } else if (method == "DELETE") {
+        return "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n";
+    } else {
+        return "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
     }
 }

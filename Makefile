@@ -1,6 +1,6 @@
 sources =	main.cpp \
-			server.cpp \
-			RequestHandler/CGIHandler.cpp \
+			Requests/server.cpp \
+			RequestHandler/RequestHandler.cpp \
 			config/ConfigParser.cpp \
 			config/ServerConfig.cpp
 
@@ -8,8 +8,8 @@ objects = $(sources:.cpp=.o)
 
 cc = c++
 
-cflags = -Wall -Wextra -Werror -std=c++98 -I.. -I../config -I../CGI
-
+cflags = -Wall -Wextra -Werror -std=c++98 
+# -I.. -I../config -I../CGI
 NAME = webserv
 
 $(NAME): $(objects)

@@ -1,7 +1,7 @@
 #include "RequestHandler/RequestHandler.hpp"
 #include "config/ConfigParser.hpp"
 #include "config/ServerConfig.hpp"
-#include "server.hpp"
+#include "Requests/server.hpp"
 
 int	main(void)
 {
