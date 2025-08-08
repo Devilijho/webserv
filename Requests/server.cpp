@@ -6,7 +6,7 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/08 15:31:17 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/08 15:54:11 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ bool Server::start()
 	return true;
 }
 
-bool Server::loadConfig(const std::string& configFile)
+bool Server::loadConfig(const std::string& configFile) //check les methodes de Config
 {
 	if (!config.parseFile(configFile) || !config.isValid())
 	{

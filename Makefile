@@ -5,28 +5,27 @@ sources =	main.cpp \
 			config/ConfigParser.cpp \
 			config/ServerConfig.cpp
 
-objects = $(sources:.cpp=.o)
-
 cc = c++
 
 cflags = -Wall -Wextra -Werror -std=c++98 
-# -I.. -I../config -I../CGI
+
 NAME = webserv
+
+all: $(NAME)
 
 $(NAME): $(objects)
 	$(cc) $(cflags) -o $(NAME) $(objects)
 
-all: $(NAME)
-
-%.o: %.cpp
+build/%.o: %.cpp
+	@mkdir -p $(dir $@)
 	$(cc) $(cflags) -c $< -o $@
 
 clean:
-	rm -f ${objects}
+	rm -rf build
 
 fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
 
-.PHONY: all clean re fclean
+.PHONY: all clean fclean re
