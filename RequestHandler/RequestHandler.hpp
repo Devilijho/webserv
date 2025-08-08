@@ -38,11 +38,11 @@ struct RequestHandlerData
 	std::vector<char *> env;
 
 	std::ifstream staticFile;
-	std::string staticFileContent;
 	std::string	staticFileName;
 
-	std::string dynamicFileName;
+	std::string FileContent;
 
+	std::string dynamicFileName;
 	std::string requestMethod;
 
 	int	fd[2];

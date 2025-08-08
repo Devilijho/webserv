@@ -185,7 +185,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request) {
                    "\r\nContent-Type: text/plain\r\n\r\n" + body;
         }
         // After fix: handle_dynamic_request should fill data.staticFileContent with CGI output
-        body = data.staticFileContent;
+        body = data.FileContent;
         return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
                "\r\nContent-Type: text/html\r\n\r\n" + body;
     } else if (method == "GET") {
@@ -193,7 +193,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request) {
         if (status != 0) {
             return "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
         }
-        body = data.staticFileContent;
+        body = data.FileContent;
         return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
                "\r\nContent-Type: text/html\r\n\r\n" + body;
     } else if (method == "DELETE") {
