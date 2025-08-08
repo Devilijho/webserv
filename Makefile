@@ -1,6 +1,6 @@
 sources =	main.cpp \
 			server.cpp \
-			RequestHandler/CGIHandler.cpp \
+			RequestHandler/RequestHandler.cpp \
 			config/ConfigParser.cpp \
 			config/ServerConfig.cpp
 
