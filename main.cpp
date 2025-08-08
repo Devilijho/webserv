@@ -12,7 +12,5 @@ int	main(void)
 	if (!server.start()) {
 		return 1;
 	}
-
-	std::cout << "request return value : " << htpp_request(serverConfig) << std::endl;
 	return (0);
 }
