@@ -6,7 +6,7 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/08 17:18:43 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/08 18:42:24 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,12 @@ Server::~Server() {
 
 bool Server::start()
 {
+	if (!config.parseFile("default.conf") || !config.isValid())
+    {
+        std::cerr << "Invalid configuration. Stopping." << std::endl;
+        return false;
+    }
+
 	if (!loadConfig("default.conf"))
 		return false;
 
@@ -197,6 +203,30 @@ std::string Server::buildHttpResponse(const std::string &raw_request) {
 	int status = 0;
 	std::string body;
 
+    if (path.find(".php") != std::string::npos && (method == "GET" || method == "POST")) {
+        status = handle_dynamic_request(data);
+        if (status != 0) {
+            body = "CGI Error";
+            return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: " + toString(body.size()) +
+                   "\r\nContent-Type: text/plain\r\n\r\n" + body;
+        }
+        // After fix: handle_dynamic_request should fill data.staticFileContent with CGI output
+        body = data.FileContent;
+        return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
+               "\r\nContent-Type: text/html\r\n\r\n" + body;
+    } else if (method == "GET") {
+        status = handle_static_request(data);
+        if (status != 0) {
+            return "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
+        }
+        body = data.FileContent;
+        return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
+               "\r\nContent-Type: text/html\r\n\r\n" + body;
+    } else if (method == "DELETE") {
+        return "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n";
+    } else {
+        return "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
+    }
 	if (path.find(".php") != std::string::npos && (method == "GET" || method == "POST")) {
 		status = handle_dynamic_request(data);
 		if (status != 0) {

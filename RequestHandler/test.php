@@ -1,20 +1,10 @@
 <?php
-echo "PHP CGI Test";
-
-echo "Request Method: " . $_SERVER["REQUEST_METHOD"] . "\n";
-
-echo "Query String: " . $_SERVER["QUERY_STRING"] . "\n";
-
-echo "Environment Variables\n";
-
-foreach ($_SERVER as $key => $value) {
-	echo "$key = $value\n";
-}
-
-// if ($_SERVER["REQUEST_METHOD"] === "POST") {
-// 	echo "<h2> POST Data</h2>";
-// 	$postData = file_get_contents("php://input");
-// 	echo "<pre>$postData</pre>\n";
-// }
-
+echo "Content-Type: text/html\r\n\r\n";
+echo "<html>";
+echo "<head><title>PHP CGI Test</title></head>";
+echo "<body>";
+echo "<h1>Hello from PHP!!!!!!!</h1>";
+echo "<p>Current time is: " . date("Y-m-d H:i:s") . "</p>";
+echo "</body>";
+echo "</html>";
 ?>

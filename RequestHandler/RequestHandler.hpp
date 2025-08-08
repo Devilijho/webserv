@@ -22,9 +22,13 @@
 #define ERROR 1
 
 //Linux
-// #define CGI_INTERPRETER_PATH "/usr/bin/php-cgi"
+#define CGI_INTERPRETER_PATH "/usr/bin/php-cgi"
+#define FILES_PATH "/home/pde-vara/Documents/webserv/RequestHandler/"
+
 //MacOS
-#define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
+// #define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
+// #define FILES_PATH "/Users/devilijho/Workplace/webserv/"
+
 
 struct RequestHandlerData
 {
@@ -34,11 +38,11 @@ struct RequestHandlerData
 	std::vector<char *> env;
 
 	std::ifstream staticFile;
-	std::string staticFileContent;
 	std::string	staticFileName;
 
-	std::string dynamicFileName;
+	std::string FileContent;
 
+	std::string dynamicFileName;
 	std::string requestMethod;
 
 	int	fd[2];

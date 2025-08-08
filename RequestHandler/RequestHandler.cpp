@@ -1,4 +1,5 @@
 #include "RequestHandler.hpp"
+#include <unistd.h>
 
 /*check if its either a static request (html) or needs the cgi (phpCGI)
 else return an error */
@@ -22,17 +23,17 @@ int	htpp_request(ServerConfig &dataServer)
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
-	data.requestMethod = "GET";
+	data.requestMethod = "POST";
 	data.staticFileName = "RequestHandler/index.html";
-	data.dynamicFileName = "RequestHandler/test.php";
+	data.dynamicFileName = "test.php";
 	std::ostringstream clientBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
 
 	data.args_str.push_back(CGI_INTERPRETER_PATH);
-	data.args_str.push_back("/Users/devilijho/Workplace/webserv/" + data.dynamicFileName);
+	data.args_str.push_back(FILES_PATH + data.dynamicFileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
-	data.env_str.push_back("SCRIPT_FILENAME=/Users/devilijho/Workplace/webserv/" + data.dynamicFileName);
+	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + FILES_PATH + data.dynamicFileName);
 	data.env_str.push_back("REDIRECT_STATUS=200");
 	data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
@@ -63,7 +64,7 @@ int	handle_static_request(RequestHandlerData &data)
 	if (data.staticFile.is_open() == false)
 		return (ERROR);
 	oss << data.staticFile.rdbuf();
-	data.staticFileContent = oss.str();
+	data.FileContent = oss.str();
 	data.staticFile.close();
 	return (SUCCESS);
 }
@@ -72,11 +73,15 @@ int	handle_static_request(RequestHandlerData &data)
 
 int	handle_dynamic_request(RequestHandlerData &data)
 {
-	pid_t pid = fork();
-	int		child_status = SUCCESS;
+	pid_t pid;
 	int		return_value;
+	char	buffer;
+	int		child_status = SUCCESS;
 
-	if (pid == -1 || pipe(data.fd) == ERROR)
+	if (pipe(data.fd) == ERROR)
+		return (ERROR);
+	pid = fork();
+	if (pid == -1)
 		return (ERROR);
 	else if (pid == 0)
 	{
@@ -87,6 +92,9 @@ int	handle_dynamic_request(RequestHandlerData &data)
 	}
 	else
 		waitpid(pid,&child_status, 0);
+	close(data.fd[1]);
+	while (read(data.fd[0], &buffer, 1) > 0)
+		data.FileContent += buffer;
 	return_value = WEXITSTATUS(child_status);
 	return (return_value);
 }
