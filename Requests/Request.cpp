@@ -1,18 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   request.cpp                                        :+:      :+:    :+:   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/08 12:57:19 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/08 12:57:27 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/08 14:58:44 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 #include <sstream>
 #include <iostream>
+#include <cstdlib>
 
 Request::Request(const std::string& raw_request) {
     parse(raw_request);
@@ -37,20 +38,23 @@ void Request::parse(const std::string& raw_request) {
 
             // Trim whitespace
             while (!value.empty() && (value[0] == ' ' || value[0] == '\t')) value.erase(0, 1);
-            while (!value.empty() && (value.back() == '\r' || value.back() == '\n')) value.pop_back();
+            while (!value.empty() && (value[value.size()-1] == '\r' || value[value.size()-1] == '\n')) value.resize(value.size()-1);
 
             headers[key] = value;
         }
     }
 
     // Read body if Content-Length header is present
-    auto it = headers.find("Content-Length");
+	std::map<std::string, std::string>::iterator it = headers.find("Content-Length");
     if (it != headers.end()) {
-        int length = std::stoi(it->second);
-        body.resize(length);
-        stream.read(&body[0], length);
+        int length = atoi(it->second.c_str());  // Use atoi instead of stoi
+        if (length > 0) {
+            body.resize(length);
+            stream.read(&body[0], length);
+        }
     }
 }
+
 
 std::string Request::getHeader(const std::string& key) const {
     std::map<std::string, std::string>::const_iterator it = headers.find(key);
