@@ -31,6 +31,10 @@ class Server
 		std::string toString(int value);
 		std::string buildHttpResponse(const std::string &raw_request);
 
+		bool loadConfig(const std::string& configFile);
+		void addServerSocketToPoll();
+		void eventLoop();
+		void handleClientConnection(size_t index);
 
 	public:
 		Server(int port);
