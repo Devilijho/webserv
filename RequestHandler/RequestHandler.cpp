@@ -60,13 +60,13 @@ int	handle_static_request(RequestHandlerData &data)
 {
 	std::string buffer;
 	std::ostringstream oss;
-	char tmp[256];
 
-	data.staticFile.open((FILES_PATH + data.staticFileName));
+	if (data.staticFileName == "./www/")
+		data.staticFileName = "./www/index.html";
+	data.staticFile.open(data.staticFileName);
 	if (data.staticFile.is_open() == false)
 	{
-		getcwd(tmp, 256);
-		std::cout <<  tmp << std::endl;
+		std::cout << "error?" << std::endl;
 		return (ERROR);
 	}
 	oss << data.staticFile.rdbuf();

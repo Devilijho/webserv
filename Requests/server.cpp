@@ -169,12 +169,9 @@ std::string Server::buildHttpResponse(const std::string &raw_request) {
     // 4. Prepare RequestHandlerData
     RequestHandlerData data;
     data.requestMethod = method;
-    std::cout << "\nFILE PATH: " << path << std::endl;
-
     // 5. Set environment and args for CGI / static
-    data.staticFileName = path;
     setData(data, const_cast<ServerConfig&>(srv));
-
+    data.staticFileName = srv.root + path;
     int status = 0;
     std::string body;
 
