@@ -66,7 +66,7 @@ int	handle_static_request(RequestHandlerData &data)
 	data.staticFile.open(data.staticFileName.c_str());
 	if (data.staticFile.is_open() == false)
 	{
-		std::cout << "error?" << std::endl;
+		std::cout << "Couldn't find file: " << data.staticFileName << std::endl;
 		return (ERROR);
 	}
 	oss << data.staticFile.rdbuf();
