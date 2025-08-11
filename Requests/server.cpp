@@ -6,7 +6,7 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/08 18:44:28 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/08 18:50:04 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ bool Server::start()
         std::cerr << "Invalid configuration. Stopping." << std::endl;
         return false;
     }
-
 	if (!loadConfig("default.conf"))
 		return false;
 
@@ -53,7 +52,6 @@ bool Server::loadConfig(const std::string& configFile) //check les methodes de C
 	return true;
 }
 
-
 bool Server::setupSocket()
 {
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -71,16 +69,10 @@ bool Server::setupSocket()
 	addr.sin_addr.s_addr = INADDR_ANY;
 	addr.sin_port = htons(port);
 
-	if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
-		perror("bind");
-		return false;
-	}
-
-	if (listen(server_fd, 10) < 0) {
-		perror("listen");
-		return false;
-	}
-
+	if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+		return perror("bind"), false;
+	if (listen(server_fd, 10) < 0)
+		return perror("listen"), false;
 	return true;
 }
 
