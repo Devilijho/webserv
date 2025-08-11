@@ -25,7 +25,6 @@ int	htpp_request(ServerConfig &dataServer)
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.requestMethod = "POST";
-	data.staticFileName = "index.html";
 	data.dynamicFileName = "test.php";
 	std::ostringstream clientBodysize;
 
@@ -67,7 +66,9 @@ int	handle_static_request(RequestHandlerData &data)
 	if (data.staticFile.is_open() == false)
 	{
 		std::cout << "Couldn't find file: " << data.staticFileName << std::endl;
-		return (ERROR);
+		data.staticFile.open("./www/404.html");
+		if (data.staticFile.is_open() == false)
+			return (ERROR);
 	}
 	oss << data.staticFile.rdbuf();
 	data.FileContent = oss.str();

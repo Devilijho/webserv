@@ -179,13 +179,12 @@ std::string Server::buildHttpResponse(const std::string &raw_request) {
 			   "\r\nContent-Type: text/html\r\n\r\n" + body;
 	}
 
-	// 4. Prepare RequestHandlerData
-	RequestHandlerData data;
-	data.requestMethod = method;
 
-	// 5. Set environment and args for CGI / static
-	setData(data, const_cast<ServerConfig&>(srv));  // may want to adjust setData to not hardcode paths
-	data.staticFileName = srv.root + path; // Example, adjust for your config
+	RequestHandlerData data;
+	//Set environment and args for CGI / static
+	setData(data, const_cast<ServerConfig&>(srv));
+	data.requestMethod = method;
+	data.staticFileName = srv.root + path;
 
 	int status = 0;
 	std::string body;
