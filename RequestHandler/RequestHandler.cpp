@@ -66,10 +66,10 @@ int	handle_static_request(RequestHandlerData &data)
 	if (data.staticFile.is_open() == false)
 	{
 		data.staticFileName = "./www/404.html";
-		data.HeadContent = "HTTP/1.1 404 Not Found\r\nContent-Length: ";
+		data.HeadContent = "HTTP/1.1 404 Internal Server Error\r\nContent-Length: ";
 		if (access(data.staticFileName.c_str(), R_OK | F_OK) != 0)
 			return (ERROR);
-		handle_static_request(data);
+		return handle_static_request(data);
 	}
 	oss << data.staticFile.rdbuf();
 	data.FileContent = oss.str();

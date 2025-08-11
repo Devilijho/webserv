@@ -202,7 +202,6 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	else if (method == "GET")
 	{
 		status = handle_static_request(data);
-		std::cout << data.HeadContent;
 		returnData = data.HeadContent + toString(data.FileContent.size())
 			+ "\r\nContent-Type: text/html\r\n\r\n" + data.FileContent;
 		return (returnData);
