@@ -23,13 +23,10 @@
 #define ERROR 1
 
 //Linux
-// #define PATH_INFO "/usr/bin/php-cgi"
-// #define FILES_PATH "/home/safuente/Documents/webserv/RequestHandler/"
+#define PATH_INFO "/usr/bin/php-cgi"
 
 //MacOS
-#define PATH_INFO "/opt/homebrew/bin/php-cgi"
-#define FILES_PATH "./www/"
-#define ERROR_PATH "./www/error/"
+// #define PATH_INFO "/opt/homebrew/bin/php-cgi"
 
 
 struct RequestHandlerData
