@@ -22,12 +22,12 @@
 #define ERROR 1
 
 //Linux
-#define CGI_INTERPRETER_PATH "/usr/bin/php-cgi"
-#define FILES_PATH "/home/safuente/Documents/webserv/RequestHandler/"
+// #define PATH_INFO "/usr/bin/php-cgi"
+// #define FILES_PATH "/home/safuente/Documents/webserv/RequestHandler/"
 
 //MacOS
-// #define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
-// #define FILES_PATH "/Users/devilijho/Workplace/webserv/"
+#define PATH_INFO "/opt/homebrew/bin/php-cgi"
+#define FILES_PATH "./www/"
 
 
 struct RequestHandlerData

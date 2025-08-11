@@ -1,4 +1,5 @@
 #include "RequestHandler.hpp"
+#include <filesystem>
 #include <unistd.h>
 
 /*check if its either a static request (html) or needs the cgi (phpCGI)
@@ -24,13 +25,13 @@ int	htpp_request(ServerConfig &dataServer)
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.requestMethod = "POST";
-	data.staticFileName = "RequestHandler/index.html";
+	data.staticFileName = "index.html";
 	data.dynamicFileName = "test.php";
 	std::ostringstream clientBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
 
-	data.args_str.push_back(CGI_INTERPRETER_PATH);
+	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(FILES_PATH + data.dynamicFileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + FILES_PATH + data.dynamicFileName);
@@ -59,10 +60,15 @@ int	handle_static_request(RequestHandlerData &data)
 {
 	std::string buffer;
 	std::ostringstream oss;
+	char tmp[256];
 
-	data.staticFile.open(data.staticFileName.c_str());
+	data.staticFile.open((FILES_PATH + data.staticFileName));
 	if (data.staticFile.is_open() == false)
+	{
+		getcwd(tmp, 256);
+		std::cout <<  tmp << std::endl;
 		return (ERROR);
+	}
 	oss << data.staticFile.rdbuf();
 	data.FileContent = oss.str();
 	data.staticFile.close();
@@ -87,7 +93,7 @@ int	handle_dynamic_request(RequestHandlerData &data)
 	{
 		close(data.fd[0]);
 		dup2(data.fd[1], STDOUT_FILENO);
-		child_status = execve(CGI_INTERPRETER_PATH, data.args.data(), data.env.data());
+		child_status = execve(PATH_INFO, data.args.data(), data.env.data());
 		_exit(child_status);
 	}
 	else
