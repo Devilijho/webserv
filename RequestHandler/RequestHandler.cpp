@@ -77,7 +77,6 @@ int	handle_dynamic_request(RequestHandlerData &data)
 	char	buffer;
 	int		child_status = SUCCESS;
 
-	return (ERROR);
 	if (pipe(data.fd) == ERROR)
 		return (ERROR);
 	pid = fork();
