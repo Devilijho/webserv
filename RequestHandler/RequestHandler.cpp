@@ -63,7 +63,7 @@ int	handle_static_request(RequestHandlerData &data)
 
 	if (data.staticFileName == "./www/")
 		data.staticFileName = "./www/index.html";
-	data.staticFile.open(data.staticFileName);
+	data.staticFile.open(data.staticFileName.c_str());
 	if (data.staticFile.is_open() == false)
 	{
 		std::cout << "error?" << std::endl;
