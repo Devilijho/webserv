@@ -1,6 +1,4 @@
 #include "RequestHandler.hpp"
-#include <filesystem>
-#include <unistd.h>
 
 /*check if its either a static request (html) or needs the cgi (phpCGI)
 else return an error */
@@ -26,6 +24,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.requestMethod = "POST";
 	data.dynamicFileName = "test.php";
+	data.HeadContent = "HTTP/1.1 200 OK\r\nContent-Length: ";
 	std::ostringstream clientBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
@@ -66,7 +65,11 @@ int	handle_static_request(RequestHandlerData &data)
 	data.staticFile.open(data.staticFileName.c_str());
 	if (data.staticFile.is_open() == false)
 	{
-		return (ERROR);
+		data.staticFileName = "./www/404.html";
+		data.HeadContent = "HTTP/1.1 404 Not Found\r\nContent-Length: ";
+		if (access(data.staticFileName.c_str(), R_OK | F_OK) != 0)
+			return (ERROR);
+		handle_static_request(data);
 	}
 	oss << data.staticFile.rdbuf();
 	data.FileContent = oss.str();

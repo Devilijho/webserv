@@ -184,36 +184,28 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	data.staticFileName = srv.root + path;
 
 	int status = 0;
-	std::string body;
+	std::string returnData;
 
 	if (path.find(".php") != std::string::npos && (method == "GET" || method == "POST"))
 	{
 		status = handle_dynamic_request(data);
 		if (status != 0)
 		{
-			body = "CGI Error";
-			return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: " + toString(body.size()) +
-				"\r\nContent-Type: text/plain\r\n\r\n" + body;
+			returnData = "CGI Error";
+			return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: " + toString(returnData.size()) +
+				"\r\nContent-Type: text/plain\r\n\r\n" + returnData;
 		}
-		body = data.FileContent;
-		return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
-			"\r\nContent-Type: text/html\r\n\r\n" + body;
+		returnData = data.FileContent;
+		return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(returnData.size()) +
+			"\r\nContent-Type: text/html\r\n\r\n" + returnData;
 	}
 	else if (method == "GET")
 	{
 		status = handle_static_request(data);
-		if (status != 0)
-		{
-			data.staticFileName = srv.root + "/404.html";
-			if (handle_static_request(data) != 0)
-				return ("ERROR");
-			body = data.FileContent;
-			return "HTTP/1.1 404 Internal Server Error\r\nContent-Length: " + toString(body.size()) +
-				   "\r\nContent-Type: text/html\r\n\r\n" + body;;
-		}
-		body = data.FileContent;
-		return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
-			   "\r\nContent-Type: text/html\r\n\r\n" + body;
+		std::cout << data.HeadContent;
+		returnData = data.HeadContent + toString(data.FileContent.size())
+			+ "\r\nContent-Type: text/html\r\n\r\n" + data.FileContent;
+		return (returnData);
 	}
 	else if (method == "DELETE")
 		return "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n";
