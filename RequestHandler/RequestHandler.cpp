@@ -55,6 +55,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 /*Finds the static file (html, css, ico), reads its content at returns it trough a pipe to
 the server (not yet but easy to implement)*/
 
+
 int	handle_static_request(RequestHandlerData &data)
 {
 	std::string buffer;
@@ -65,10 +66,7 @@ int	handle_static_request(RequestHandlerData &data)
 	data.staticFile.open(data.staticFileName.c_str());
 	if (data.staticFile.is_open() == false)
 	{
-		std::cout << "Couldn't find file: " << data.staticFileName << std::endl;
-		data.staticFile.open("./www/404.html");
-		if (data.staticFile.is_open() == false)
-			return (ERROR);
+		return (ERROR);
 	}
 	oss << data.staticFile.rdbuf();
 	data.FileContent = oss.str();
