@@ -6,7 +6,7 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/08 18:50:04 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/11 14:32:03 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,6 @@ Server::~Server() {
 
 bool Server::start()
 {
-	if (!config.parseFile("default.conf") || !config.isValid())
-    {
-        std::cerr << "Invalid configuration. Stopping." << std::endl;
-        return false;
-    }
 	if (!loadConfig("default.conf"))
 		return false;
 
@@ -67,7 +62,7 @@ bool Server::setupSocket()
 	std::memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(port);
+	addr.sin_port = htons(port); // host to network short
 
 	if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 		return perror("bind"), false;
