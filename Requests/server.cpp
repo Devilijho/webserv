@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "server.hpp"
+#include <unistd.h>
 
 Server::Server(int _port) : server_fd(-1), port(_port) {}
 
@@ -179,35 +180,40 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	}
 
 	RequestHandlerData data;
-	setData(data, const_cast<ServerConfig&>(srv));
 	data.requestMethod = method;
-	data.staticFileName = srv.root + path;
-
+	data.FileName = srv.root + path;
 	int status = 0;
 	std::string returnData;
 
-	if (path.find(".php") != std::string::npos && (method == "GET" || method == "POST"))
+	setData(data, const_cast<ServerConfig&>(srv));
+	if (data.FileName.find(".php") != std::string::npos && (method == "GET" || method == "POST"))
 	{
+		std::cout << "TESTING PHP: " << data.FileName << std::endl;
 		status = handle_dynamic_request(data);
 		if (status != 0)
-		{
-			returnData = "CGI Error";
-			return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: " + toString(returnData.size()) +
-				"\r\nContent-Type: text/plain\r\n\r\n" + returnData;
-		}
-		returnData = data.FileContent;
-		return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(returnData.size()) +
-			"\r\nContent-Type: text/html\r\n\r\n" + returnData;
+			errorHandling(data, "./www/error/505.html", "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n");
+		returnData = data.HeadContent + toString(data.FileContent.size())
+			+ "\r\nContent-Type: text/html\r\n\r\n" + data.FileContent;
+		return (returnData);
 	}
 	else if (method == "GET")
 	{
 		status = handle_static_request(data);
+		if (status != 0)
+			errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found\r\nContent-Length: ");
 		returnData = data.HeadContent + toString(data.FileContent.size())
 			+ "\r\nContent-Type: text/html\r\n\r\n" + data.FileContent;
 		return (returnData);
 	}
 	else if (method == "DELETE")
+	{
 		return "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n";
+	}
 	else
-		return "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
+	{
+		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n");
+		returnData = data.HeadContent + toString(data.FileContent.size())
+			+ "\r\nContent-Type: text/html\r\n\r\n" + data.FileContent;
+		return (returnData);
+	}
 }

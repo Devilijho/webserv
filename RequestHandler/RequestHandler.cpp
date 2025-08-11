@@ -22,24 +22,21 @@ int	htpp_request(ServerConfig &dataServer)
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
-	data.requestMethod = "POST";
-	data.dynamicFileName = "test.php";
 	data.HeadContent = "HTTP/1.1 200 OK\r\nContent-Length: ";
 	std::ostringstream clientBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
 
 	data.args_str.push_back(PATH_INFO);
-	data.args_str.push_back(FILES_PATH + data.dynamicFileName);
+	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
-	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + FILES_PATH + data.dynamicFileName);
+	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
 	data.env_str.push_back("REDIRECT_STATUS=200");
 	data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	data.env_str.push_back("QUERY_STRING=searchedInfo");
 	data.env_str.push_back("MAX_FILE_SIZE=" + clientBodysize.str());
-	// data.env_str.push_back("PHP_SELF=" + dataServer.server_name);
 
 	for (unsigned long i = 0; i < data.args_str.size(); i++)
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
@@ -60,17 +57,11 @@ int	handle_static_request(RequestHandlerData &data)
 	std::string buffer;
 	std::ostringstream oss;
 
-	if (data.staticFileName == "./www/")
-		data.staticFileName = "./www/index.html";
-	data.staticFile.open(data.staticFileName.c_str());
+	if (data.FileName == "./www/")
+		data.FileName = "./www/index.html";
+	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
-	{
-		data.staticFileName = "./www/404.html";
-		data.HeadContent = "HTTP/1.1 404 Internal Server Error\r\nContent-Length: ";
-		if (access(data.staticFileName.c_str(), R_OK | F_OK) != 0)
-			return (ERROR);
-		return handle_static_request(data);
-	}
+		return (ERROR);
 	oss << data.staticFile.rdbuf();
 	data.FileContent = oss.str();
 	data.staticFile.close();
@@ -86,6 +77,7 @@ int	handle_dynamic_request(RequestHandlerData &data)
 	char	buffer;
 	int		child_status = SUCCESS;
 
+	return (ERROR);
 	if (pipe(data.fd) == ERROR)
 		return (ERROR);
 	pid = fork();
@@ -105,4 +97,15 @@ int	handle_dynamic_request(RequestHandlerData &data)
 		data.FileContent += buffer;
 	return_value = WEXITSTATUS(child_status);
 	return (return_value);
+}
+
+void errorHandling(RequestHandlerData &data, std::string errorFile, std::string HeadContent)
+{
+	std::string returnData;
+	data.FileName = errorFile;
+	data.HeadContent = HeadContent;
+	if (access(errorFile.c_str(), R_OK | F_OK) != 0)
+		return ;
+	if (handle_static_request(data) != 0)
+		return ;
 }
