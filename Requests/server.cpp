@@ -182,12 +182,15 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	RequestHandlerData data;
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
-	data.FileContentType = fileContentTypeHandler(path);
+	data.FileContentType = getContentType(path);
 	std::string returnData;
 
 	setData(data, const_cast<ServerConfig&>(srv));
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
+	{
+		data.FileContentType = "html";
 		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
+	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST"))
 	{
 		data.FileContentType = "html";

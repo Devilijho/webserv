@@ -49,6 +49,6 @@ int	handle_dynamic_request(RequestHandlerData &data);
 int	handle_static_request(RequestHandlerData &data);
 int	setData(RequestHandlerData &data, ServerConfig &dataServer);
 int	htpp_request(ServerConfig &dataServer);
-std::string fileContentTypeHandler(std::string);
+std::string getContentType(std::string);
 std::string getDate(void);
 std::string getFileDate(std::string fileName);

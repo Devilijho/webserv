@@ -1,6 +1,7 @@
 #include "RequestHandler.hpp"
 #include <ctime>
 #include <sys/stat.h>
+#include <unistd.h>
 
 /*Sets data, this is temporary since the paths and values used are hard coded :) */
 
@@ -94,7 +95,7 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 		return ;
 }
 
-std::string fileContentTypeHandler(std::string name)
+std::string getContentType(std::string name)
 {
 	size_t pos;
 	pos = name.find_last_of(".");
