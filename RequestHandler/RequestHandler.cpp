@@ -104,7 +104,7 @@ std::string getContentType(std::string name)
 	size_t pos;
 	pos = name.find_last_of(".");
 
-	if (pos == std::string::npos)
+	if (pos == std::string::npos || pos == 0)
 		return "html";
 	else
 		return name.substr(pos + 1);
@@ -140,8 +140,8 @@ std::string getQueryData(RequestHandlerData &data)
 	queryData = data.FileName.substr(pos + 1);
 	cutFileName = data.FileName.substr(0, pos);
 	data.FileName = cutFileName;
-	std::cout << "QUERY->>>>>>>" << std::endl;
-	std::cout << data.FileName << std::endl;
-	std::cout << queryData << std::endl;
+	// std::cout << "QUERY->>>>>>>" << std::endl;
+	// std::cout << data.FileName << std::endl;
+	// std::cout << queryData << std::endl;
 	return queryData;
 }
