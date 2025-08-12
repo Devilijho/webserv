@@ -6,11 +6,12 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/11 14:32:03 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/12 13:35:34 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.hpp"
+#include <unistd.h>
 
 Server::Server(int _port) : server_fd(-1), port(_port) {}
 
@@ -121,9 +122,7 @@ void Server::acceptClient()
 		perror("accept");
 		return;
 	}
-
 	fcntl(client_fd, F_SETFL, O_NONBLOCK);
-
 	struct pollfd client_pollfd;
 	client_pollfd.fd = client_fd;
 	client_pollfd.events = POLLIN;
@@ -154,7 +153,9 @@ std::string Server::toString(int value) {
 	return oss.str();
 }
 
-std::string Server::buildHttpResponse(const std::string &raw_request) {
+std::string Server::buildHttpResponse(const std::string &raw_request)
+{
+
 	// --- Parse method and path from raw_request manually ---
 	// Very simple HTTP request parser, improve as needed
 	std::istringstream req_stream(raw_request);
@@ -170,7 +171,6 @@ std::string Server::buildHttpResponse(const std::string &raw_request) {
 	// 3. Check if path matches a location (simplified)
 	const LocationConfig *loc = srv.findLocation(path);
 	if (!loc) {
-		// Return 404 page
 		std::ifstream errFile(srv.error_pages.at(404).c_str());
 		std::stringstream errBuf;
 		errBuf << errFile.rdbuf();
@@ -179,63 +179,35 @@ std::string Server::buildHttpResponse(const std::string &raw_request) {
 			   "\r\nContent-Type: text/html\r\n\r\n" + body;
 	}
 
-	// 4. Prepare RequestHandlerData
 	RequestHandlerData data;
 	data.requestMethod = method;
-	data.staticFileName = srv.root + path; // Example, adjust for your config
-
-	// 5. Set environment and args for CGI / static
-	setData(data, const_cast<ServerConfig&>(srv));  // may want to adjust setData to not hardcode paths
-
+	data.FileName = srv.root + path;
 	int status = 0;
-	std::string body;
+	std::string returnData;
+	data.FileContentType = fileContentTypeHandler(path);
+	// std::cout << "file name: " << path << std::endl;
+	// std::cout << "CONTENT TYPE: " << data.FileContentType << std::endl;
 
-    if (path.find(".php") != std::string::npos && (method == "GET" || method == "POST")) {
-        status = handle_dynamic_request(data);
-        if (status != 0) {
-            body = "CGI Error";
-            return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: " + toString(body.size()) +
-                   "\r\nContent-Type: text/plain\r\n\r\n" + body;
-        }
-        // After fix: handle_dynamic_request should fill data.staticFileContent with CGI output
-        body = data.FileContent;
-        return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
-               "\r\nContent-Type: text/html\r\n\r\n" + body;
-    } else if (method == "GET") {
-        status = handle_static_request(data);
-        if (status != 0) {
-            return "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-        }
-        body = data.FileContent;
-        return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
-               "\r\nContent-Type: text/html\r\n\r\n" + body;
-    } else if (method == "DELETE") {
-        return "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n";
-    } else {
-        return "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
-    }
-	if (path.find(".php") != std::string::npos && (method == "GET" || method == "POST")) {
+	setData(data, const_cast<ServerConfig&>(srv));
+	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
+		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found\r\nContent-Length: ");
+	else if (data.FileContentType == "php" && (method == "GET" || method == "POST"))
+	{
 		status = handle_dynamic_request(data);
-		if (status != 0) {
-			body = "CGI Error";
-			return "HTTP/1.1 500 Internal Server Error\r\nContent-Length: " + toString(body.size()) +
-				   "\r\nContent-Type: text/plain\r\n\r\n" + body;
-		}
-		// After fix: handle_dynamic_request should fill data.staticFileContent with CGI output
-		body = data.FileContent;
-		return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
-			   "\r\nContent-Type: text/html\r\n\r\n" + body;
-	} else if (method == "GET") {
-		status = handle_static_request(data);
-		if (status != 0) {
-			return "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-		}
-		body = data.FileContent;
-		return "HTTP/1.1 200 OK\r\nContent-Length: " + toString(body.size()) +
-			   "\r\nContent-Type: text/html\r\n\r\n" + body;
-	} else if (method == "DELETE") {
-		return "HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n";
-	} else {
-		return "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: 0\r\n\r\n";
+		if (status != SUCCESS)
+			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Internal Server Error\r\nContent-Length: ");
 	}
+	else if (method == "GET")
+	{
+		status = handle_static_request(data);
+		if (status != SUCCESS)
+			std::cout << "File: " + data.FileName + " failed to be handled" << std::endl;
+	}
+	else if (method == "DELETE")
+		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found\r\nContent-Length: ");
+	else
+		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: ");
+	returnData = data.HeadContent + toString(data.FileContent.size())
+		+ "\r\nContent-Type: text/" + data.FileContentType + "\r\n\r\n" + data.FileContent;
+	return (returnData);
 }

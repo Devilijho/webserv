@@ -2,6 +2,7 @@
 
 #include "../config/ConfigParser.hpp"
 #include "../config/ServerConfig.hpp"
+#include "../Requests/server.hpp"
 #include <fstream>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -13,21 +14,14 @@
 #include <vector>
 #include <sstream>
 
-#define	OK 200
-#define BAD_REQUEST 400
-#define NOT_FOUND 404
-#define INTERNAL_SERVER_ERROR 500
-
 #define SUCCESS 0
 #define ERROR 1
 
 //Linux
-#define CGI_INTERPRETER_PATH "/usr/bin/php-cgi"
-#define FILES_PATH "/home/pde-vara/Documents/webserv/RequestHandler/"
+// #define PATH_INFO "/usr/bin/php-cgi"
 
 //MacOS
-// #define CGI_INTERPRETER_PATH "/opt/homebrew/bin/php-cgi"
-// #define FILES_PATH "/Users/devilijho/Workplace/webserv/"
+#define PATH_INFO "/opt/homebrew/bin/php-cgi"
 
 
 struct RequestHandlerData
@@ -38,17 +32,20 @@ struct RequestHandlerData
 	std::vector<char *> env;
 
 	std::ifstream staticFile;
-	std::string	staticFileName;
+	std::string	FileName;
+	std::string FileContentType;
 
 	std::string FileContent;
+	std::string HeadContent;
 
-	std::string dynamicFileName;
 	std::string requestMethod;
 
 	int	fd[2];
 };
 
+void errorHandling(RequestHandlerData &data, std::string errorFile, std::string HeadContent);
 int	handle_dynamic_request(RequestHandlerData &data);
 int	handle_static_request(RequestHandlerData &data);
 int	setData(RequestHandlerData &data, ServerConfig &dataServer);
 int	htpp_request(ServerConfig &dataServer);
+std::string fileContentTypeHandler(std::string);
