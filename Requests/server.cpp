@@ -185,8 +185,8 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	int status = 0;
 	std::string returnData;
 	data.FileContentType = fileContentTypeHandler(path);
-	std::cout << "file name: " << path << std::endl;
-	std::cout << "CONTENT TYPE: " << data.FileContentType << std::endl;
+	// std::cout << "file name: " << path << std::endl;
+	// std::cout << "CONTENT TYPE: " << data.FileContentType << std::endl;
 
 	setData(data, const_cast<ServerConfig&>(srv));
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
