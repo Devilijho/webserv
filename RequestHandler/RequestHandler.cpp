@@ -1,22 +1,5 @@
 #include "RequestHandler.hpp"
-
-/*check if its either a static request (html) or needs the cgi (phpCGI)
-else return an error */
-
-int	htpp_request(ServerConfig &dataServer)
-{
-	RequestHandlerData data;
-
-	setData(data, dataServer);
-	if (data.requestMethod == "POST")
-		return (handle_dynamic_request(data));
-	else if (data.requestMethod == "GET")
-		return (handle_static_request(data));
-	else if (data.requestMethod == "DELETE")
-		return (ERROR); // not implemented yet
-	else
-		return (BAD_REQUEST);
-}
+#include <string>
 
 /*Sets data, this is temporary since the paths and values used are hard coded :) */
 
@@ -94,6 +77,7 @@ int	handle_dynamic_request(RequestHandlerData &data)
 	close(data.fd[1]);
 	while (read(data.fd[0], &buffer, 1) > 0)
 		data.FileContent += buffer;
+	close(data.fd[0]);
 	return_value = WEXITSTATUS(child_status);
 	return (return_value);
 }
@@ -107,4 +91,14 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 		return ;
 	if (handle_static_request(data) != 0)
 		return ;
+}
+
+std::string fileContentTypeHandler(std::string name)
+{
+	size_t pos;
+	pos = name.find(".");
+	if (pos == std::string::npos)
+		return "html";
+	else
+		return name.substr(pos + 1);
 }
