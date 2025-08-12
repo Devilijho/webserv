@@ -162,7 +162,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	std::string method, path, protocol;
 	req_stream >> method >> path >> protocol;
 	if (method.empty() || path.empty()) {
-		return "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
+		return "HTTP/1.1 400 Bad Request0\r\n\r\n";
 	}
 
 	// 2. Match to a server config (simplified)
@@ -175,38 +175,44 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 		std::stringstream errBuf;
 		errBuf << errFile.rdbuf();
 		std::string body = errBuf.str();
-		return "HTTP/1.1 404 Not Found\r\nContent-Length: " + toString(body.size()) +
+		return "HTTP/1.1 404 Not Found" + toString(body.size()) +
 			   "\r\nContent-Type: text/html\r\n\r\n" + body;
 	}
 
 	RequestHandlerData data;
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
-	data.FileContentType = fileContentTypeHandler(path);
-	int status = 0;
+	data.FileContentType = getContentType(path);
 	std::string returnData;
 
 	setData(data, const_cast<ServerConfig&>(srv));
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
-		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found\r\nContent-Length: ");
+	{
+		data.FileContentType = "html";
+		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
+	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST"))
 	{
 		data.FileContentType = "html";
-		status = handle_dynamic_request(data);
-		if (status != SUCCESS)
-			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Internal Server Error\r\nContent-Length: ");
+		if (handle_dynamic_request(data) != SUCCESS)
+			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Internal Server Error");
 	}
 	else if (method == "GET")
 	{
-		status = handle_static_request(data);
-		if (status != SUCCESS)
+		if (handle_static_request(data) != SUCCESS)
 			std::cout << "File: " + data.FileName + " failed to be handled" << std::endl;
 	}
 	else if (method == "DELETE")
-		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found\r\nContent-Length: ");
+		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
 	else
-		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: ");
-	returnData = data.HeadContent + toString(data.FileContent.size())
-		+ "\r\nContent-Type: text/" + data.FileContentType + "\r\n\r\n" + data.FileContent;
+		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed");
+	returnData =
+		data.StatusLine
+		+ "\r\nConnection: keep-alive"
+		+ "\r\nLast-Modified: " + getFileDate(data.FileName)
+		+ "\r\nDate: " + getDate()
+		+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
+		+ "\r\nContent-Type: text/" + data.FileContentType
+		+ "\r\n\r\n" + data.FileContent;
 	return (returnData);
 }

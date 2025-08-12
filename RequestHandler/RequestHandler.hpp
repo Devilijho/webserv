@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include <vector>
 #include <sstream>
+#include <sys/stat.h>
 
 #define SUCCESS 0
 #define ERROR 1
@@ -36,7 +37,7 @@ struct RequestHandlerData
 	std::string FileContentType;
 
 	std::string FileContent;
-	std::string HeadContent;
+	std::string StatusLine;
 
 	std::string requestMethod;
 
@@ -48,4 +49,6 @@ int	handle_dynamic_request(RequestHandlerData &data);
 int	handle_static_request(RequestHandlerData &data);
 int	setData(RequestHandlerData &data, ServerConfig &dataServer);
 int	htpp_request(ServerConfig &dataServer);
-std::string fileContentTypeHandler(std::string);
+std::string getContentType(std::string);
+std::string getDate(void);
+std::string getFileDate(std::string fileName);

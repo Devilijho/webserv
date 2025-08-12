@@ -1,11 +1,13 @@
 #include "RequestHandler.hpp"
-#include <string>
+#include <ctime>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /*Sets data, this is temporary since the paths and values used are hard coded :) */
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
-	data.HeadContent = "HTTP/1.1 200 OK\r\nContent-Length: ";
+	data.StatusLine = "HTTP/1.1 200 OK";
 	std::ostringstream clientBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
@@ -86,14 +88,14 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 {
 	std::string returnData;
 	data.FileName = errorFile;
-	data.HeadContent = HeadContent;
+	data.StatusLine = HeadContent;
 	if (access(errorFile.c_str(), R_OK | F_OK) != 0)
 		return ;
 	if (handle_static_request(data) != 0)
 		return ;
 }
 
-std::string fileContentTypeHandler(std::string name)
+std::string getContentType(std::string name)
 {
 	size_t pos;
 	pos = name.find_last_of(".");
@@ -101,4 +103,19 @@ std::string fileContentTypeHandler(std::string name)
 		return "html";
 	else
 		return name.substr(pos + 1);
+}
+
+std::string getDate(void)
+{
+	time_t now = time(0);
+	std::string time(ctime(&now));
+	return (time.substr(0, time.length() - 1));
+}
+
+std::string getFileDate(std::string fileName)
+{
+	struct stat info;
+	stat(fileName.c_str(), &info);
+	std::string time(ctime(&info.st_mtime));
+	return (time.substr(0, time.length() - 1));
 }
