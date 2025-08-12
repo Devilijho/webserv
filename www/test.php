@@ -1,6 +1,4 @@
 <?php
-echo "Content-Type: text/html\r\n\r\n";
-echo "<html>";
 echo "<head><title>PHP CGI Test</title></head>";
 echo "<body>";
 echo "<h1>Hello from PHP!!!!!!!</h1>";

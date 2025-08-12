@@ -96,7 +96,7 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 std::string fileContentTypeHandler(std::string name)
 {
 	size_t pos;
-	pos = name.find(".");
+	pos = name.find_last_of(".");
 	if (pos == std::string::npos)
 		return "html";
 	else

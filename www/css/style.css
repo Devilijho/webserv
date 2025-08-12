@@ -13,6 +13,19 @@ h2 {
 	color: yellow;
 }
 
+br {
+	line-height: 150%;
+}
+
+a {
+	color: blue;
+	text-decoration: none;
+}
+
+a:hover {
+	color: black;
+}
+
 button {
 	padding: 10px 100px;
 	font-size: 16px;
