@@ -183,7 +183,6 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
 	data.FileContentType = fileContentTypeHandler(path);
-	int status = 0;
 	std::string returnData;
 
 	setData(data, const_cast<ServerConfig&>(srv));
@@ -192,21 +191,23 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST"))
 	{
 		data.FileContentType = "html";
-		status = handle_dynamic_request(data);
-		if (status != SUCCESS)
+		if (handle_dynamic_request(data) != SUCCESS)
 			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Internal Server Error\r\nContent-Length: ");
 	}
 	else if (method == "GET")
 	{
-		status = handle_static_request(data);
-		if (status != SUCCESS)
+		if (handle_static_request(data) != SUCCESS)
 			std::cout << "File: " + data.FileName + " failed to be handled" << std::endl;
 	}
 	else if (method == "DELETE")
 		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found\r\nContent-Length: ");
 	else
 		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: ");
-	returnData = data.HeadContent + toString(data.FileContent.size())
-		+ "\r\nContent-Type: text/" + data.FileContentType + "\r\n\r\n" + data.FileContent;
+	returnData = data.StatusLine
+		+ "\r\nContent-Length: " + toString(data.FileContent.size())
+		// + "\r\nDate: " + actualDate()
+		+ "\r\nContent-Type: text/" + data.FileContentType + "\r\n\r\n"
+		+ data.FileContent;
+	std::cout << returnData << std::endl;
 	return (returnData);
 }

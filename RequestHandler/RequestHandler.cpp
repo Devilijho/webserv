@@ -1,11 +1,12 @@
 #include "RequestHandler.hpp"
+#include <ctime>
 #include <string>
 
 /*Sets data, this is temporary since the paths and values used are hard coded :) */
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
-	data.HeadContent = "HTTP/1.1 200 OK\r\nContent-Length: ";
+	data.StatusLine = "HTTP/1.1 200 OK";
 	std::ostringstream clientBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
@@ -86,7 +87,7 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 {
 	std::string returnData;
 	data.FileName = errorFile;
-	data.HeadContent = HeadContent;
+	data.StatusLine = HeadContent;
 	if (access(errorFile.c_str(), R_OK | F_OK) != 0)
 		return ;
 	if (handle_static_request(data) != 0)
@@ -101,4 +102,20 @@ std::string fileContentTypeHandler(std::string name)
 		return "html";
 	else
 		return name.substr(pos + 1);
+}
+
+std::string actualDate(void)
+{
+	struct tm datetime;
+	time_t timestamp;
+
+	datetime.tm_year = 2023 - 1900;
+	datetime.tm_mon = 12 - 1;
+	datetime.tm_mday = 17;
+	datetime.tm_hour = 12;
+	datetime.tm_min = 30;
+	datetime.tm_sec = 1;
+	datetime.tm_isdst = -1;
+	timestamp = mktime(&datetime);
+	return ctime(&timestamp);
 }
