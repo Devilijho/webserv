@@ -20,7 +20,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	data.env_str.push_back("QUERY_STRING=searchedInfo");
+	data.env_str.push_back("QUERY_STRING=" + getQueryData(data));
 	data.env_str.push_back("MAX_FILE_SIZE=" + clientBodysize.str());
 
 	for (unsigned long i = 0; i < data.args_str.size(); i++)
@@ -84,6 +84,8 @@ int	handle_dynamic_request(RequestHandlerData &data)
 	return (return_value);
 }
 
+/*fills some variables and returns a error page */
+
 void errorHandling(RequestHandlerData &data, std::string errorFile, std::string HeadContent)
 {
 	std::string returnData;
@@ -95,15 +97,20 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 		return ;
 }
 
+/*get the extension of a file */
+
 std::string getContentType(std::string name)
 {
 	size_t pos;
 	pos = name.find_last_of(".");
-	if (pos == std::string::npos)
+
+	if (pos == std::string::npos || pos == 0)
 		return "html";
 	else
 		return name.substr(pos + 1);
 }
+
+/*Gets the current time and returns it as a string*/
 
 std::string getDate(void)
 {
@@ -112,10 +119,29 @@ std::string getDate(void)
 	return (time.substr(0, time.length() - 1));
 }
 
+/*Gets the last time the file was modified and returns it as a string */
 std::string getFileDate(std::string fileName)
 {
 	struct stat info;
 	stat(fileName.c_str(), &info);
 	std::string time(ctime(&info.st_mtime));
 	return (time.substr(0, time.length() - 1));
+}
+
+/*gets the variables sent by the POST method */
+
+std::string getQueryData(RequestHandlerData &data)
+{
+	size_t pos;
+	std::string cutFileName;
+	std::string queryData = "";
+
+	pos = data.FileName.find_last_of("?");
+	queryData = data.FileName.substr(pos + 1);
+	cutFileName = data.FileName.substr(0, pos);
+	data.FileName = cutFileName;
+	// std::cout << "QUERY->>>>>>>" << std::endl;
+	// std::cout << data.FileName << std::endl;
+	// std::cout << queryData << std::endl;
+	return queryData;
 }

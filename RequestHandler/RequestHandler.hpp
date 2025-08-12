@@ -52,3 +52,4 @@ int	htpp_request(ServerConfig &dataServer);
 std::string getContentType(std::string);
 std::string getDate(void);
 std::string getFileDate(std::string fileName);
+std::string getQueryData(RequestHandlerData &data);
