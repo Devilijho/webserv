@@ -1,6 +1,6 @@
 #include "RequestHandler.hpp"
 #include <ctime>
-#include <string>
+#include <sys/stat.h>
 
 /*Sets data, this is temporary since the paths and values used are hard coded :) */
 
@@ -104,18 +104,17 @@ std::string fileContentTypeHandler(std::string name)
 		return name.substr(pos + 1);
 }
 
-std::string actualDate(void)
+std::string getDate(void)
 {
-	struct tm datetime;
-	time_t timestamp;
+	time_t now = time(0);
+	std::string time(ctime(&now));
+	return (time.substr(0, time.length() - 1));
+}
 
-	datetime.tm_year = 2023 - 1900;
-	datetime.tm_mon = 12 - 1;
-	datetime.tm_mday = 17;
-	datetime.tm_hour = 12;
-	datetime.tm_min = 30;
-	datetime.tm_sec = 1;
-	datetime.tm_isdst = -1;
-	timestamp = mktime(&datetime);
-	return ctime(&timestamp);
+std::string getFileDate(std::string fileName)
+{
+	struct stat info;
+	stat(fileName.c_str(), &info);
+	std::string time(ctime(&info.st_mtime));
+	return (time.substr(0, time.length() - 1));
 }
