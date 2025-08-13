@@ -1,12 +1,13 @@
 #include "RequestHandler.hpp"
 #include <ctime>
 #include <sstream>
+#include <string>
 #include <sys/stat.h>
 #include <unistd.h>
 
 /*Sets data, this is temporary since the paths and values used are hard coded :) */
 
-int	setData(RequestHandlerData &data, ServerConfig &dataServer)
+int	setData(RequestHandlerData &data, ServerConfig &dataServer, std::string rawRequest)
 {
 	data.StatusLine = "HTTP/1.1 200 OK";
 	std::string query = getQueryData(data);
@@ -14,13 +15,14 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	std::ostringstream requestBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
+	requestBodysize << rawRequest;
 
 	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
 	data.env_str.push_back("REDIRECT_STATUS=200");
-	data.env_str.push_back("CONTENT_LENGTH=0");
+	data.env_str.push_back("CONTENT_LENGTH=" + requestBodysize.str());
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	data.env_str.push_back("QUERY_STRING=" + query);
@@ -47,7 +49,7 @@ int	handle_static_request(RequestHandlerData &data)
 	std::ostringstream oss;
 
 	if (data.FileName == "./www/")
-		data.FileName = "./www/index.html";
+		data.FileName = "./www/html/index.html";
 	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
 		return (ERROR);

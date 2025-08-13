@@ -49,7 +49,7 @@ struct RequestHandlerData
 void errorHandling(RequestHandlerData &data, std::string errorFile, std::string HeadContent);
 int	handle_dynamic_request(RequestHandlerData &data);
 int	handle_static_request(RequestHandlerData &data);
-int	setData(RequestHandlerData &data, ServerConfig &dataServer);
+int	setData(RequestHandlerData &data, ServerConfig &dataServer, std::string rawRequest);
 int	htpp_request(ServerConfig &dataServer);
 
 /*Helper functions */
