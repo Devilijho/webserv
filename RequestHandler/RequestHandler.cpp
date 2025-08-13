@@ -15,14 +15,15 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer, std::string rawR
 	std::ostringstream requestBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
-	requestBodysize << rawRequest;
+	requestBodysize << rawRequest.length();
 
 	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
 	data.env_str.push_back("REDIRECT_STATUS=200");
-	data.env_str.push_back("CONTENT_LENGTH=" + requestBodysize.str());
+	// data.env_str.push_back("CONTENT_LENGTH=" + requestBodysize.str());
+	data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	data.env_str.push_back("QUERY_STRING=" + query);
@@ -32,7 +33,8 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer, std::string rawR
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
 	for (unsigned long i = 0; i < data.env_str.size(); i++)
 		data.env.push_back(const_cast<char *>(data.env_str[i].c_str()));
-
+	for (unsigned long i = 0; i < data.env_str.size(); i++)
+		std::cout << data.env_str[i] << std::endl;
 	data.args.push_back(NULL);
 	data.env.push_back(NULL);
 	data.FileContentType = getContentType(data.FileName);

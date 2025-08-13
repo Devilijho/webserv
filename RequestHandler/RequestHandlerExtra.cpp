@@ -40,6 +40,8 @@ std::string getQueryData(RequestHandlerData &data)
 	std::string queryData = "";
 
 	pos = data.FileName.find_last_of("?");
+	if (pos == std::string::npos)
+		return "";
 	queryData = data.FileName.substr(pos + 1);
 	cutFileName = data.FileName.substr(0, pos);
 	data.FileName = cutFileName;
