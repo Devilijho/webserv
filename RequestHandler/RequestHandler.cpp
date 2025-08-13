@@ -33,8 +33,6 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer, std::string rawR
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
 	for (unsigned long i = 0; i < data.env_str.size(); i++)
 		data.env.push_back(const_cast<char *>(data.env_str[i].c_str()));
-	for (unsigned long i = 0; i < data.env_str.size(); i++)
-		std::cout << data.env_str[i] << std::endl;
 	data.args.push_back(NULL);
 	data.env.push_back(NULL);
 	data.FileContentType = getContentType(data.FileName);
