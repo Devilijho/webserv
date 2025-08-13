@@ -181,11 +181,12 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	}
 
 	RequestHandlerData data;
+	std::string returnData;
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
-	std::string returnData;
+	data.rawRequest = raw_request;
 
-	setData(data, const_cast<ServerConfig&>(srv), raw_request);
+	setData(data, const_cast<ServerConfig&>(srv));
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
 	{
 		data.FileContentType = "html";

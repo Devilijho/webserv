@@ -41,7 +41,11 @@ struct RequestHandlerData
 
 	std::string requestMethod;
 
-	int	fd[2];
+	std::string rawRequest;
+	std::string requestBody;
+
+	int	fdOut[2];
+	int fdIn[2];
 };
 
 /*Main functions */
@@ -49,8 +53,9 @@ struct RequestHandlerData
 void errorHandling(RequestHandlerData &data, std::string errorFile, std::string HeadContent);
 int	handle_dynamic_request(RequestHandlerData &data);
 int	handle_static_request(RequestHandlerData &data);
-int	setData(RequestHandlerData &data, ServerConfig &dataServer, std::string rawRequest);
+int	setData(RequestHandlerData &data, ServerConfig &dataServer);
 int	htpp_request(ServerConfig &dataServer);
+void	setRequestBody(RequestHandlerData &data);
 
 /*Helper functions */
 
