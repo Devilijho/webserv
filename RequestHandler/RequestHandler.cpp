@@ -1,5 +1,6 @@
 #include "RequestHandler.hpp"
 #include <ctime>
+#include <sstream>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -8,11 +9,12 @@
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.StatusLine = "HTTP/1.1 200 OK";
+	std::string query = getQueryData(data);
 	std::ostringstream clientBodysize;
+	std::ostringstream requestBodysize;
 
 	clientBodysize << dataServer.client_max_body_size;
 
-	std::string query = getQueryData(data);
 	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
