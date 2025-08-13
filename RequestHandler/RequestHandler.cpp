@@ -12,6 +12,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 
 	clientBodysize << dataServer.client_max_body_size;
 
+	std::string query = getQueryData(data);
 	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
@@ -20,16 +21,17 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	data.env_str.push_back("QUERY_STRING=" + getQueryData(data));
+	data.env_str.push_back("QUERY_STRING=" + query);
 	data.env_str.push_back("MAX_FILE_SIZE=" + clientBodysize.str());
 
 	for (unsigned long i = 0; i < data.args_str.size(); i++)
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
 	for (unsigned long i = 0; i < data.env_str.size(); i++)
 		data.env.push_back(const_cast<char *>(data.env_str[i].c_str()));
+
 	data.args.push_back(NULL);
 	data.env.push_back(NULL);
-
+	data.FileContentType = getContentType(data.FileName);
 	return (SUCCESS);
 }
 
@@ -95,53 +97,4 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 		return ;
 	if (handle_static_request(data) != 0)
 		return ;
-}
-
-/*get the extension of a file */
-
-std::string getContentType(std::string name)
-{
-	size_t pos;
-	pos = name.find_last_of(".");
-
-	if (pos == std::string::npos || pos == 0)
-		return "html";
-	else
-		return name.substr(pos + 1);
-}
-
-/*Gets the current time and returns it as a string*/
-
-std::string getDate(void)
-{
-	time_t now = time(0);
-	std::string time(ctime(&now));
-	return (time.substr(0, time.length() - 1));
-}
-
-/*Gets the last time the file was modified and returns it as a string */
-std::string getFileDate(std::string fileName)
-{
-	struct stat info;
-	stat(fileName.c_str(), &info);
-	std::string time(ctime(&info.st_mtime));
-	return (time.substr(0, time.length() - 1));
-}
-
-/*gets the variables sent by the POST method */
-
-std::string getQueryData(RequestHandlerData &data)
-{
-	size_t pos;
-	std::string cutFileName;
-	std::string queryData = "";
-
-	pos = data.FileName.find_last_of("?");
-	queryData = data.FileName.substr(pos + 1);
-	cutFileName = data.FileName.substr(0, pos);
-	data.FileName = cutFileName;
-	// std::cout << "QUERY->>>>>>>" << std::endl;
-	// std::cout << data.FileName << std::endl;
-	// std::cout << queryData << std::endl;
-	return queryData;
 }
