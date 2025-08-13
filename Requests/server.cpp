@@ -6,7 +6,7 @@
 /*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/12 13:35:34 by pde-vara         ###   ########.fr       */
+/*   Updated: 2025/08/13 13:30:36 by pde-vara         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,15 +170,15 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	const ServerConfig &srv = config.getServers()[0];
 
 	// 3. Check if path matches a location (simplified)
-	const LocationConfig *loc = srv.findLocation(path);
-	if (!loc) {
-		std::ifstream errFile(srv.error_pages.at(404).c_str());
-		std::stringstream errBuf;
-		errBuf << errFile.rdbuf();
-		std::string body = errBuf.str();
-		return "HTTP/1.1 404 Not Found" + toString(body.size()) +
-			   "\r\nContent-Type: text/html\r\n\r\n" + body;
-	}
+	// const LocationConfig *loc = srv.findLocation(path);
+	// if (!loc) {
+	// 	std::ifstream errFile(srv.error_pages.at(404).c_str());
+	// 	std::stringstream errBuf;
+	// 	errBuf << errFile.rdbuf();
+	// 	std::string body = errBuf.str();
+	// 	return "HTTP/1.1 404 Not Found" + toString(body.size()) +
+	// 		   "\r\nContent-Type: text/html\r\n\r\n" + body;
+	// }
 
 	RequestHandlerData data;
 	data.FileName = srv.root + path;

@@ -19,10 +19,10 @@
 #define ERROR 1
 
 //Linux
-// #define PATH_INFO "/usr/bin/php-cgi"
+#define PATH_INFO "/usr/bin/php-cgi"
 
 //MacOS
-#define PATH_INFO "/opt/homebrew/bin/php-cgi"
+// #define PATH_INFO "/opt/homebrew/bin/php-cgi"
 
 
 struct RequestHandlerData
