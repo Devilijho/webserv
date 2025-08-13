@@ -1,8 +1,4 @@
 #include "RequestHandler.hpp"
-#include <ctime>
-#include <sstream>
-#include <sys/stat.h>
-#include <unistd.h>
 
 /*Sets data, this is temporary since the paths and values used are hard coded :) */
 
@@ -11,26 +7,34 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.StatusLine = "HTTP/1.1 200 OK";
 	std::string query = getQueryData(data);
 	std::ostringstream clientBodysize;
-	std::ostringstream requestBodysize;
+	std::ostringstream contentLength;
 
+	setRequestBody(data);
 	clientBodysize << dataServer.client_max_body_size;
+	contentLength << data.requestBody.length();
 
 	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
 	data.env_str.push_back("REDIRECT_STATUS=200");
-	data.env_str.push_back("CONTENT_LENGTH=0");
+	if (data.requestMethod == "POST")
+		data.env_str.push_back("CONTENT_LENGTH=" + contentLength.str());
+	else if (data.requestMethod == "GET")
+		data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	data.env_str.push_back("QUERY_STRING=" + query);
 	data.env_str.push_back("MAX_FILE_SIZE=" + clientBodysize.str());
+	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
+	data.env_str.push_back("SERVER_NAME=localhost");
+	data.env_str.push_back("SERVER_PORT=8080");
+	data.env_str.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
 
 	for (unsigned long i = 0; i < data.args_str.size(); i++)
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
 	for (unsigned long i = 0; i < data.env_str.size(); i++)
 		data.env.push_back(const_cast<char *>(data.env_str[i].c_str()));
-
 	data.args.push_back(NULL);
 	data.env.push_back(NULL);
 	data.FileContentType = getContentType(data.FileName);
@@ -47,7 +51,7 @@ int	handle_static_request(RequestHandlerData &data)
 	std::ostringstream oss;
 
 	if (data.FileName == "./www/")
-		data.FileName = "./www/index.html";
+		data.FileName = "./www/html/index.html";
 	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
 		return (ERROR);
@@ -66,25 +70,34 @@ int	handle_dynamic_request(RequestHandlerData &data)
 	char	buffer;
 	int		child_status = SUCCESS;
 
-	if (pipe(data.fd) == ERROR)
+	if (pipe(data.fdOut) == ERROR || pipe(data.fdIn) == ERROR)
 		return (ERROR);
 	pid = fork();
 	if (pid == -1)
 		return (ERROR);
 	else if (pid == 0)
 	{
-		close(data.fd[0]);
-		dup2(data.fd[1], STDOUT_FILENO);
+		close(data.fdOut[0]);
+		close(data.fdIn[1]);
+		dup2(data.fdOut[1], STDOUT_FILENO);
+		dup2(data.fdIn[0], STDIN_FILENO);
 		child_status = execve(PATH_INFO, data.args.data(), data.env.data());
 		_exit(child_status);
 	}
 	else
-		waitpid(pid,&child_status, 0);
-	close(data.fd[1]);
-	while (read(data.fd[0], &buffer, 1) > 0)
-		data.FileContent += buffer;
-	close(data.fd[0]);
-	return_value = WEXITSTATUS(child_status);
+	{
+		close(data.fdOut[1]);
+		close(data.fdIn[0]);
+		if (!data.requestBody.empty())
+			write(data.fdIn[1], data.requestBody.c_str(), data.requestBody.size());
+		close(data.fdIn[1]);
+		while (read(data.fdOut[0], &buffer, 1) > 0)
+			data.FileContent += buffer;
+		close(data.fdOut[0]);
+		waitpid(pid, &child_status, 0);
+		return_value = WEXITSTATUS(child_status);
+	}
+	std::cout << data.requestBody << std::endl;
 	return (return_value);
 }
 
