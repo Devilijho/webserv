@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/12 15:43:31 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/13 13:27:26 by pde-vara         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "server.hpp"
 #include <unistd.h>
 
@@ -17,8 +5,8 @@ int server_fd;
 		int port;
 		std::vector<pollfd> poll_fds;
 		ConfigParser config;
-		
-		
+
+
 Server::Server(int _port): server_fd(-1), port(_port) {}
 
 Server::~Server() {
@@ -35,7 +23,7 @@ bool Server::start()
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_fd < 0)
 		return (perror("socket"), false);
-	
+
 }
 
 std::string Server::buildHttpResponse(const std::string &raw_request)
@@ -46,5 +34,4 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	if (method.empty() || path.empty()) {
 		return "HTTP/1.1 400 Bad Request0\r\n\r\n";
 	}
-	+
 }
