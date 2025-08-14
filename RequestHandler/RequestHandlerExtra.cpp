@@ -89,3 +89,13 @@ std::string toString(int value)
 	oss << value;
 	return oss.str();
 }
+
+std::string getRequestContentType(RequestHandlerData &data)
+{
+	size_t posStart = data.rawRequest.find("Content-Type: ");
+	size_t posEnd = data.rawRequest.find("Upgrade-Insecure-Requests: ");
+	if (posStart != std::string::npos && posEnd != std::string::npos)
+		return data.rawRequest.substr(posStart + 14, posEnd - posStart - 16);
+	else
+		return "";
+}

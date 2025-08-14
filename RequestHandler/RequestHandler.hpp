@@ -57,9 +57,11 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer);
 int	htpp_request(ServerConfig &dataServer);
 std::string http_response(RequestHandlerData &data, ServerConfig &srv);
 
+
 /*Helper functions */
 
 void	setRequestBody(RequestHandlerData &data);
+std::string getRequestContentType(RequestHandlerData &data);
 std::string getETag(std::string fileName);
 std::string getContentType(std::string);
 std::string getDate(void);
