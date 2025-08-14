@@ -1,6 +1,7 @@
 #include "RequestHandler.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
 
 /*get the extension of a file */
 
@@ -53,18 +54,17 @@ std::string getQueryData(RequestHandlerData &data)
 std::string getETag(std::string fileName)
 {
 	std::string ETag(getFileDate(fileName));
-	int	pos = 0;
+	size_t	pos = 0;
 
 	ETag.erase(std::remove(ETag.begin(), ETag.end(), ' '), ETag.end());
-	for (int i = 0; i < ETag.length(); i++)
+	for (size_t i = 0; i < ETag.length(); i++)
 	{
 		if (std::isdigit(ETag[i]) != 0)
 		{
-			pos = i;
-			break ;
+			pos = i; break ;
 		}
 	}
-	return ETag.substr(0, );
+	return ETag.substr(pos, ETag.length());
 }
 
 void	setRequestBody(RequestHandlerData &data)
