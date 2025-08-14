@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
+#include <cstdlib>
+#include <sstream>
+#include <string>
 
 /*get the extension of a file */
 
@@ -53,18 +56,20 @@ std::string getQueryData(RequestHandlerData &data)
 
 std::string getETag(std::string fileName)
 {
-	std::string ETag(getFileDate(fileName));
+	std::string FileDate(getFileDate(fileName));
+	std::ostringstream EtagStream;
+	long	ETagNum;
 	size_t	pos = 0;
 
-	ETag.erase(std::remove(ETag.begin(), ETag.end(), ' '), ETag.end());
-	for (size_t i = 0; i < ETag.length(); i++)
-	{
-		if (std::isdigit(ETag[i]) != 0)
-		{
-			pos = i; break ;
-		}
-	}
-	return ETag.substr(pos, ETag.length());
+	FileDate.erase(std::remove(FileDate.begin(), FileDate.end(), ' '), FileDate.end());
+	FileDate.erase(std::remove(FileDate.begin(), FileDate.end(), ':'), FileDate.end());
+	for (size_t i = 0; i < FileDate.length(); i++){
+		if (std::isdigit(FileDate[i]) != 0)
+		{ pos = i; break; } }
+	ETagNum = std::stol(FileDate.substr(pos, FileDate.length()));
+	srand(ETagNum);
+	EtagStream << rand();
+	return "\"" + EtagStream.str() + "\"";
 }
 
 void	setRequestBody(RequestHandlerData &data)
@@ -76,4 +81,11 @@ void	setRequestBody(RequestHandlerData &data)
 		data.requestBody = "";
 	else
 		data.requestBody = data.rawRequest.substr(posStart + 4);
+}
+
+std::string toString(int value)
+{
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
 }

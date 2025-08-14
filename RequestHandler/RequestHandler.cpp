@@ -112,3 +112,25 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 	if (handle_static_request(data) != 0)
 		return ;
 }
+
+std::string http_response(RequestHandlerData &data, ServerConfig &srv)
+{
+	std::string response =
+	data.StatusLine
+	+ "\r\nConnection: keep-alive"
+	+ "\r\nLast-Modified: " + getFileDate(data.FileName)
+	+ "\r\nDate: " + getDate()
+	+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
+	+ "\r\nContent-Type: text/" + data.FileContentType
+	// + "\r\nAge: " + "24";
+	// + "\r\nLocation :/index.html";
+	// + "\r\nRetry-After: "
+	+ "\r\nAccept-Ranges: bytes"
+	+ "\r\nETag: " + getETag(data.FileName)
+	+ "\r\nProxy-Authenticate: Basic realm=Dev"
+	+ "\r\nServer: " + srv.server_name
+	// + "\r\nVary: "
+	+ "\r\nWWW-Authenticate: Basic realm=User Visible Realm"
+	+ "\r\n\r\n" + data.FileContent;
+	return response;
+}

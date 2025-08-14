@@ -181,7 +181,6 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	}
 
 	RequestHandlerData data;
-	std::string returnData;
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
@@ -207,22 +206,5 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
 	else
 		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed");
-	returnData =
-		data.StatusLine
-		+ "\r\nConnection: keep-alive"
-		+ "\r\nLast-Modified: " + getFileDate(data.FileName)
-		+ "\r\nDate: " + getDate()
-		+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
-		+ "\r\nContent-Type: text/" + data.FileContentType
-		// + "\r\nAccept-Ranges: "
-		// + "\r\nAge: " + "24";
-		+ "\r\nETag: " + getETag(data.FileName)
-		// + "\r\nLocation: "
-		// + "\r\nProxy-Authenticate: "
-		// + "\r\nRetry-After: "
-		// + "\r\nServer: "
-		// + "\r\nVary: "
-		// + "\r\nWWW-Authenticate: "
-		+ "\r\n\r\n" + data.FileContent;
-	return (returnData);
+	return (http_response(data, const_cast<ServerConfig&>(srv)));
 }
