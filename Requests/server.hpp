@@ -12,12 +12,14 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <poll.h>
+#include <algorithm>
 
 #include "../config/ConfigParser.hpp"
 #include "../config/ServerConfig.hpp"
 #include "../RequestHandler/RequestHandler.hpp"
 #include "Request.hpp"
 
+struct RequestHandlerData;
 
 class Server
 {
@@ -31,7 +33,6 @@ class Server
 		void acceptClient();
 		void handleClient(int client_fd);
 		std::string toString(int value);
-		std::string buildHttpResponse(const std::string &raw_request);
 
 		bool loadConfig(const std::string& configFile);
 		void addServerSocketToPoll();
@@ -58,3 +59,4 @@ class Server
 		bool start();
 
 };
+
