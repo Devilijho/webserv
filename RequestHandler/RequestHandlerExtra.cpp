@@ -40,11 +40,21 @@ std::string getQueryData(RequestHandlerData &data)
 	std::string queryData = "";
 
 	pos = data.FileName.find_last_of("?");
+	if (pos == std::string::npos)
+		return "";
 	queryData = data.FileName.substr(pos + 1);
 	cutFileName = data.FileName.substr(0, pos);
 	data.FileName = cutFileName;
-	// std::cout << "QUERY->>>>>>>" << std::endl;
-	// std::cout << data.FileName << std::endl;
-	// std::cout << queryData << std::endl;
 	return queryData;
+}
+
+void	setRequestBody(RequestHandlerData &data)
+{
+	size_t posStart;
+
+	posStart = data.rawRequest.find("\r\n\r\n");
+	if (posStart == std::string::npos)
+		data.requestBody = "";
+	else
+		data.requestBody = data.rawRequest.substr(posStart + 4);
 }
