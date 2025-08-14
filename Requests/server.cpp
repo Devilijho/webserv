@@ -1,14 +1,6 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: pde-vara <pde-vara@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/06 11:51:40 by pde-vara          #+#    #+#             */
-/*   Updated: 2025/08/13 18:15:58 by pde-vara         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+
+
+
 
 #include "server.hpp"
 
@@ -170,49 +162,126 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 
 	// 3. Check if path matches a location (simplified)
 	const LocationConfig *loc = srv.findLocation(path);
-	if (!loc) {
-		std::ifstream errFile(srv.error_pages.at(404).c_str());
-		std::stringstream errBuf;
-		errBuf << errFile.rdbuf();
-		std::string body = errBuf.str();
-		return "HTTP/1.1 404 Not Found" + toString(body.size()) +
-			   "\r\nContent-Type: text/html\r\n\r\n" + body;
-	}
 
 	RequestHandlerData data;
-	data.FileName = srv.root + path;
-	data.requestMethod = method;
-	std::string returnData;
+    data.requestMethod = method;
 
-	setData(data, const_cast<ServerConfig&>(srv));
-	data.FileContentType = getContentType(data.FileName);
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
-	{
-		data.FileContentType = "html";
-		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
-	}
-	else if (data.FileContentType == "php" && (method == "GET" || method == "POST"))
-	{
-		data.FileContentType = "html";
-		if (handle_dynamic_request(data) != SUCCESS)
-			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Internal Server Error");
-	}
-	else if (method == "GET")
-	{
-		if (handle_static_request(data) != SUCCESS)
-			std::cout << "File: " + data.FileName + " failed to be handled" << std::endl;
-	}
-	else if (method == "DELETE")
-		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
-	else
-		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed");
-	returnData =
-		data.StatusLine
-		+ "\r\nConnection: keep-alive"
-		+ "\r\nLast-Modified: " + getFileDate(data.FileName)
-		+ "\r\nDate: " + getDate()
-		+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
-		+ "\r\nContent-Type: text/" + data.FileContentType
-		+ "\r\n\r\n" + data.FileContent;
-	return (returnData);
+	 if (!loc) {
+        serveError(data, srv, 404);
+        return buildResponseString(data);
+    }
+
+    // 🔹 Check allowed methods
+    if (!isMethodAllowed(*loc, method)) {
+        serveError(data, srv, 405);
+        return buildResponseString(data);
+    }
+
+    // 🔹 Check body size
+    if (!isBodySizeAllowed(raw_request, loc->client_max_body_size)) {
+        serveError(data, srv, 413);
+        return buildResponseString(data);
+    }
+
+    // Prepare target file path
+    data.FileName = srv.root + path;
+    setData(data, const_cast<ServerConfig&>(srv));
+    data.FileContentType = getContentType(data.FileName);
+
+    // -----------------------------
+    // Handle request type
+    // -----------------------------
+    if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS) {
+        serveError(data, srv, 404);
+    }
+    else if (data.FileContentType == "php" && (method == "GET" || method == "POST")) {
+        data.FileContentType = "html";
+        if (handle_dynamic_request(data) != SUCCESS)
+            serveError(data, srv, 500);
+    }
+    else if (method == "GET") {
+        if (handle_static_request(data) != SUCCESS)
+            serveError(data, srv, 500);
+    }
+    else if (method == "DELETE") {
+        serveError(data, srv, 403); // or 404 depending on policy
+    }
+    else {
+        serveError(data, srv, 405);
+    }
+
+    return buildResponseString(data);
+}
+
+
+
+
+
+std::string Server::getStatusMessage(int code)
+{
+    switch (code) {
+        case 400: return "Bad Request";
+        case 403: return "Forbidden";
+        case 404: return "Not Found";
+        case 405: return "Method Not Allowed";
+        case 413: return "Payload Too Large";
+        case 500: return "Internal Server Error";
+        default:  return "Error";
+    }
+}
+
+
+std::string Server::buildResponseString(const RequestHandlerData &data)
+{
+    std::string returnData =
+        data.StatusLine
+        + "\r\nConnection: keep-alive"
+        + "\r\nLast-Modified: " + getFileDate(data.FileName)
+        + "\r\nDate: " + getDate()
+        + "\r\nContent-Length: " + toString(data.FileContent.size())
+        + "\r\nContent-Type: text/" + data.FileContentType
+        + "\r\n\r\n" + data.FileContent;
+
+    return returnData;
+}
+
+
+
+void Server::serveError(RequestHandlerData &data, const ServerConfig &srv, int code)
+{
+    std::map<int, std::string>::const_iterator it = srv.error_pages.find(code);
+    std::string filePath;
+
+    if (it != srv.error_pages.end())
+        filePath = it->second;
+    else
+        filePath = "./errors/default.html"; // fallback
+
+    std::ifstream errFile(filePath.c_str());
+    std::stringstream buf;
+    buf << errFile.rdbuf();
+
+    data.FileContent = buf.str();
+    data.FileContentType = "html";
+    data.StatusLine = "HTTP/1.1 " + toString(code) + " " + getStatusMessage(code);
+}
+
+
+bool Server::isMethodAllowed(const LocationConfig &loc, const std::string &method)
+{
+    const std::vector<std::string> &allowed = loc.methods;
+    return std::find(allowed.begin(), allowed.end(), method) != allowed.end();
+}
+
+bool Server::isBodySizeAllowed(const std::string &raw_request, size_t max_size)
+{
+    std::istringstream req_stream(raw_request);
+    std::string line;
+    while (std::getline(req_stream, line) && line != "\r") {
+        if (line.find("Content-Length:") == 0) {
+            size_t length = std::atoi(line.substr(15).c_str());
+            return length <= max_size;
+        }
+    }
+    return true; // No Content-Length = fine (GET requests, etc.)
 }
