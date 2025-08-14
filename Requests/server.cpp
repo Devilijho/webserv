@@ -214,6 +214,15 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 		+ "\r\nDate: " + getDate()
 		+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
 		+ "\r\nContent-Type: text/" + data.FileContentType
+		// + "\r\nAccept-Ranges: "
+		// + "\r\nAge: " + "24";
+		+ "\r\nETag: " + getETag(data.FileName)
+		// + "\r\nLocation: "
+		// + "\r\nProxy-Authenticate: "
+		// + "\r\nRetry-After: "
+		// + "\r\nServer: "
+		// + "\r\nVary: "
+		// + "\r\nWWW-Authenticate: "
 		+ "\r\n\r\n" + data.FileContent;
 	return (returnData);
 }

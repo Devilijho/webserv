@@ -1,4 +1,6 @@
 #include "RequestHandler.hpp"
+#include <algorithm>
+#include <cctype>
 
 /*get the extension of a file */
 
@@ -46,6 +48,23 @@ std::string getQueryData(RequestHandlerData &data)
 	cutFileName = data.FileName.substr(0, pos);
 	data.FileName = cutFileName;
 	return queryData;
+}
+
+std::string getETag(std::string fileName)
+{
+	std::string ETag(getFileDate(fileName));
+	int	pos = 0;
+
+	ETag.erase(std::remove(ETag.begin(), ETag.end(), ' '), ETag.end());
+	for (int i = 0; i < ETag.length(); i++)
+	{
+		if (std::isdigit(ETag[i]) != 0)
+		{
+			pos = i;
+			break ;
+		}
+	}
+	return ETag.substr(0, );
 }
 
 void	setRequestBody(RequestHandlerData &data)

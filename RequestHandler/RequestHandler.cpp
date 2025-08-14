@@ -51,7 +51,7 @@ int	handle_static_request(RequestHandlerData &data)
 	std::ostringstream oss;
 
 	if (data.FileName == "./www/")
-		data.FileName = "./www/html/index.html";
+		data.FileName = "./www/index.html";
 	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
 		return (ERROR);
@@ -97,7 +97,6 @@ int	handle_dynamic_request(RequestHandlerData &data)
 		waitpid(pid, &child_status, 0);
 		return_value = WEXITSTATUS(child_status);
 	}
-	std::cout << data.requestBody << std::endl;
 	return (return_value);
 }
 
