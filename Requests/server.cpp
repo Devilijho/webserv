@@ -169,17 +169,6 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	// 2. Match to a server config (simplified)
 	const ServerConfig &srv = config.getServers()[0];
 
-	// 3. Check if path matches a location (simplified)
-	const LocationConfig *loc = srv.findLocation(path);
-	if (!loc) {
-		std::ifstream errFile(srv.error_pages.at(404).c_str());
-		std::stringstream errBuf;
-		errBuf << errFile.rdbuf();
-		std::string body = errBuf.str();
-		return "HTTP/1.1 404 Not Found" + toString(body.size()) +
-			   "\r\nContent-Type: text/html\r\n\r\n" + body;
-	}
-
 	RequestHandlerData data;
 	data.FileName = srv.root + path;
 	data.requestMethod = method;

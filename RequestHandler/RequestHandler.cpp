@@ -122,9 +122,9 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 	+ "\r\nDate: " + getDate()
 	+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
 	+ "\r\nContent-Type: text/" + data.FileContentType
-	+ "\r\nAge: " + "24"
-	+ "\r\nLocation :/index.html"
-	+ "\r\nRetry-After: "
+	// + "\r\nAge: " + "24"
+	// + "\r\nLocation :/index.html"
+	// + "\r\nRetry-After: "
 	+ "\r\nAccept-Ranges: bytes"
 	+ "\r\nETag: " + getETag(data.FileName)
 	+ "\r\nProxy-Authenticate: Basic realm=Dev"
