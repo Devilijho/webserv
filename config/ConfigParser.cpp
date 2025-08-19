@@ -137,6 +137,13 @@ bool ConfigParser::isValidPort(int port) {
     return (port > 0 && port <= 65535);
 }
 
+std::string ConfigParser::removeInlineComment(const std::string& str) {
+    size_t commentPos = str.find('#');
+    if (commentPos != std::string::npos) {
+        return trim(str.substr(0, commentPos));
+    }
+    return str;
+}
 
 bool ConfigParser::parseServerBlock(std::ifstream &file, ServerConfig &server) {
     std::string line;
@@ -145,6 +152,9 @@ bool ConfigParser::parseServerBlock(std::ifstream &file, ServerConfig &server) {
         line = trim(line);
 
         if (line.empty() || line[0] == '#') continue;
+
+        line = removeInlineComment(line);
+        if (line.empty()) continue;
 
         // End of server block
         if (line == "}") {
@@ -211,6 +221,9 @@ bool ConfigParser::parseLocationBlock(std::ifstream &file, LocationConfig &locat
 
         if (line.empty() || line[0] == '#') continue;
 
+        line = removeInlineComment(line);
+        if (line.empty()) continue;
+
         // End of location block
         if (line == "}") {
             return true;
@@ -273,3 +286,5 @@ bool ConfigParser::parseLocationBlock(std::ifstream &file, LocationConfig &locat
 
     return false; // Missing closing brace
 }
+
+
