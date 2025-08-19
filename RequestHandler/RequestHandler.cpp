@@ -25,9 +25,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	data.env_str.push_back("SERVER_NAME=localhost");
 	data.env_str.push_back("SERVER_PORT=8080");
-	// data.env_str.push_back("CONTENT_TYPE=" + getRequestContentType(data));
-	data.env_str.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
-
+	data.env_str.push_back("CONTENT_TYPE=" + getRequestContentType(data));
 	for (unsigned long i = 0; i < data.args_str.size(); i++)
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
 	for (unsigned long i = 0; i < data.env_str.size(); i++)
