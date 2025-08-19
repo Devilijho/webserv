@@ -14,11 +14,11 @@
 #include <sys/socket.h>
 #include <poll.h>
 #include <algorithm>
+#include <netdb.h>
 
 #include "../config/ConfigParser.hpp"
 #include "../config/ServerConfig.hpp"
 #include "../RequestHandler/RequestHandler.hpp"
-#include "Request.hpp"
 
 class Server
 {
@@ -32,12 +32,15 @@ class Server
 		// --- Configuration ---
 		std::vector<ServerConfig> configs;
 
+		std::map<int, ServerConfig> listeningSockets;	// FD -> config
+		std::map<int, RequestHandlerData> clientSockets; 	// FD -> client state
+
 		// --- Sockets ---
-		std::vector<int> server_fds;
+		// std::vector<int> server_fds;
 		std::vector<struct pollfd> poll_fds;
 
 		// --- Setup ---
-		bool setupSocket(const ServerConfig& cfg);
+		int setupSocket(const ServerConfig& cfg);
 		void addServerSocketToPoll(int fd);
 
 		// --- Event loop ---

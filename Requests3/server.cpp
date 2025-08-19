@@ -20,47 +20,19 @@ bool Server::start(const std::vector<ServerConfig>& servers)
 
 	for (size_t i = 0; i < configs.size(); ++i)
 	{
-		if (!setupSocket(configs[i]))
+		int fd = setupSocket(configs[i]);
+		if (fd < 0)
 		{
 			std::cerr << "[ERROR] Failed to set up socket for "
 					  << configs[i].host << ":" << configs[i].port << std::endl;
 			return false;
 		}
+		listeningSockets[fd] = configs[i]; //server_fds.push_back(fd);
+		addServerSocketToPoll(fd);
 	}
 
-	std::cout << "[INFO] All sockets ready, entering event loop..." << std::endl;
+	std::cout << "Listening on " << server_fds.size() << " sockets..." << std::endl;
 	eventLoop();
-	return true;
-}
-
-
-bool Server::setupSocket(const ServerConfig& cfg)
-{
-	int fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (fd < 0)
-		return perror("socket"), false;
-
-	fcntl(fd, F_SETFL, O_NONBLOCK);
-
-	int opt = 1;
-	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
-	struct sockaddr_in addr;
-	std::memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(cfg.port);
-	addr.sin_addr.s_addr = inet_addr(cfg.host.c_str());
-
-	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
-		return perror("bind"), close(fd), false;
-
-	if (listen(fd, 10) < 0)
-		return perror("listen"), close(fd), false;
-
-	server_fds.push_back(fd);
-	addServerSocketToPoll(fd);
-
-	std::cout << "[INFO] Listening on " << cfg.host << ":" << cfg.port << std::endl;
 	return true;
 }
 
@@ -68,7 +40,52 @@ void Server::addServerSocketToPoll(int fd) {
 	struct pollfd pfd;
 	pfd.fd = fd;
 	pfd.events = POLLIN;
+	pfd.revents = 0;
 	poll_fds.push_back(pfd);
+}
+
+int Server::setupSocket(const ServerConfig& cfg)
+{
+	int fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (fd < 0) {
+		perror("socket");
+		return -1;
+	}
+
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+
+	int opt = 1;
+	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+	struct addrinfo hints, *res;
+	std::memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;		// IPv4 only
+	hints.ai_socktype = SOCK_STREAM;  // TCP
+	hints.ai_flags = AI_PASSIVE;	  // For binding
+
+	std::ostringstream port_str;
+	port_str << cfg.port;
+		
+	const char* host = cfg.host.empty() ? NULL : cfg.host.c_str();
+	if (getaddrinfo(host, port_str.str().c_str(), &hints, &res) != 0) {
+		perror("getaddrinfo");
+		close(fd);
+		return -1;
+	}
+
+	if (bind(fd, res->ai_addr, res->ai_addrlen) < 0) {
+		perror("bind");
+		freeaddrinfo(res);
+		close(fd);
+		return -1;
+	}
+	freeaddrinfo(res);
+
+	if (listen(fd, 10) < 0)
+		return perror("listen"), close(fd), -1;
+
+	std::cout << "[INFO] Listening on " << cfg.host << ":" << cfg.port << std::endl;
+	return fd;
 }
 
 void Server::eventLoop() {

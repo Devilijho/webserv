@@ -19,7 +19,6 @@
 #include "../config/ConfigParser.hpp"
 #include "../config/ServerConfig.hpp"
 #include "../RequestHandler/RequestHandler.hpp"
-#include "Request.hpp"
 
 class Server
 {
