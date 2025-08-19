@@ -6,7 +6,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.FileContentType = getContentType(data.FileName);
 	data.StatusLine = "HTTP/1.1 200 OK";
-	std::string query = getQueryData(data);
+	setQueryData(data);
 	setRequestBody(data);
 
 	data.args_str.push_back(PATH_INFO);
@@ -20,7 +20,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 		data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	data.env_str.push_back("QUERY_STRING=" + query);
+	data.env_str.push_back("QUERY_STRING=" + data.query);
 	data.env_str.push_back("MAX_FILE_SIZE=" + toString(dataServer.client_max_body_size));
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	data.env_str.push_back("SERVER_NAME=localhost");

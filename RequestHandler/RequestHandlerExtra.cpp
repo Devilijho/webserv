@@ -39,7 +39,7 @@ std::string getFileDate(std::string fileName)
 
 /*gets the variables sent by the POST method */
 
-std::string getQueryData(RequestHandlerData &data)
+void setQueryData(RequestHandlerData &data)
 {
 	size_t pos;
 	std::string cutFileName;
@@ -47,11 +47,11 @@ std::string getQueryData(RequestHandlerData &data)
 
 	pos = data.FileName.find_last_of("?");
 	if (pos == std::string::npos)
-		return "";
+		data.query = "";
 	queryData = data.FileName.substr(pos + 1);
 	cutFileName = data.FileName.substr(0, pos);
 	data.FileName = cutFileName;
-	return queryData;
+	data.query = queryData;
 }
 
 std::string getETag(std::string fileName)

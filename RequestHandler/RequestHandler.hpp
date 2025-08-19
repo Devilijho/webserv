@@ -40,6 +40,7 @@ struct RequestHandlerData
 	std::string StatusLine;
 
 	std::string requestMethod;
+	std::string query;
 
 	std::string rawRequest;
 	std::string requestBody;
@@ -61,10 +62,10 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv);
 /*Helper functions */
 
 void	setRequestBody(RequestHandlerData &data);
+void setQueryData(RequestHandlerData &data);
 std::string getRequestContentType(RequestHandlerData &data);
 std::string getETag(std::string fileName);
 std::string getContentType(std::string);
 std::string getDate(void);
 std::string getFileDate(std::string fileName);
-std::string getQueryData(RequestHandlerData &data);
 std::string toString(int value);
