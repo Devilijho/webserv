@@ -43,6 +43,8 @@ struct LocationConfig
 	std::string upload_dir;			  // Directory for file uploads
 	bool autoindex;					  // Enable/disable directory listing
 
+	size_t client_max_body_size;
+
 	// For CGI (Part C)
 	std::string cgi_extension; // .php, .py, etc.
 	std::string cgi_path;	   // Path to the CGI executable
