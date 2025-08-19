@@ -165,28 +165,27 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	data.FileName = srv.root + path;
 	setData(data, const_cast<ServerConfig&>(srv));
 
-	// std::cout << "error 404->" << srv.error_pages[2];
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
 	{
-		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
+		errorHandling(data, srv, 404);
 	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")) {
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data) != SUCCESS)
-			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Server Error");
+			errorHandling(data, srv, 500);
 	}
 	else if (method == "GET") {
 		if (handle_static_request(data) != SUCCESS)
-			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Server Error");
+			errorHandling(data, srv, 500);
 	}
 	else if (method == "DELETE")
-		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
+		errorHandling(data, srv, 404);
 	else
-		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed");
+		errorHandling(data, srv, 405);
 	return (http_response(data, const_cast<ServerConfig&>(srv)));
 }
 
-
+/*
 std::string Server::buildResponseString(const RequestHandlerData &data)
 {
 	std::string returnData =
@@ -232,6 +231,7 @@ void Server::serveError(RequestHandlerData &data, const ServerConfig &srv, int c
 	data.FileContentType = "html";
 	data.StatusLine = "HTTP/1.1 " + toString(code) + " " + getStatusMessage(code);
 }
+ */
 
 
 bool Server::isMethodAllowed(const LocationConfig &loc, const std::string &method)

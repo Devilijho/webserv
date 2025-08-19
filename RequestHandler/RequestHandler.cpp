@@ -99,12 +99,16 @@ int	handle_dynamic_request(RequestHandlerData &data)
 
 /*fills some variables and returns a error page */
 
-void errorHandling(RequestHandlerData &data, std::string errorFile, std::string HeadContent)
+void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code)
 {
+	std::map<int, std::string>::const_iterator it = srv.error_pages.find(code);
 	std::string returnData;
-	data.FileName = errorFile;
-	data.StatusLine = HeadContent;
-	if (access(errorFile.c_str(), R_OK | F_OK) != 0)
+	if (it != srv.error_pages.end())
+		data.FileName = it->second;
+	else
+		data.FileName = "./www/error/default.html";
+	data.StatusLine = getStatusMessage(code);
+	if (access(data.FileName.c_str(), R_OK | F_OK) != 0)
 		return ;
 	if (handle_static_request(data) != 0)
 		return ;
@@ -112,7 +116,6 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 
 std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 {
-	// std::cout << "Server name: " << srv.server_name << std::endl;
 	std::string response =
 	data.StatusLine
 	+ "\r\nConnection: keep-alive"
