@@ -165,7 +165,9 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	data.FileName = srv.root + path;
 	setData(data, const_cast<ServerConfig&>(srv));
 
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS) {
+	// std::cout << "error 404->" << srv.error_pages[2];
+	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
+	{
 		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
 	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")) {
