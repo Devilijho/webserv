@@ -4,14 +4,10 @@
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
+	data.FileContentType = getContentType(data.FileName);
 	data.StatusLine = "HTTP/1.1 200 OK";
 	std::string query = getQueryData(data);
-	std::ostringstream clientBodysize;
-	std::ostringstream contentLength;
-
 	setRequestBody(data);
-	clientBodysize << dataServer.client_max_body_size;
-	contentLength << data.requestBody.length();
 
 	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
@@ -19,17 +15,18 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
 	data.env_str.push_back("REDIRECT_STATUS=200");
 	if (data.requestMethod == "POST")
-		data.env_str.push_back("CONTENT_LENGTH=" + contentLength.str());
+		data.env_str.push_back("CONTENT_LENGTH=" + toString(data.requestBody.length()));
 	else if (data.requestMethod == "GET")
 		data.env_str.push_back("CONTENT_LENGTH=0");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	data.env_str.push_back("QUERY_STRING=" + query);
-	data.env_str.push_back("MAX_FILE_SIZE=" + clientBodysize.str());
+	data.env_str.push_back("MAX_FILE_SIZE=" + toString(dataServer.client_max_body_size));
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	data.env_str.push_back("SERVER_NAME=localhost");
 	data.env_str.push_back("SERVER_PORT=8080");
-	data.env_str.push_back("CONTENT_TYPE=" + getRequestContentType(data));
+	// data.env_str.push_back("CONTENT_TYPE=" + getRequestContentType(data));
+	data.env_str.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
 
 	for (unsigned long i = 0; i < data.args_str.size(); i++)
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));

@@ -67,6 +67,8 @@ std::string getETag(std::string fileName)
 		if (std::isdigit(FileDate[i]) != 0)
 		{ pos = i; break; } }
 	ETagNum = std::stol(FileDate.substr(pos, FileDate.length()));
+	for (size_t i = 0; i < fileName.length(); i++)
+		ETagNum += fileName[i];
 	srand(ETagNum);
 	EtagStream << rand();
 	return "\"" + EtagStream.str() + "\"";
@@ -76,6 +78,7 @@ void	setRequestBody(RequestHandlerData &data)
 {
 	size_t posStart;
 
+	std::cout << data.rawRequest;
 	posStart = data.rawRequest.find("\r\n\r\n");
 	if (posStart == std::string::npos)
 		data.requestBody = "";

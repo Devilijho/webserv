@@ -155,61 +155,33 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	// Find matching server + location (simplified: take first server)
 	const ServerConfig &srv = config.getServers()[0];
 	const LocationConfig *loc = srv.findLocation(path);
+	(void)loc;
+
 	RequestHandlerData data;
 
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
-
-	if (!loc) {
-		serveError(data, srv, 404);
-		return buildResponseString(data);
-	}
-
-	// 🔹 Check allowed methods
-	if (!isMethodAllowed(*loc, method)) {
-		serveError(data, srv, 405);
-		return buildResponseString(data);
-	}
-
-	// 🔹 Check body size
-	if (!isBodySizeAllowed(raw_request, loc->client_max_body_size)) {
-		serveError(data, srv, 413);
-		return buildResponseString(data);
-	}
-
-	// Prepare target file path
+	data.rawRequest = raw_request;
 	data.FileName = srv.root + path;
 	setData(data, const_cast<ServerConfig&>(srv));
-	data.FileContentType = getContentType(data.FileName);
 
-	// Handle request type
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS) {
-		serveError(data, srv, 404);
+		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
 	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")) {
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data) != SUCCESS)
-			serveError(data, srv, 500);
+			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Server Error");
 	}
 	else if (method == "GET") {
 		if (handle_static_request(data) != SUCCESS)
-			serveError(data, srv, 500);
+			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Server Error");
 	}
-<<<<<<< HEAD
 	else if (method == "DELETE")
 		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
 	else
 		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed");
 	return (http_response(data, const_cast<ServerConfig&>(srv)));
-=======
-	else if (method == "DELETE") {
-		serveError(data, srv, 403); // or 404 depending on policy
-	}
-	else {
-		serveError(data, srv, 405);
-	}
-
-	return buildResponseString(data);
 }
 
 
@@ -225,7 +197,6 @@ std::string Server::buildResponseString(const RequestHandlerData &data)
 		+ "\r\n\r\n" + data.FileContent;
 
 	return returnData;
->>>>>>> main
 }
 
 std::string Server::getStatusMessage(int code)
@@ -249,7 +220,7 @@ void Server::serveError(RequestHandlerData &data, const ServerConfig &srv, int c
 	if (it != srv.error_pages.end())
 		filePath = it->second;
 	else
-		filePath = "./errors/default.html"; // fallback
+		filePath = "./errors/default.html";
 
 	std::ifstream errFile(filePath.c_str());
 	std::stringstream buf;
@@ -277,5 +248,5 @@ bool Server::isBodySizeAllowed(const std::string &raw_request, size_t max_size)
 			return length <= max_size;
 		}
 	}
-	return true; // GET/HEAD without body
+	return true;
 }
