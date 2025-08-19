@@ -1,4 +1,3 @@
-
 #include "server.hpp"
 
 Server::Server(int _port) : server_fd(-1), port(_port) {}

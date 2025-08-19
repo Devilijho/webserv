@@ -1,10 +1,4 @@
 #include "RequestHandler.hpp"
-#include <algorithm>
-#include <cctype>
-#include <cstddef>
-#include <cstdlib>
-#include <sstream>
-#include <string>
 
 /*get the extension of a file */
 
@@ -46,12 +40,12 @@ void setQueryData(RequestHandlerData &data)
 	std::string queryData = "";
 
 	pos = data.FileName.find_last_of("?");
-	if (pos == std::string::npos)
-		data.query = "";
 	queryData = data.FileName.substr(pos + 1);
 	cutFileName = data.FileName.substr(0, pos);
 	data.FileName = cutFileName;
 	data.query = queryData;
+	if (pos == std::string::npos)
+		data.query = "";
 }
 
 std::string getETag(std::string fileName)
@@ -78,7 +72,6 @@ void	setRequestBody(RequestHandlerData &data)
 {
 	size_t posStart;
 
-	std::cout << data.rawRequest;
 	posStart = data.rawRequest.find("\r\n\r\n");
 	if (posStart == std::string::npos)
 		data.requestBody = "";

@@ -1,13 +1,13 @@
 #include "RequestHandler.hpp"
 
-/*Sets data, this is temporary since the paths and values used are hard coded :) */
+/*Sets data*/
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.FileContentType = getContentType(data.FileName);
 	data.StatusLine = "HTTP/1.1 200 OK";
-	setQueryData(data);
 	setRequestBody(data);
+	setQueryData(data);
 
 	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
