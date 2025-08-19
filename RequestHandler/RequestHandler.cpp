@@ -115,6 +115,7 @@ void errorHandling(RequestHandlerData &data, std::string errorFile, std::string 
 
 std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 {
+	// std::cout << "Server name: " << srv.server_name << std::endl;
 	std::string response =
 	data.StatusLine
 	+ "\r\nConnection: keep-alive"
