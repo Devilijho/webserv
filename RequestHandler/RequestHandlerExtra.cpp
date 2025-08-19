@@ -67,7 +67,6 @@ std::string getETag(std::string fileName)
 		if (std::isdigit(FileDate[i]) != 0)
 		{ pos = i; break; } }
 	ETagNum = std::strtol((FileDate.substr(pos, FileDate.length())).c_str(), NULL, 10);
-	ETagNum = std::stol(FileDate.substr(pos, FileDate.length()));
 	for (size_t i = 0; i < fileName.length(); i++)
 		ETagNum += fileName[i];
 	srand(ETagNum);
