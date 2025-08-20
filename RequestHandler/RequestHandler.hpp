@@ -19,7 +19,8 @@
 #define ERROR 1
 
 //Linux
-#define PATH_INFO "/usr/bin/php-cgi"
+// #define PATH_INFO "/usr/bin/php-cgi"
+#define PATH_INFO "/usr/bin/php" //Como en mi default.conf
 
 //MacOS
 // #define PATH_INFO "/opt/homebrew/bin/php-cgi"

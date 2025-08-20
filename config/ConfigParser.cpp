@@ -1,5 +1,6 @@
 #include "ConfigParser.hpp"
 #include <iostream>
+#include <unistd.h> // Para access()
 
 ConfigParser::ConfigParser() : _is_parsed(false) {}
 
@@ -285,6 +286,42 @@ bool ConfigParser::parseLocationBlock(std::ifstream &file, LocationConfig &locat
     }
 
     return false; // Missing closing brace
+}
+
+// Validar configuración después de analizar
+bool ConfigParser::validateConfig() {
+    for (size_t i = 0; i < _servers.size(); ++i) {
+        const ServerConfig& srv = _servers[i];
+
+        // Validar puerto
+        if (!isValidPort(srv.port)) {
+            std::cerr << "Invalid port: " << srv.port << std::endl;
+            return false;
+        }
+
+        // Validar que root existe
+        if (access(srv.root.c_str(), R_OK) != 0) {
+            std::cerr << "Root directory not accessible: " << srv.root << std::endl;
+            return false;
+        }
+
+        // Validar locations
+        for (size_t j = 0; j < srv.locations.size(); ++j) {
+            const LocationConfig& loc = srv.locations[j];
+
+            if (loc.methods.empty()) {
+                std::cerr << "Location " << loc.path << " has no methods" << std::endl;
+                return false;
+            }
+
+            // Si tiene CGI, validar que el intérprete existe
+            if (!loc.cgi_path.empty() && access(loc.cgi_path.c_str(), X_OK) != 0) {
+                std::cerr << "CGI interpreter not found: " << loc.cgi_path << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 
