@@ -2,24 +2,42 @@
 #include "config/ConfigParser.hpp"
 #include "config/ServerConfig.hpp"
 #include "Requests/server.hpp"
+#include <iostream>
+#include <vector>
 
-// int	main(void)
-// {
-// 	Server server(8080);
-// 	ConfigParser parserConfig;
-// 	ServerConfig serverConfig;
+// FUNCIÓN DE DEBUG (definida ANTES del main):
+void debugConfig(const ServerConfig& config) {
+    std::cout << "\n=== DEBUG: TESTING CONFIG INTEGRATION ===" << std::endl;
 
-// 	if (!server.start()) {
-// 		return 1;
-// 	}
-// 	return (0);
-// }
+    // Test location finding
+    const LocationConfig* loc_root = config.findLocation("/");
+    const LocationConfig* loc_cgi = config.findLocation("/cgi-bin/test.php");
+    const LocationConfig* loc_upload = config.findLocation("/upload");
+
+    std::cout << "🔍 Location tests:" << std::endl;
+    std::cout << "  / -> " << (loc_root ? "FOUND" : "NOT FOUND") << std::endl;
+    std::cout << "  /cgi-bin/test.php -> " << (loc_cgi ? loc_cgi->path : "NOT FOUND") << std::endl;
+    std::cout << "  /upload -> " << (loc_upload ? "FOUND" : "NOT FOUND") << std::endl;
+
+    if (loc_cgi) {
+        std::cout << "🔧 CGI config:" << std::endl;
+        std::cout << "  Extension: " << loc_cgi->cgi_extension << std::endl;
+        std::cout << "  Path: " << loc_cgi->cgi_path << std::endl;
+        std::cout << "  Root: " << loc_cgi->root << std::endl;
+    }
+
+    std::cout << "📄 Error pages:" << std::endl;
+    for (std::map<int, std::string>::const_iterator it = config.error_pages.begin();
+         it != config.error_pages.end(); ++it) {
+        std::cout << "  " << it->first << " -> " << it->second << std::endl;
+    }
+}
 
 int main(int argc, char* argv[]) {
-    // Parse configuration
-    ConfigParser parser;
     std::string configFile = (argc > 1) ? argv[1] : "default.conf";
 
+    // Parse configuration
+    ConfigParser parser;
     if (!parser.parseFile(configFile)) {
         std::cerr << "Error: Failed to parse configuration file" << std::endl;
         return 1;
@@ -36,22 +54,41 @@ int main(int argc, char* argv[]) {
     // Get servers from configuration
     const std::vector<ServerConfig>& servers = parser.getServers();
 
-    // Create servers based on configuration
-    for (size_t i = 0; i < servers.size(); ++i) {
-        const ServerConfig& config = servers[i];
-        std::cout << "Starting server on " << config.host << ":" << config.port << std::endl;
-
-        // Tu Parte A usará esto para crear sockets
-        Server server(config.port);
-        if (!server.start()) {
-            std::cerr << "Error: Failed to start server on port " << config.port << std::endl;
-            continue;
-        }
+    if (servers.empty()) {
+        std::cerr << "Error: No servers configured" << std::endl;
+        return 1;
     }
+
+    // Para testing inicial: usar SOLO el primer servidor
+    const ServerConfig& config = servers[0];
+
+    // AQUÍ es donde llamas la función de debug (DENTRO del main):
+    debugConfig(config);
+
+    std::cout << "\n🚀 Starting server on " << config.host << ":" << config.port << std::endl;
+    std::cout << "Root directory: " << config.root << std::endl;
+    std::cout << "Index file: " << config.index << std::endl;
+    std::cout << "Locations configured: " << config.locations.size() << std::endl;
+
+    // Crear servidor único para testing
+    Server server(config.port);
+
+    // Cargar la configuración en el servidor (necesitas implementar esto)
+    // server.loadConfig(config);  // ← Esto lo implementaremos después si es necesario
+
+    if (!server.start()) {
+        std::cerr << "Error: Failed to start server on port " << config.port << std::endl;
+        return 1;
+    }
+
+    std::cout << "✅ Server started successfully!" << std::endl;
+    std::cout << "Test URLs:" << std::endl;
+    std::cout << "  http://localhost:" << config.port << "/" << std::endl;
+    std::cout << "  http://localhost:" << config.port << "/cgi-bin/" << std::endl;
+    std::cout << "  http://localhost:" << config.port << "/api/" << std::endl;
 
     return 0;
 }
-
 
 // int main() {
 //     ConfigParser parser;
