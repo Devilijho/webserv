@@ -149,7 +149,6 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	if (method.empty() || path.empty())
 		return "HTTP/1.1 400 Bad Request\r\n\r\n";
 
-	// Find matching server + location (simplified: take first server)
 	const ServerConfig &srv = config.getServers()[0];
 	const LocationConfig *loc = srv.findLocation(path);
 	(void)loc;
@@ -161,17 +160,16 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	data.rawRequest = raw_request;
 	setData(data, const_cast<ServerConfig&>(srv));
 
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
-	{
+	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
 		data.FileContentType = "html";
 		errorHandling(data, srv, 404);
 	}
-	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")) {
+	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
-	else if (method == "GET") {
+	else if (method == "GET"){
 		if (handle_static_request(data) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
