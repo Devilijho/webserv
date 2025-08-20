@@ -159,7 +159,6 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
-	data.FileName = srv.root + path;
 	setData(data, const_cast<ServerConfig&>(srv));
 
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)

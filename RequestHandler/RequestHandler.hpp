@@ -70,3 +70,4 @@ std::string getDate(void);
 std::string getFileDate(std::string fileName);
 std::string toString(int value);
 std::string getStatusMessage(int code);
+std::string getAbsolutePath(std::string);

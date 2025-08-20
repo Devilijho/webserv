@@ -13,19 +13,20 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
-	data.env_str.push_back("REDIRECT_STATUS=200");
-	if (data.requestMethod == "POST")
-		data.env_str.push_back("CONTENT_LENGTH=" + toString(data.requestBody.length()));
-	else if (data.requestMethod == "GET")
-		data.env_str.push_back("CONTENT_LENGTH=0");
+	data.env_str.push_back("REDIRECT_STATUS=CGI");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	data.env_str.push_back("QUERY_STRING=" + data.query);
 	data.env_str.push_back("MAX_FILE_SIZE=" + toString(dataServer.client_max_body_size));
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
-	data.env_str.push_back("SERVER_NAME=localhost");
-	data.env_str.push_back("SERVER_PORT=8080");
+	data.env_str.push_back("SERVER_NAME=" + dataServer.server_name);
+	data.env_str.push_back("SERVER_PORT=" + toString(dataServer.port));
 	data.env_str.push_back("CONTENT_TYPE=" + getRequestContentType(data));
+	if (data.requestMethod == "POST")
+		data.env_str.push_back("CONTENT_LENGTH=" + toString(data.requestBody.length()));
+	else if (data.requestMethod == "GET")
+		data.env_str.push_back("CONTENT_LENGTH=0");
+
 	for (unsigned long i = 0; i < data.args_str.size(); i++)
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
 	for (unsigned long i = 0; i < data.env_str.size(); i++)
