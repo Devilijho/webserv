@@ -140,11 +140,9 @@ std::string Server::toString(int value) {
 	oss << value;
 	return oss.str();
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::string Server::buildHttpResponse(const std::string &raw_request)
 {
-	// Parse request line
 	std::istringstream req_stream(raw_request);
 	std::string method, path, protocol;
 	req_stream >> method >> path >> protocol;
