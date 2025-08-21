@@ -41,6 +41,8 @@ class ConfigParser
 		std::vector<std::string> split(const std::string& str, char delimiter);  // Divide strings
 		bool isValidMethod(const std::string& method);               // Part C: HTTP method validation
 		bool isValidPort(int port);                                  // Part A: port validation for bind()
+		std::string removeInlineComment(const std::string& str);	// Quita comentarios en línea
+		bool validateConfig();
 };
 
 #endif

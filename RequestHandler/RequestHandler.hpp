@@ -20,6 +20,7 @@
 
 //Linux
 #define PATH_INFO "/usr/bin/php-cgi"
+// #define PATH_INFO "/usr/bin/php" //Como en mi default.conf
 
 //MacOS
 // #define PATH_INFO "/opt/homebrew/bin/php-cgi"
@@ -40,6 +41,7 @@ struct RequestHandlerData
 	std::string StatusLine;
 
 	std::string requestMethod;
+	std::string query;
 
 	std::string rawRequest;
 	std::string requestBody;
@@ -50,16 +52,24 @@ struct RequestHandlerData
 
 /*Main functions */
 
-void errorHandling(RequestHandlerData &data, std::string errorFile, std::string HeadContent);
+void errorHandling(RequestHandlerData &data, const ServerConfig &srv, int code);
+void	handle_delete_request(RequestHandlerData &data);
 int	handle_dynamic_request(RequestHandlerData &data);
 int	handle_static_request(RequestHandlerData &data);
 int	setData(RequestHandlerData &data, ServerConfig &dataServer);
 int	htpp_request(ServerConfig &dataServer);
-void	setRequestBody(RequestHandlerData &data);
+std::string http_response(RequestHandlerData &data, ServerConfig &srv);
+
 
 /*Helper functions */
 
+void	setRequestBody(RequestHandlerData &data);
+void setQueryData(RequestHandlerData &data);
+std::string getRequestContentType(RequestHandlerData &data);
+std::string getETag(std::string fileName);
 std::string getContentType(std::string);
 std::string getDate(void);
 std::string getFileDate(std::string fileName);
-std::string getQueryData(RequestHandlerData &data);
+std::string toString(int value);
+std::string getStatusMessage(int code);
+std::string getAbsolutePath(std::string);

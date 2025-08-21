@@ -50,17 +50,23 @@ class Server
 	struct addrinfo* resolveAddress(const ServerConfig& cfg);
 	void addServerSocketToPoll(int fd);
 
-	// --- Event Loop ---
-	void eventLoop();
-	bool handleReadEvent(int fd);
-	void handleWriteEvent(int fd);
-	void handleError(int fd);
+		// --- Event loop ---
+		void eventLoop();
+		void handleWriteEvent(int fd);
+		void handleError(int fd);
+		bool handleReadEvent(int fd);
+		//
+		// --- Client handling ---
+		void acceptClient(int server_fd);
 
-	// --- Client Handling ---
-	void acceptClient(int server_fd);
-	void closeConnection(int client_fd);
-	std::string buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig);
-	int clientFdToServerFd(int client_fd);
+		void closeConnection(int client_fd);
+		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig);
+		
+		int clientFdToServerFd(int client_fd);
+
+		std::string toString(int value);
+
+
 };
 
 struct ClientData {

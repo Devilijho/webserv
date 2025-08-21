@@ -15,6 +15,7 @@ objects = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(sources))
 cc = c++
 cflags = -Wall -Wextra -Werror -fsanitize=address -std=c++98
 
+
 NAME = webserv
 
 $(OBJ_DIR)/%.o: %.cpp
@@ -26,8 +27,11 @@ $(NAME): $(objects)
 
 all: $(NAME)
 
+%.o: %.cpp
+	$(cc) $(cflags) -c $< -o $@
+
 clean:
-	rm -rf $(OBJ_DIR)
+	rm -f ${objects}
 
 fclean: clean
 	rm -f $(NAME)

@@ -1,40 +1,38 @@
 #include "RequestHandler.hpp"
 
-/*Sets data, this is temporary since the paths and values used are hard coded :) */
+/*Sets data and the variables needed for the dynamic file handling*/
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
 	data.StatusLine = "HTTP/1.1 200 OK";
-	std::string query = getQueryData(data);
-	std::ostringstream clientBodysize;
-	std::ostringstream contentLength;
-
 	setRequestBody(data);
-	clientBodysize << dataServer.client_max_body_size;
-	contentLength << data.requestBody.length();
+	setQueryData(data);
 
 	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
-	data.env_str.push_back("REDIRECT_STATUS=200");
-	if (data.requestMethod == "POST")
-		data.env_str.push_back("CONTENT_LENGTH=" + contentLength.str());
-	else if (data.requestMethod == "GET")
-		data.env_str.push_back("CONTENT_LENGTH=0");
+	// data.env_str.push_back(std::string("SCRIPT_FILENAME=/home/safuente/Documents/mrd/www/script/post_msg.php"));
+	data.env_str.push_back("REDIRECT_STATUS=CGI");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
-	data.env_str.push_back("QUERY_STRING=" + query);
-	data.env_str.push_back("MAX_FILE_SIZE=" + clientBodysize.str());
+	data.env_str.push_back("QUERY_STRING=" + data.query);
+	data.env_str.push_back("MAX_FILE_SIZE=" + toString(dataServer.client_max_body_size));
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
-	data.env_str.push_back("SERVER_NAME=localhost");
-	data.env_str.push_back("SERVER_PORT=8080");
-	data.env_str.push_back("CONTENT_TYPE=application/x-www-form-urlencoded");
+	data.env_str.push_back("SERVER_NAME=" + dataServer.server_name);
+	data.env_str.push_back("REMOTE_ADDR=localhost");
+	data.env_str.push_back("SERVER_PORT=" + toString(dataServer.port));
+	data.env_str.push_back("CONTENT_TYPE=" + getRequestContentType(data));
+	if (data.requestMethod == "POST")
+		data.env_str.push_back("CONTENT_LENGTH=" + toString(data.requestBody.length()));
+	else if (data.requestMethod == "GET")
+		data.env_str.push_back("CONTENT_LENGTH=0");
 
 	for (unsigned long i = 0; i < data.args_str.size(); i++)
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
 	for (unsigned long i = 0; i < data.env_str.size(); i++)
 		data.env.push_back(const_cast<char *>(data.env_str[i].c_str()));
+
 	data.args.push_back(NULL);
 	data.env.push_back(NULL);
 	data.FileContentType = getContentType(data.FileName);
@@ -51,7 +49,7 @@ int	handle_static_request(RequestHandlerData &data)
 	std::ostringstream oss;
 
 	if (data.FileName == "./www/")
-		data.FileName = "./www/html/index.html";
+		data.FileName = "./www/index.html";
 	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
 		return (ERROR);
@@ -97,19 +95,53 @@ int	handle_dynamic_request(RequestHandlerData &data)
 		waitpid(pid, &child_status, 0);
 		return_value = WEXITSTATUS(child_status);
 	}
-	std::cout << data.requestBody << std::endl;
 	return (return_value);
 }
 
 /*fills some variables and returns a error page */
 
-void errorHandling(RequestHandlerData &data, std::string errorFile, std::string HeadContent)
+void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code)
 {
+	std::map<int, std::string>::const_iterator it = srv.error_pages.find(code);
 	std::string returnData;
-	data.FileName = errorFile;
-	data.StatusLine = HeadContent;
-	if (access(errorFile.c_str(), R_OK | F_OK) != 0)
+	if (it != srv.error_pages.end())
+		data.FileName = it->second;
+	else
+		data.FileName = "./www/error/default.html";
+	data.FileContentType = "html";
+	data.StatusLine = getStatusMessage(code);
+	if (access(data.FileName.c_str(), R_OK | F_OK) != 0)
 		return ;
 	if (handle_static_request(data) != 0)
 		return ;
+}
+
+/*assembles the http response and returns it as a string */
+
+std::string http_response(RequestHandlerData &data, ServerConfig &srv)
+{
+	std::string response =
+	data.StatusLine
+	+ "\r\nConnection: keep-alive"
+	+ "\r\nLast-Modified: " + getFileDate(data.FileName)
+	+ "\r\nDate: " + getDate()
+	+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
+	+ "\r\nContent-Type: text/" + data.FileContentType
+	+ "\r\nAccept-Ranges: bytes"
+	+ "\r\nETag: " + getETag(data.FileName)
+	+ "\r\nProxy-Authenticate: Basic realm=Dev"
+	+ "\r\nServer: " + srv.server_name
+	+ "\r\nWWW-Authenticate: Basic realm=User Visible Realm"
+	+ "\r\n\r\n" + data.FileContent;
+	return response;
+}
+
+
+/*handles delete requests */
+
+void	handle_delete_request(RequestHandlerData &data)
+{
+	std::remove(data.FileName.c_str());
+	data.StatusLine = "http/1.1 204 No Content";
+	data.FileContent = "";
 }
