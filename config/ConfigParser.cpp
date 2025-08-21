@@ -43,6 +43,14 @@ bool ConfigParser::parseFile(const std::string &filename) {
     }
 
     _is_parsed = true;
+
+    // AÑADIR VALIDACIÓN:
+    if (!validateConfig()) {
+        std::cerr << "Configuration validation failed" << std::endl;
+        _is_parsed = false;
+        return false;
+    }
+
     std::cout << "ConfigParser: Successfully loaded " << _servers.size() << " server(s)" << std::endl;
     return true;
 }
@@ -290,18 +298,59 @@ bool ConfigParser::parseLocationBlock(std::ifstream &file, LocationConfig &locat
 
 // Validar configuración después de analizar
 bool ConfigParser::validateConfig() {
+    if (_servers.empty()) {
+        std::cerr << "No servers defined in configuration" << std::endl;
+        return false;
+    }
+
+    // Validar cada servidor individualmente
     for (size_t i = 0; i < _servers.size(); ++i) {
         const ServerConfig& srv = _servers[i];
 
         // Validar puerto
         if (!isValidPort(srv.port)) {
-            std::cerr << "Invalid port: " << srv.port << std::endl;
+            std::cerr << "Server " << i << ": Invalid port " << srv.port << std::endl;
+            return false;
+        }
+
+        // Validar host
+        if (srv.host.empty()) {
+            std::cerr << "Server " << i << ": Host cannot be empty" << std::endl;
             return false;
         }
 
         // Validar que root existe
         if (access(srv.root.c_str(), R_OK) != 0) {
-            std::cerr << "Root directory not accessible: " << srv.root << std::endl;
+            std::cerr << "Server " << i << ": Root directory not accessible: " << srv.root << std::endl;
+            return false;
+        }
+
+        // Validar error pages
+        for (std::map<int, std::string>::const_iterator it = srv.error_pages.begin();
+             it != srv.error_pages.end(); ++it) {
+            if (access(it->second.c_str(), R_OK) != 0) {
+                std::cerr << "Server " << i << ": Error page not accessible: " << it->second
+                          << " (for error " << it->first << ")" << std::endl;
+                return false;
+            }
+        }
+
+        // Validar que tiene locations
+        if (srv.locations.empty()) {
+            std::cerr << "Server " << i << ": No locations defined" << std::endl;
+            return false;
+        }
+
+        // Verificar que existe location root "/"
+        bool hasRootLocation = false;
+        for (size_t j = 0; j < srv.locations.size(); ++j) {
+            if (srv.locations[j].path == "/") {
+                hasRootLocation = true;
+                break;
+            }
+        }
+        if (!hasRootLocation) {
+            std::cerr << "Server " << i << ": Missing root location '/'" << std::endl;
             return false;
         }
 
@@ -309,19 +358,61 @@ bool ConfigParser::validateConfig() {
         for (size_t j = 0; j < srv.locations.size(); ++j) {
             const LocationConfig& loc = srv.locations[j];
 
+            // Validar path
+            if (loc.path.empty() || loc.path[0] != '/') {
+                std::cerr << "Server " << i << " Location " << j << ": Invalid path '" << loc.path << "'" << std::endl;
+                return false;
+            }
+
+            // Validar methods
             if (loc.methods.empty()) {
-                std::cerr << "Location " << loc.path << " has no methods" << std::endl;
+                std::cerr << "Server " << i << " Location '" << loc.path << "': No methods defined" << std::endl;
+                return false;
+            }
+
+            // Validar location root si está definido
+            std::string effectiveRoot = loc.root.empty() ? srv.root : loc.root;
+            if (access(effectiveRoot.c_str(), R_OK) != 0) {
+                std::cerr << "Server " << i << " Location '" << loc.path << "': Root directory not accessible: "
+                          << effectiveRoot << std::endl;
+                return false;
+            }
+
+            // Validar upload_dir si está definido
+            if (!loc.upload_dir.empty() && access(loc.upload_dir.c_str(), W_OK) != 0) {
+                std::cerr << "Server " << i << " Location '" << loc.path << "': Upload directory not accessible: "
+                          << loc.upload_dir << std::endl;
                 return false;
             }
 
             // Si tiene CGI, validar que el intérprete existe
-            if (!loc.cgi_path.empty() && access(loc.cgi_path.c_str(), X_OK) != 0) {
-                std::cerr << "CGI interpreter not found: " << loc.cgi_path << std::endl;
+            if (!loc.cgi_path.empty()) {
+                if (access(loc.cgi_path.c_str(), X_OK) != 0) {
+                    std::cerr << "Server " << i << " Location '" << loc.path << "': CGI interpreter not found: "
+                              << loc.cgi_path << std::endl;
+                    return false;
+                }
+
+                // Validar que CGI extension está definida
+                if (loc.cgi_extension.empty()) {
+                    std::cerr << "Server " << i << " Location '" << loc.path << "': CGI path defined but no extension" << std::endl;
+                    return false;
+                }
+            }
+        }
+    }
+
+    // Verificar puertos duplicados entre servidores
+    for (size_t i = 0; i < _servers.size(); ++i) {
+        for (size_t j = i + 1; j < _servers.size(); ++j) {
+            if (_servers[i].port == _servers[j].port && _servers[i].host == _servers[j].host) {
+                std::cerr << "Duplicate server configuration: "
+                          << _servers[i].host << ":" << _servers[i].port << std::endl;
                 return false;
             }
         }
     }
+
     return true;
 }
-
 
