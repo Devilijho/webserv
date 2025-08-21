@@ -4,13 +4,7 @@
 
 Server::Server() : configs() {}
 
-Server::~Server() {
-	if (server_fd != -1)
-		close(server_fd);
-}
-
-bool Server::start()
-
+Server::~Server()
 {
 	for (std::map<int, ServerConfig>::iterator it = listeningSockets.begin(); it != listeningSockets.end(); ++it)
 	{

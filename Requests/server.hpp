@@ -67,6 +67,8 @@ class Server
 		
 		int clientFdToServerFd(int client_fd);
 
+		std::string toString(int value);
+
 
 };
 

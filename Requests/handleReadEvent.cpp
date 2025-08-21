@@ -4,6 +4,12 @@
 #include "server.hpp"
 
 
+std::string Server::toString(int value) {
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
+}
+
 bool Server::handleReadEvent(int client_fd)
 {
 	char buffer[4096];
@@ -64,10 +70,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 				std::stringstream errBuf;
 				errBuf << errFile.rdbuf();
 				std::string body = errBuf.str();
-				std::ostringstream oss;
-				oss << body.size();
-				std::string contentLength = oss.str();
-				return "HTTP/1.1 404 Not Found\r\nContent-Length: " + contentLength +
+				return "HTTP/1.1 404 Not Found\r\nContent-Length: " + toString(body.size()) +
 					   "\r\nContent-Type: text/html\r\n\r\n" + body;
 			}
 		}
@@ -113,7 +116,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 		+ "\r\nConnection: keep-alive"
 		+ "\r\nLast-Modified: " + getFileDate(data.FileName)
 		+ "\r\nDate: " + getDate()
-		+ "\r\nContent-Length: " + len_str
+		+ "\r\nContent-Length: " + toString(data.FileContent.size())
 		+ "\r\nContent-Type: text/" + data.FileContentType
 		+ "\r\n\r\n" + data.FileContent;
 		
