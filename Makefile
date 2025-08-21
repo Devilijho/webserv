@@ -8,24 +8,26 @@ sources =	main.cpp \
 			config/ConfigParser.cpp \
 			config/ServerConfig.cpp
 
-objects = $(sources:.cpp=.o)
+OBJ_DIR = build
+
+objects = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(sources))
 
 cc = c++
-
 cflags = -Wall -Wextra -Werror -fsanitize=address -std=c++98
-# -I.. -I../config -I../CGI
+
 NAME = webserv
+
+$(OBJ_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(cc) $(cflags) -c $< -o $@
 
 $(NAME): $(objects)
 	$(cc) $(cflags) -o $(NAME) $(objects)
 
 all: $(NAME)
 
-%.o: %.cpp
-	$(cc) $(cflags) -c $< -o $@
-
 clean:
-	rm -f ${objects}
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(NAME)

@@ -5,14 +5,6 @@
 
 Server::Server() : configs() {}
 
-// Server::~Server()
-// {
-// 	for (size_t i = 0; i < server_fds.size(); ++i)
-// 	{
-// 		if (server_fds[i] != -1)
-// 			close(server_fds[i]);
-// 	}
-// }
 Server::~Server()
 {
 	for (std::map<int, ServerConfig>::iterator it = listeningSockets.begin(); it != listeningSockets.end(); ++it)
@@ -21,7 +13,6 @@ Server::~Server()
 			close(it->first);
 	}
 }
-
 
 bool Server::start(const std::vector<ServerConfig>& servers, const std::string& configFile)
 {
@@ -127,7 +118,7 @@ void Server::acceptClient(int server_fd)
 	poll_fds.push_back(client_pollfd);
 
 	clientSockets[client_fd] = new RequestHandlerData();
-		
+
 	// Initialize client buffer
 	clientBuffers[client_fd] = "";
 

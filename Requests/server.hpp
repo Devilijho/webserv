@@ -32,53 +32,41 @@ class Server
 					const std::string& configFile = "default.conf");
 
 	private:
-		// --- Configuration ---
-		std::vector<ServerConfig> configs;
-		
-		// std::vector<int> server_fds;						// Multiple server file descriptors
-		std::map<int, ServerConfig> listeningSockets;		// FD -> config
-		std::map<int, RequestHandlerData*> clientSockets;	// FD -> client state
+		// --- Server Configuration ---
+	std::vector<ServerConfig> configs;					// List of server configs
+	std::map<int, ServerConfig> listeningSockets;		// Server socket FD -> config
+	std::map<int, ServerConfig> client_to_server_config;// Client FD -> selected server config
 
-		// --- Sockets ---
-		// std::vector<int> server_fds;
-		std::vector<struct pollfd> poll_fds;
+	// --- Client Connections ---
+	std::map<int, RequestHandlerData*> clientSockets;	// Client FD -> state/data
+	std::map<int, std::string> clientBuffers;			// Client FD -> accumulated request buffer
 
-		// NEW: per-client buffers to accumulate request data
-		std::map<int, std::string>  clientBuffers;    // client fd -> raw request so far
-		std::map<int, ServerConfig> client_to_server_config;
+	// --- Sockets & Polling ---
+	std::vector<struct pollfd> poll_fds;				// poll() structures for event loop
 
-		// --- Setup ---
-		int setupSocket(const ServerConfig& cfg);
-		struct addrinfo* resolveAddress(const ServerConfig& cfg);
-		void addServerSocketToPoll(int fd);
-		bool loadConfig(const std::string& configFile);
+	// --- Setup / Initialization ---
+	bool loadConfig(const std::string& configFile);
+	int setupSocket(const ServerConfig& cfg);
+	struct addrinfo* resolveAddress(const ServerConfig& cfg);
+	void addServerSocketToPoll(int fd);
 
-		// --- Event loop ---
-		void eventLoop();
-		void handleWriteEvent(int fd);
-		void handleError(int fd);
-		bool handleReadEvent(int fd);
-		//
-		// --- Client handling ---
-		void acceptClient(int server_fd);
+	// --- Event Loop ---
+	void eventLoop();
+	bool handleReadEvent(int fd);
+	void handleWriteEvent(int fd);
+	void handleError(int fd);
 
-		void closeConnection(int client_fd);
-		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig);
-		
-		int clientFdToServerFd(int client_fd);
-
-
+	// --- Client Handling ---
+	void acceptClient(int server_fd);
+	void closeConnection(int client_fd);
+	std::string buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig);
+	int clientFdToServerFd(int client_fd);
 };
 
 struct ClientData {
-    ServerConfig server_config;
-    int state;
-    std::string request_buffer;
-    std::string response_buffer;
-    size_t bytes_sent;
-};
-
-enum ClientState {
-    CLIENT_READING_REQUEST,
-    CLIENT_WRITING_RESPONSE
+	ServerConfig server_config;
+	int state;
+	std::string request_buffer;
+	std::string response_buffer;
+	size_t bytes_sent;
 };
