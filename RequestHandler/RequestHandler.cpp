@@ -105,6 +105,7 @@ void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code)
 		data.FileName = it->second;
 	else
 		data.FileName = "./www/error/default.html";
+	data.FileContentType = "html";
 	data.StatusLine = getStatusMessage(code);
 	if (access(data.FileName.c_str(), R_OK | F_OK) != 0)
 		return ;
@@ -135,8 +136,10 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 
 /*handles delete requests */
 
-void	handle_delete_request(RequestHandlerData &data)
+void	handle_delete_request(RequestHandlerData &data, const ServerConfig &srv)
 {
-
-(void)data;
+	(void)srv;
+	std::remove(data.FileName.c_str());
+	data.StatusLine = "http/1.1 204 No Content";
+	data.FileContent = "";
 }

@@ -51,8 +51,8 @@ struct RequestHandlerData
 
 /*Main functions */
 
-void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code);
-void	handle_delete_request(RequestHandlerData &data);
+void errorHandling(RequestHandlerData &data, const ServerConfig &srv, int code);
+void	handle_delete_request(RequestHandlerData &data, const ServerConfig &srv);
 int	handle_dynamic_request(RequestHandlerData &data);
 int	handle_static_request(RequestHandlerData &data);
 int	setData(RequestHandlerData &data, ServerConfig &dataServer);

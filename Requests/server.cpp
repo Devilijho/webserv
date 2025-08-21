@@ -127,7 +127,7 @@ void Server::handleClient(int client_fd) {
 	}
 
 	std::string raw_request(buffer);
-	// std::cout << "Pedido recibido:\n" << raw_request << std::endl;
+	std::cout << "Pedido recibido:\n" << raw_request << std::endl;
 
 
 	std::string response = buildHttpResponse(raw_request);
@@ -159,9 +159,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
 	setData(data, const_cast<ServerConfig&>(srv));
-
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
-		data.FileContentType = "html";
 		errorHandling(data, srv, 404);
 	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
@@ -174,7 +172,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "DELETE")
-		handle_delete_request(data);
+		handle_delete_request(data, srv);
 	else
 		errorHandling(data, srv, 405);
 	return (http_response(data, const_cast<ServerConfig&>(srv)));
