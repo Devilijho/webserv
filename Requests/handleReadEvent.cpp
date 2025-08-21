@@ -86,26 +86,26 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	setData(data, const_cast<ServerConfig&>(srv));
 	data.FileContentType = getContentType(data.FileName);
 		
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
-	{
-		data.FileContentType = "html";
-		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
-	}
-	else if (data.FileContentType == "php" && (method == "GET" || method == "POST"))
-	{
-		data.FileContentType = "html";
-		if (handle_dynamic_request(data) != SUCCESS)
-			errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Internal Server Error");
-	}
-	else if (method == "GET")
-	{
-		if (handle_static_request(data) != SUCCESS)
-			std::cout << "File: " + data.FileName + " failed to be handled" << std::endl;
-	}
-	else if (method == "DELETE")
-		errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
-	else
-		errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed");
+	// if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
+	// {
+	// 	data.FileContentType = "html";
+	// 	errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
+	// }
+	// else if (data.FileContentType == "php" && (method == "GET" || method == "POST"))
+	// {
+	// 	data.FileContentType = "html";
+	// 	if (handle_dynamic_request(data) != SUCCESS)
+	// 		errorHandling(data, "./www/error/500.html", "HTTP/1.1 500 Internal Server Error");
+	// }
+	// else if (method == "GET")
+	// {
+	// 	if (handle_static_request(data) != SUCCESS)
+	// 		std::cout << "File: " + data.FileName + " failed to be handled" << std::endl;
+	// }
+	// else if (method == "DELETE")
+	// 	errorHandling(data, "./www/error/404.html", "HTTP/1.1 404 Not Found");
+	// else
+	// 	errorHandling(data, "./www/error/405.html", "HTTP/1.1 405 Method Not Allowed");
 	
 	std::ostringstream oss_len;
 	oss_len << data.FileContent.size();

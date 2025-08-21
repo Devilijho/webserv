@@ -1,4 +1,5 @@
 
+
 #include "server.hpp"
 #include <arpa/inet.h>
 
@@ -131,67 +132,25 @@ void Server::acceptClient(int server_fd)
 	std::cout << "Client connected on fd " << client_fd << std::endl;
 }
 
-std::string Server::toString(int value) {
-	std::ostringstream oss;
-	oss << value;
-	return oss.str();
-}
+// bool Server::isMethodAllowed(const LocationConfig &loc, const std::string &method)
+// {
+// 	const std::vector<std::string> &allowed = loc.methods;
+// 	return std::find(allowed.begin(), allowed.end(), method) != allowed.end();
+// }
 
-std::string Server::buildHttpResponse(const std::string &raw_request)
-{
-	std::istringstream req_stream(raw_request);
-	std::string method, path, protocol;
-	req_stream >> method >> path >> protocol;
-	if (method.empty() || path.empty())
-		return "HTTP/1.1 400 Bad Request\r\n\r\n";
+// bool Server::isBodySizeAllowed(const std::string &raw_request, size_t max_size)
+// {
+// 	std::istringstream req_stream(raw_request);
+// 	std::string line;
+// 	while (std::getline(req_stream, line) && line != "\r") {
+// 		if (line.find("Content-Length:") == 0) {
+// 			size_t length = std::atoi(line.substr(15).c_str());
+// 			return length <= max_size;
+// 		}
+// 	}
+// 	return true;
+// }
 
-	const ServerConfig &srv = config.getServers()[0];
-	const LocationConfig *loc = srv.findLocation(path);
-	(void)loc;
-
-	RequestHandlerData data;
-
-	data.FileName = srv.root + path;
-	data.requestMethod = method;
-	data.rawRequest = raw_request;
-	setData(data, const_cast<ServerConfig&>(srv));
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
-		errorHandling(data, srv, 404);
-	}
-	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
-		data.FileContentType = "html";
-		if (handle_dynamic_request(data) != SUCCESS)
-			errorHandling(data, srv, 500);
-	}
-	else if (method == "GET"){
-		if (handle_static_request(data) != SUCCESS)
-			errorHandling(data, srv, 500);
-	}
-	else if (method == "DELETE")
-		handle_delete_request(data);
-	else
-		errorHandling(data, srv, 405);
-	return (http_response(data, const_cast<ServerConfig&>(srv)));
-}
-
-bool Server::isMethodAllowed(const LocationConfig &loc, const std::string &method)
-{
-	const std::vector<std::string> &allowed = loc.methods;
-	return std::find(allowed.begin(), allowed.end(), method) != allowed.end();
-}
-
-bool Server::isBodySizeAllowed(const std::string &raw_request, size_t max_size)
-{
-	std::istringstream req_stream(raw_request);
-	std::string line;
-	while (std::getline(req_stream, line) && line != "\r") {
-		if (line.find("Content-Length:") == 0) {
-			size_t length = std::atoi(line.substr(15).c_str());
-			return length <= max_size;
-		}
-	}
-	return true;
-}
 void Server::closeConnection(int client_fd)
 {
 	// Remove from poll_fds by marking fd as -1
@@ -200,8 +159,7 @@ void Server::closeConnection(int client_fd)
 			it->fd = -1; // Mark for cleanup instead of erasing immediately
 			break;
 		}
-	}
-		
+	}		
 	// Clean up client data - no pointers, just erase directly
 	clientSockets.erase(client_fd);
 	clientBuffers.erase(client_fd);
