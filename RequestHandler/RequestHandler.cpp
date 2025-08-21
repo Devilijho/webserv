@@ -12,6 +12,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
+	// data.env_str.push_back(std::string("SCRIPT_FILENAME=/home/safuente/Documents/mrd/www/script/post_msg.php"));
 	data.env_str.push_back("REDIRECT_STATUS=CGI");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
@@ -19,6 +20,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 	data.env_str.push_back("MAX_FILE_SIZE=" + toString(dataServer.client_max_body_size));
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	data.env_str.push_back("SERVER_NAME=" + dataServer.server_name);
+	data.env_str.push_back("REMOTE_ADDR=localhost");
 	data.env_str.push_back("SERVER_PORT=" + toString(dataServer.port));
 	data.env_str.push_back("CONTENT_TYPE=" + getRequestContentType(data));
 	if (data.requestMethod == "POST")
@@ -30,6 +32,7 @@ int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 		data.args.push_back(const_cast<char *>(data.args_str[i].c_str()));
 	for (unsigned long i = 0; i < data.env_str.size(); i++)
 		data.env.push_back(const_cast<char *>(data.env_str[i].c_str()));
+
 	data.args.push_back(NULL);
 	data.env.push_back(NULL);
 	data.FileContentType = getContentType(data.FileName);
