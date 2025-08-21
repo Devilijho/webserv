@@ -33,86 +33,70 @@ void debugConfig(const ServerConfig& config) {
     }
 }
 
-int main(int argc, char* argv[]) {
-    std::string configFile = (argc > 1) ? argv[1] : "default.conf";
+int main(int argc, char* argv[])
+{
+	// Parse configuration
+	ConfigParser parser;
+	std::string configFile = (argc > 1) ? argv[1] : "default.conf";
 
-    // Parse configuration
-    ConfigParser parser;
-    if (!parser.parseFile(configFile)) {
-        std::cerr << "Error: Failed to parse configuration file" << std::endl;
-        return 1;
-    }
+	if (!parser.parseFile(configFile)) {
+	std::cerr << "Error: Failed to parse configuration file" << std::endl;
+	return 1;
+	}
 
-    if (!parser.isValid()) {
-        std::cerr << "Error: Invalid configuration" << std::endl;
-        return 1;
-    }
+	if (!parser.isValid()) {
+	std::cerr << "Error: Invalid configuration" << std::endl;
+	return 1;
+	}
 
-    // Debug: Print loaded configuration
-    parser.printConfig();
+	// Debug: Print loaded configuration
+	parser.printConfig();
 
-    // Get servers from configuration
-    const std::vector<ServerConfig>& servers = parser.getServers();
-
+	// Get servers from configuration
+	std::vector<ServerConfig> servers = parser.getServers();
     if (servers.empty()) {
-        std::cerr << "Error: No servers configured" << std::endl;
+        std::cerr << "No servers defined in configuration." << std::endl;
         return 1;
     }
 
-    // Para testing inicial: usar SOLO el primer servidor
-    const ServerConfig& config = servers[0];
+    // Start each server
+    for (size_t i = 0; i < servers.size(); ++i) {
+        const ServerConfig& cfg = servers[i];
+        std::cout << "Starting server on " << cfg.host << ":" << cfg.port << std::endl;
 
-    // AQUÍ es donde llamas la función de debug (DENTRO del main):
-    debugConfig(config);
-
-    std::cout << "\n🚀 Starting server on " << config.host << ":" << config.port << std::endl;
-    std::cout << "Root directory: " << config.root << std::endl;
-    std::cout << "Index file: " << config.index << std::endl;
-    std::cout << "Locations configured: " << config.locations.size() << std::endl;
-
-    // Crear servidor único para testing
-    Server server(config.port);
-
-    // Cargar la configuración en el servidor (necesitas implementar esto)
-    // server.loadConfig(config);  // ← Esto lo implementaremos después si es necesario
-
-    if (!server.start()) {
-        std::cerr << "Error: Failed to start server on port " << config.port << std::endl;
-        return 1;
+        // Create server instance
+        Server server;  // no arguments
+		std::vector<ServerConfig> singleServer;
+		singleServer.push_back(cfg);
+		server.start(singleServer);
     }
-
-    std::cout << "✅ Server started successfully!" << std::endl;
-    std::cout << "Test URLs:" << std::endl;
-    std::cout << "  http://localhost:" << config.port << "/" << std::endl;
-    std::cout << "  http://localhost:" << config.port << "/cgi-bin/" << std::endl;
-    std::cout << "  http://localhost:" << config.port << "/api/" << std::endl;
 
     return 0;
 }
 
 // int main() {
-//     ConfigParser parser;
+//	 ConfigParser parser;
 
-//     // Test parsing
-//     if (parser.parseFile("default.conf")) {
-//         std::cout << "✅ Parsing successful" << std::endl;
-//         parser.printConfig();
+//	 // Test parsing
+//	 if (parser.parseFile("default.conf")) {
+//	 std::cout << "✅ Parsing successful" << std::endl;
+//	 parser.printConfig();
 
-//         // Test server access
-//         const std::vector<ServerConfig>& servers = parser.getServers();
-//         if (!servers.empty()) {
-//             const ServerConfig& server = servers[0];
-//             std::cout << "✅ First server port: " << server.port << std::endl;
+//	 // Test server access
+//	 const std::vector<ServerConfig>& servers = parser.getServers();
+//	 if (!servers.empty()) {
+//	 const ServerConfig& server = servers[0];
+//	 std::cout << "✅ First server port: " << server.port << std::endl;
 
-//             // Test location finding
-//             const LocationConfig* loc = server.findLocation("/upload");
-//             if (loc) {
-//                 std::cout << "✅ Found /upload location with " << loc->methods.size() << " methods" << std::endl;
-//             }
-//         }
-//     } else {
-//         std::cout << "❌ Parsing failed" << std::endl;
-//     }
+//	 // Test location finding
+//	 const LocationConfig* loc = server.findLocation("/upload");
+//	 if (loc) {
+//	 std::cout << "✅ Found /upload location with " << loc->methods.size() << " methods" << std::endl;
+//	 }
+//	 }
+//	 } else {
+//	 std::cout << "❌ Parsing failed" << std::endl;
+//	 }
 
-//     return 0;
+//	 return 0;
 // }
