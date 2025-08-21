@@ -7,7 +7,6 @@ Server::~Server() {
 		close(server_fd);
 }
 
-
 bool Server::start()
 {
 	if (!loadConfig("default.conf"))
