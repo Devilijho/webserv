@@ -172,7 +172,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "DELETE")
-		handle_delete_request(data, srv);
+		handle_delete_request(data);
 	else
 		errorHandling(data, srv, 405);
 	return (http_response(data, const_cast<ServerConfig&>(srv)));
