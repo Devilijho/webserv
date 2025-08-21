@@ -1,11 +1,9 @@
 #include "RequestHandler.hpp"
-#include <sys/poll.h>
 
-/*Sets data*/
+/*Sets data and the variables needed for the dynamic file handling*/
 
 int	setData(RequestHandlerData &data, ServerConfig &dataServer)
 {
-	data.FileContentType = getContentType(data.FileName);
 	data.StatusLine = "HTTP/1.1 200 OK";
 	setRequestBody(data);
 	setQueryData(data);
@@ -114,6 +112,8 @@ void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code)
 		return ;
 }
 
+/*assembles the http response and returns it as a string */
+
 std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 {
 	std::string response =
@@ -130,4 +130,13 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 	+ "\r\nWWW-Authenticate: Basic realm=User Visible Realm"
 	+ "\r\n\r\n" + data.FileContent;
 	return response;
+}
+
+
+/*handles delete requests */
+
+void	handle_delete_request(RequestHandlerData &data)
+{
+
+(void)data;
 }
