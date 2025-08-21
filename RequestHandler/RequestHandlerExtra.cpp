@@ -1,10 +1,4 @@
 #include "RequestHandler.hpp"
-#include <algorithm>
-#include <cctype>
-#include <cstddef>
-#include <cstdlib>
-#include <sstream>
-#include <string>
 
 /*get the extension of a file */
 
@@ -46,13 +40,15 @@ void setQueryData(RequestHandlerData &data)
 	std::string queryData = "";
 
 	pos = data.FileName.find_last_of("?");
-	if (pos == std::string::npos)
-		data.query = "";
 	queryData = data.FileName.substr(pos + 1);
 	cutFileName = data.FileName.substr(0, pos);
 	data.FileName = cutFileName;
 	data.query = queryData;
+	if (pos == std::string::npos)
+		data.query = "";
 }
+
+/*returns an random generate ETag based on a filename and time of last modified */
 
 std::string getETag(std::string fileName)
 {
@@ -74,11 +70,12 @@ std::string getETag(std::string fileName)
 	return "\"" + EtagStream.str() + "\"";
 }
 
+/*set the request body from the http raw request */
+
 void	setRequestBody(RequestHandlerData &data)
 {
 	size_t posStart;
 
-	std::cout << data.rawRequest;
 	posStart = data.rawRequest.find("\r\n\r\n");
 	if (posStart == std::string::npos)
 		data.requestBody = "";
@@ -86,12 +83,16 @@ void	setRequestBody(RequestHandlerData &data)
 		data.requestBody = data.rawRequest.substr(posStart + 4);
 }
 
+/*converts an int to an string and returns it */
+
 std::string toString(int value)
 {
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
 }
+
+/*Returns the contentType of the http raw request on a string */
 
 std::string getRequestContentType(RequestHandlerData &data)
 {
@@ -102,6 +103,8 @@ std::string getRequestContentType(RequestHandlerData &data)
 	else
 		return "";
 }
+
+/*return an string of the status message based on the parameter code)*/
 
 std::string getStatusMessage(int code)
 {

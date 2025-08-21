@@ -1,4 +1,3 @@
-
 #include "server.hpp"
 
 Server::Server(int _port) : server_fd(-1), port(_port) {}
@@ -7,7 +6,6 @@ Server::~Server() {
 	if (server_fd != -1)
 		close(server_fd);
 }
-
 
 bool Server::start()
 {
@@ -141,18 +139,15 @@ std::string Server::toString(int value) {
 	oss << value;
 	return oss.str();
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::string Server::buildHttpResponse(const std::string &raw_request)
 {
-	// Parse request line
 	std::istringstream req_stream(raw_request);
 	std::string method, path, protocol;
 	req_stream >> method >> path >> protocol;
 	if (method.empty() || path.empty())
 		return "HTTP/1.1 400 Bad Request\r\n\r\n";
 
-	// Find matching server + location (simplified: take first server)
 	const ServerConfig &srv = config.getServers()[0];
 	const LocationConfig *loc = srv.findLocation(path);
 	(void)loc;
@@ -162,78 +157,25 @@ std::string Server::buildHttpResponse(const std::string &raw_request)
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
-	data.FileName = srv.root + path;
 	setData(data, const_cast<ServerConfig&>(srv));
-
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
-	{
-		data.FileContentType = "html";
+	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
 		errorHandling(data, srv, 404);
 	}
-	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")) {
+	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
-	else if (method == "GET") {
+	else if (method == "GET"){
 		if (handle_static_request(data) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "DELETE")
-		errorHandling(data, srv, 404);
+		handle_delete_request(data);
 	else
 		errorHandling(data, srv, 405);
 	return (http_response(data, const_cast<ServerConfig&>(srv)));
 }
-
-/*
-std::string Server::buildResponseString(const RequestHandlerData &data)
-{
-	std::string returnData =
-		data.StatusLine
-		+ "\r\nConnection: keep-alive"
-		+ "\r\nLast-Modified: " + getFileDate(data.FileName)
-		+ "\r\nDate: " + getDate()
-		+ "\r\nContent-Length: " + toString(data.FileContent.size())
-		+ "\r\nContent-Type: text/" + data.FileContentType
-		+ "\r\n\r\n" + data.FileContent;
-
-	return returnData;
-}
-
-std::string Server::getStatusMessage(int code)
-{
-	switch (code) {
-		case 400: return "Bad Request";
-		case 403: return "Forbidden";
-		case 404: return "Not Found";
-		case 405: return "Method Not Allowed";
-		case 413: return "Payload Too Large";
-		case 500: return "Internal Server Error";
-		default:  return "Error";
-	}
-}
-
-void Server::serveError(RequestHandlerData &data, const ServerConfig &srv, int code)
-{
-	std::map<int, std::string>::const_iterator it = srv.error_pages.find(code);
-	std::string filePath;
-
-	if (it != srv.error_pages.end())
-		filePath = it->second;
-	else
-		filePath = "./errors/default.html";
-
-	std::ifstream errFile(filePath.c_str());
-	std::stringstream buf;
-	buf << errFile.rdbuf();
-
-	data.FileContent = buf.str();
-	data.FileContentType = "html";
-	data.StatusLine = "HTTP/1.1 " + toString(code) + " " + getStatusMessage(code);
-}
- */
-
 
 bool Server::isMethodAllowed(const LocationConfig &loc, const std::string &method)
 {
