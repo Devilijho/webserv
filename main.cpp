@@ -53,22 +53,25 @@ int main(int argc, char* argv[])
 	parser.printConfig();
 
 	// Get servers from configuration
-	const std::vector<ServerConfig>& servers = parser.getServers();
+	std::vector<ServerConfig> servers = parser.getServers();
+    if (servers.empty()) {
+        std::cerr << "No servers defined in configuration." << std::endl;
+        return 1;
+    }
 
-	// Create servers based on configuration
-	for (size_t i = 0; i < servers.size(); ++i) {
-	const ServerConfig& config = servers[i];
-	std::cout << "Starting server on " << config.host << ":" << config.port << std::endl;
+    // Start each server
+    for (size_t i = 0; i < servers.size(); ++i) {
+        const ServerConfig& cfg = servers[i];
+        std::cout << "Starting server on " << cfg.host << ":" << cfg.port << std::endl;
 
-	// Tu Parte A usará esto para crear sockets
-	Server server(config.port);
-	if (!server.start()) {
-	std::cerr << "Error: Failed to start server on port " << config.port << std::endl;
-	continue;
-	}
-	}
+        // Create server instance
+        Server server;  // no arguments
+		std::vector<ServerConfig> singleServer;
+		singleServer.push_back(cfg);
+		server.start(singleServer);
+    }
 
-	return 0;
+    return 0;
 }
 
 // int main() {

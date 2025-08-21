@@ -1,5 +1,8 @@
 sources =	main.cpp \
 			Requests/server.cpp \
+			Requests/startsetup.cpp \
+			Requests/handleReadEvent.cpp \
+			Requests/handleWriteEvent.cpp \
 			RequestHandler/RequestHandler.cpp \
 			RequestHandler/RequestHandlerExtra.cpp \
 			config/ConfigParser.cpp \
