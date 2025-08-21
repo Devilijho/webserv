@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Server - Webserv</title>
+    <style>
+        body { font-family: 'Courier New', monospace; background: #1e1e1e; color: #f0f0f0; padding: 2rem; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #61dafb; text-align: center; font-size: 2.5rem; }
+        .endpoint { background: #2d2d2d; padding: 1.5rem; margin: 1rem 0; border-radius: 8px; border-left: 4px solid #61dafb; }
+        .method { display: inline-block; padding: 0.2rem 0.8rem; border-radius: 4px; font-weight: bold; color: white; margin-right: 1rem; }
+        .get { background: #28a745; }
+        .post { background: #ffc107; color: black; }
+        .delete { background: #dc3545; }
+        code { background: #3d3d3d; padding: 0.2rem 0.4rem; border-radius: 3px; color: #f8f8f2; }
+        .response { background: #1a1a1a; padding: 1rem; border-radius: 4px; margin-top: 1rem; overflow-x: auto; }
+        a { color: #61dafb; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ API Server - Puerto 8081</h1>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <strong>/</strong> - Esta página de documentación
+        </div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <strong>/test</strong> - Endpoint de prueba con autoindex
+            <div class="response">
+                <code>curl http://localhost:8081/test\</code\>
+            </div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <strong>/api/status</strong> - Estado del servidor
+            <div class="response">
+                <code>{"status": "running", "server": "webserv-api", "port": 8081}</code>
+            </div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method post">POST</span>
+            <strong>/api/data</strong> - Enviar datos
+            <div class="response">
+                <code>curl -X POST -H "Content-Type: application/json" -d '{"test": "data"}' http://localhost:8081/api/data\</code\>
+            </div>
+        </div>
+        
+        <div class="endpoint">
+            <span class="method delete">DELETE</span>
+            <strong>/api/cache</strong> - Limpiar caché
+            <div class="response">
+                <code>curl -X DELETE http://localhost:8081/api/cache\</code\>
+            </div>
+        </div>
+        
+        <p style="text-align: center; margin-top: 3rem;">
+            <a href="http://localhost:8080">← Volver al servidor principal (8080)</a>
+        </p>
+    </div>
+</body>
+</html>
