@@ -56,7 +56,7 @@ void errorHandling(RequestHandlerData &data, const ServerConfig &srv, int code);
 void	handle_delete_request(RequestHandlerData &data);
 int	handle_dynamic_request(RequestHandlerData &data);
 int	handle_static_request(RequestHandlerData &data);
-int	setData(RequestHandlerData &data, ServerConfig &dataServer);
+int	setData(RequestHandlerData &data, ServerConfig &dataServer, const LocationConfig* location);
 int	htpp_request(ServerConfig &dataServer);
 std::string http_response(RequestHandlerData &data, ServerConfig &srv);
 

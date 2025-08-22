@@ -1,6 +1,3 @@
-
-
-
 #include "server.hpp"
 
 
@@ -83,7 +80,8 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
-	setData(data, const_cast<ServerConfig&>(srv));
+	// const LocationConfig* loc = srv.findLocation(path);  // ← Obtener location
+	setData(data, const_cast<ServerConfig&>(srv), loc);   // ← USAR la loc de línea 60
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
 		errorHandling(data, srv, 404);
 	}
