@@ -34,7 +34,7 @@ class Server
 	private:
 		// --- Configuration ---
 		std::vector<ServerConfig> configs;
-		
+
 		// std::vector<int> server_fds;						// Multiple server file descriptors
 		std::map<int, ServerConfig> listeningSockets;		// FD -> config
 		std::map<int, RequestHandlerData*> clientSockets;	// FD -> client state
@@ -64,7 +64,7 @@ class Server
 
 		void closeConnection(int client_fd);
 		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig);
-		
+
 		int clientFdToServerFd(int client_fd);
 
 		std::string toString(int value);

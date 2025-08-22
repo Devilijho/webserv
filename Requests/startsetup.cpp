@@ -1,4 +1,4 @@
-#include "server.hpp"`
+#include "server.hpp"
 #include <arpa/inet.h>
 
 
@@ -83,25 +83,25 @@ void Server::addServerSocketToPoll(int fd) {
 	poll_fds.push_back(pfd);
 }
 
-void Server::createServerSockets()
-{
-	const std::vector<ServerConfig>& servers = configs;
+// void Server::createServerSockets()
+// {
+// 	const std::vector<ServerConfig>& servers = configs;
 
-	for (size_t i = 0; i < servers.size(); ++i) {
-		const ServerConfig& srv = servers[i];
-		int server_fd = setupSocket(srv);  // ← Función helper
+// 	for (size_t i = 0; i < servers.size(); ++i) {
+// 		const ServerConfig& srv = servers[i];
+// 		int server_fd = setupSocket(srv);  // ← Función helper
 
-		if (server_fd != -1) {
-			// Add to poll array
-			struct pollfd pfd;
-			pfd.fd = server_fd;
-			pfd.events = POLLIN;
-			poll_fds.push_back(pfd);
+// 		if (server_fd != -1) {
+// 			// Add to poll array
+// 			struct pollfd pfd;
+// 			pfd.fd = server_fd;
+// 			pfd.events = POLLIN;
+// 			poll_fds.push_back(pfd);
 
-			// Map fd to server config
-			serverConfigs[server_fd] = srv;  // ← Para saber qué config usar
+// 			// Map fd to server config
+// 			serverConfigs[server_fd] = srv;  // ← Para saber qué config usar
 
-			std::cout << "[INFO] Listening on " << srv.host << ":" << srv.port << std::endl;
-		}
-	}
-}
+// 			std::cout << "[INFO] Listening on " << srv.host << ":" << srv.port << std::endl;
+// 		}
+// 	}
+// }
