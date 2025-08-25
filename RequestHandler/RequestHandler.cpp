@@ -142,6 +142,6 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 void	handle_delete_request(RequestHandlerData &data)
 {
 	std::remove(data.FileName.c_str());
-	data.StatusLine = "http/1.1 204 No Content";
+	data.StatusLine = "HTTP/1.1 204 No Content";
 	data.FileContent = "";
 }
