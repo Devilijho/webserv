@@ -40,7 +40,7 @@ bool Server::handleReadEvent(int client_fd)
 		closeConnection(client_fd);
 		return false;
 	}
-
+	closeConnection(client_fd);
 	return true;
 }
 
