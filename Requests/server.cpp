@@ -57,7 +57,7 @@ void Server::eventLoop()
 		for (int i = static_cast<int>(poll_fds.size()) - 1; i >= 0; --i)
 		{
 			struct pollfd& pfd = poll_fds[i];
-		
+
 			if (pfd.revents == 0) continue;
 
 			if (pfd.revents & (POLLERR | POLLHUP | POLLNVAL)) {
@@ -119,7 +119,7 @@ void Server::acceptClient(int server_fd)
 
 	clientSockets[client_fd] = new RequestHandlerData();
 
-	// Initialize client buffer
+	// Initialize client	closeConnection(client_fd); buffer
 	clientBuffers[client_fd] = "";
 
 	// Map the client to the server config
@@ -139,12 +139,12 @@ void Server::closeConnection(int client_fd)
 			it->fd = -1; // Mark for cleanup instead of erasing immediately
 			break;
 		}
-	}		
+	}
 	// Clean up client data - no pointers, just erase directly
 	clientSockets.erase(client_fd);
 	clientBuffers.erase(client_fd);
 	client_to_server_config.erase(client_fd);
-		
+
 	// Close the socket
 	close(client_fd);
 	std::cout << "[INFO] Closed connection on fd " << client_fd << std::endl;

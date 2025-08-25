@@ -97,11 +97,14 @@ std::string toString(int value)
 std::string getRequestContentType(RequestHandlerData &data)
 {
 	size_t posStart = data.rawRequest.find("Content-Type: ");
-	size_t posEnd = data.rawRequest.find("Upgrade-Insecure-Requests: ");
-	if (posStart != std::string::npos && posEnd != std::string::npos)
-		return data.rawRequest.substr(posStart + 14, posEnd - posStart - 16);
-	else
-		return "";
+	if (posStart != std::string::npos)
+	{
+		size_t lineEnd = data.rawRequest.find("\r\n", posStart);
+		if (lineEnd != std::string::npos) {
+			return data.rawRequest.substr(posStart + 14, lineEnd - posStart - 14);
+		}
+	}
+	return "";
 }
 
 /*return an string of the status message based on the parameter code)*/
