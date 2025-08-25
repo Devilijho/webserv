@@ -2,20 +2,20 @@
 
 /*Sets data and the variables needed for the dynamic file handling*/
 
-int	setData(RequestHandlerData &data, ServerConfig &dataServer)
+int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const LocationConfig *loc)
 {
 	data.StatusLine = "HTTP/1.1 200 OK";
 	setRequestBody(data);
 	setQueryData(data);
 
-	data.args_str.push_back(PATH_INFO);
+	data.args_str.push_back(loc->cgi_path);
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
-	// data.env_str.push_back(std::string("SCRIPT_FILENAME=/home/safuente/Documents/mrd/www/script/post_msg.php"));
 	data.env_str.push_back("REDIRECT_STATUS=CGI");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	data.env_str.push_back("PATH_INFO=" + loc->cgi_path);
 	data.env_str.push_back("QUERY_STRING=" + data.query);
 	data.env_str.push_back("MAX_FILE_SIZE=" + toString(dataServer.client_max_body_size));
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
@@ -61,7 +61,7 @@ int	handle_static_request(RequestHandlerData &data)
 
 /*Executes a script such as PHP with phpCGI, returns the output trough a pipe*/
 
-int	handle_dynamic_request(RequestHandlerData &data)
+int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi)
 {
 	pid_t pid;
 	int		return_value;
@@ -79,7 +79,7 @@ int	handle_dynamic_request(RequestHandlerData &data)
 		close(data.fdIn[1]);
 		dup2(data.fdOut[1], STDOUT_FILENO);
 		dup2(data.fdIn[0], STDIN_FILENO);
-		child_status = execve(PATH_INFO, data.args.data(), data.env.data());
+		child_status = execve(path_cgi, data.args.data(), data.env.data());
 		_exit(child_status);
 	}
 	else
@@ -142,6 +142,6 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 void	handle_delete_request(RequestHandlerData &data)
 {
 	std::remove(data.FileName.c_str());
-	data.StatusLine = "http/1.1 204 No Content";
+	data.StatusLine = "HTTP/1.1 204 No Content";
 	data.FileContent = "";
 }

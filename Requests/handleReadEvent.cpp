@@ -48,48 +48,24 @@ bool Server::handleReadEvent(int client_fd)
 
 std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig)
 {
-	// --- Parse method and path from raw_request manually ---
 	std::istringstream req_stream(raw_request);
 	std::string method, path, protocol;
 	req_stream >> method >> path >> protocol;
-	if (method.empty() || path.empty()) {
-		return "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"; // Fixed typo
-	}
 
-	// Use the selected server configuration instead of hardcoded [0]
 	const ServerConfig &srv = serverConfig;
-
-	// Check if path matches a location
 	const LocationConfig *loc = srv.findLocation(path);
-	if (!loc) {
-		// Handle 404 with proper error page lookup
-			std::map<int, std::string>::const_iterator error_it = srv.error_pages.find(404);
-			if (error_it != srv.error_pages.end()) {
-			std::ifstream errFile(error_it->second.c_str());
-			if (errFile.is_open()) {
-				std::stringstream errBuf;
-				errBuf << errFile.rdbuf();
-				std::string body = errBuf.str();
-				return "HTTP/1.1 404 Not Found\r\nContent-Length: " + toString(body.size()) +
-					   "\r\nContent-Type: text/html\r\n\r\n" + body;
-			}
-		}
-		// Fallback 404 response
-		return "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-	}
-
 	RequestHandlerData data;
 
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
-	setData(data, const_cast<ServerConfig&>(srv));
+	setData(data, srv, loc);
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
 		errorHandling(data, srv, 404);
 	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
 		data.FileContentType = "html";
-		if (handle_dynamic_request(data) != SUCCESS)
+		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "GET"){
