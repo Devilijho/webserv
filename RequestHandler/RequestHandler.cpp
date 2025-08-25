@@ -60,7 +60,7 @@ int	handle_static_request(RequestHandlerData &data)
 
 /*Executes a script such as PHP with phpCGI, returns the output trough a pipe*/
 
-int	handle_dynamic_request(RequestHandlerData &data)
+int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi)
 {
 	pid_t pid;
 	int		return_value;
@@ -78,7 +78,7 @@ int	handle_dynamic_request(RequestHandlerData &data)
 		close(data.fdIn[1]);
 		dup2(data.fdOut[1], STDOUT_FILENO);
 		dup2(data.fdIn[0], STDIN_FILENO);
-		child_status = execve(PATH_INFO, data.args.data(), data.env.data());
+		child_status = execve(path_cgi, data.args.data(), data.env.data());
 		_exit(child_status);
 	}
 	else

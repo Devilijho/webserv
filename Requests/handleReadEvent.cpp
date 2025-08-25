@@ -40,7 +40,7 @@ bool Server::handleReadEvent(int client_fd)
 		closeConnection(client_fd);
 		return false;
 	}
-
+	closeConnection(client_fd);
 	return true;
 }
 
@@ -65,7 +65,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
 		data.FileContentType = "html";
-		if (handle_dynamic_request(data) != SUCCESS)
+		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "GET"){

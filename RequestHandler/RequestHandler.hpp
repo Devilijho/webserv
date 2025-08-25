@@ -18,9 +18,6 @@
 #define SUCCESS 0
 #define ERROR 1
 
-#define PATH_INFO "/opt/homebrew/bin/php-cgi"
-
-
 struct RequestHandlerData
 {
 	std::vector<std::string> args_str;
@@ -49,7 +46,7 @@ struct RequestHandlerData
 
 void errorHandling(RequestHandlerData &data, const ServerConfig &srv, int code);
 void	handle_delete_request(RequestHandlerData &data);
-int	handle_dynamic_request(RequestHandlerData &data);
+int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi);
 int	handle_static_request(RequestHandlerData &data);
 int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const LocationConfig *loc);
 int	htpp_request(ServerConfig &dataServer);
