@@ -56,11 +56,10 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	const LocationConfig *loc = srv.findLocation(path);
 	RequestHandlerData data;
 
-	(void)loc;
 	data.FileName = srv.root + path;
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
-	setData(data, const_cast<ServerConfig&>(srv));
+	setData(data, srv, loc);
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
 		errorHandling(data, srv, 404);
 	}

@@ -2,20 +2,19 @@
 
 /*Sets data and the variables needed for the dynamic file handling*/
 
-int	setData(RequestHandlerData &data, ServerConfig &dataServer)
+int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const LocationConfig *loc)
 {
 	data.StatusLine = "HTTP/1.1 200 OK";
 	setRequestBody(data);
 	setQueryData(data);
 
-	data.args_str.push_back(PATH_INFO);
 	data.args_str.push_back(data.FileName);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
-	// data.env_str.push_back(std::string("SCRIPT_FILENAME=/home/safuente/Documents/mrd/www/script/post_msg.php"));
 	data.env_str.push_back("REDIRECT_STATUS=CGI");
 	data.env_str.push_back("HTTP_USER_AGENT=SANTI");
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
+	data.env_str.push_back("PATH_INFO=" + loc->cgi_path);
 	data.env_str.push_back("QUERY_STRING=" + data.query);
 	data.env_str.push_back("MAX_FILE_SIZE=" + toString(dataServer.client_max_body_size));
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");

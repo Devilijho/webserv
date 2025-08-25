@@ -132,25 +132,6 @@ void Server::acceptClient(int server_fd)
 	std::cout << "Client connected on fd " << client_fd << std::endl;
 }
 
-// bool Server::isMethodAllowed(const LocationConfig &loc, const std::string &method)
-// {
-// 	const std::vector<std::string> &allowed = loc.methods;
-// 	return std::find(allowed.begin(), allowed.end(), method) != allowed.end();
-// }
-
-// bool Server::isBodySizeAllowed(const std::string &raw_request, size_t max_size)
-// {
-// 	std::istringstream req_stream(raw_request);
-// 	std::string line;
-// 	while (std::getline(req_stream, line) && line != "\r") {
-// 		if (line.find("Content-Length:") == 0) {
-// 			size_t length = std::atoi(line.substr(15).c_str());
-// 			return length <= max_size;
-// 		}
-// 	}
-// 	return true;
-// }
-
 void Server::closeConnection(int client_fd)
 {
 	// Remove from poll_fds by marking fd as -1
