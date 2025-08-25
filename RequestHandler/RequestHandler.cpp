@@ -1,4 +1,5 @@
 #include "RequestHandler.hpp"
+#include <unistd.h>
 
 /*Sets data and the variables needed for the dynamic file handling*/
 
@@ -18,6 +19,7 @@ int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const Loca
 	data.env_str.push_back("PATH_INFO=" + loc->cgi_path);
 	data.env_str.push_back("QUERY_STRING=" + data.query);
 	data.env_str.push_back("MAX_FILE_SIZE=" + toString(dataServer.client_max_body_size));
+	data.env_str.push_back("POST_MAX=" + toString(dataServer.client_max_body_size * 100));
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	data.env_str.push_back("SERVER_NAME=" + dataServer.server_name);
 	data.env_str.push_back("REMOTE_ADDR=localhost");
@@ -129,9 +131,7 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 	+ "\r\nContent-Type: text/" + data.FileContentType
 	+ "\r\nAccept-Ranges: bytes"
 	+ "\r\nETag: " + getETag(data.FileName)
-	+ "\r\nProxy-Authenticate: Basic realm=Dev"
 	+ "\r\nServer: " + srv.server_name
-	+ "\r\nWWW-Authenticate: Basic realm=User Visible Realm"
 	+ "\r\n\r\n" + data.FileContent;
 	return response;
 }
