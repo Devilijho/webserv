@@ -6,6 +6,9 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sstream>
+#include <string>
+#include <cctype>
 #include "ServerConfig.hpp"
 
 
@@ -43,6 +46,8 @@ class ConfigParser
 		bool isValidPort(int port);                                  // Part A: port validation for bind()
 		std::string removeInlineComment(const std::string& str);	// Quita comentarios en línea
 		bool validateConfig();
+		bool isValidIPAddress(const std::string& ip);
+		bool isValidHost(const std::string& host);
 };
 
 #endif
