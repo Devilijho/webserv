@@ -152,7 +152,7 @@ std::string read_all(int socket)
 	while (1)
 	{
 		memset(buffer, 0, sizeof(buffer) - 1);
-		read_data = read(socket, buffer, sizeof(buffer) - 1);
+		read_data = read(socket, buffer, 1);
 		output += buffer;
 		if (read_data <= 0)
 			return (output);
