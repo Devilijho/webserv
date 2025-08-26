@@ -18,8 +18,8 @@ bool Server::handleReadEvent(int client_fd)
 		closeConnection(client_fd);
 		return false;
 	}
-	std::cout << "Pedido recibido:\n" << raw_request << std::endl;
 
+	std::cout << "Pedido recibido:\n" << raw_request << std::endl;
 	std::map<int, ServerConfig>::iterator config_it = client_to_server_config.find(client_fd);
 	if (config_it == client_to_server_config.end()) {
 		std::cerr << "No server config found for client fd " << client_fd << std::endl;
