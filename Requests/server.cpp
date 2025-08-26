@@ -131,6 +131,8 @@ void Server::acceptClient(int server_fd)
 	std::cout << "Client connected on fd " << client_fd << std::endl;
 }
 
+
+
 void Server::closeConnection(int client_fd)
 {
 	// Remove from poll_fds by marking fd as -1
