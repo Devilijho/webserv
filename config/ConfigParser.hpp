@@ -6,6 +6,9 @@
 #include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sstream>
+#include <string>
+#include <cctype>
 #include "ServerConfig.hpp"
 
 
