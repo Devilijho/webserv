@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 					exit("Unknown upload error");
 			}
 		}
-		$target_dir = "uploads/";
+		$target_dir = "../uploads/";
 		$target_file = $target_dir . basename($_FILES["userfile"]["name"]);
 
 		if (move_uploaded_file($_FILES["userfile"]["tmp_name"], $target_file)) {
