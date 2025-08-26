@@ -43,6 +43,8 @@ class ConfigParser
 		bool isValidPort(int port);                                  // Part A: port validation for bind()
 		std::string removeInlineComment(const std::string& str);	// Quita comentarios en línea
 		bool validateConfig();
+		bool isValidIPAddress(const std::string& ip);
+		bool isValidHost(const std::string& host);
 };
 
 #endif

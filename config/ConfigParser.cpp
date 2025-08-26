@@ -313,9 +313,16 @@ bool ConfigParser::validateConfig() {
             return false;
         }
 
-        // Validar host
+        // REEMPLAZAR la validación de host:
+        // Validar host - VERSIÓN MEJORADA
         if (srv.host.empty()) {
             std::cerr << "Server " << i << ": Host cannot be empty" << std::endl;
+            return false;
+        }
+
+        if (!isValidHost(srv.host)) {
+            std::cerr << "Server " << i << ": Invalid host format '" << srv.host
+                      << "'. Expected IP address (e.g., 0.0.0.0, 127.0.0.1) or valid hostname" << std::endl;
             return false;
         }
 
@@ -410,6 +417,61 @@ bool ConfigParser::validateConfig() {
                           << _servers[i].host << ":" << _servers[i].port << std::endl;
                 return false;
             }
+        }
+    }
+
+    return true;
+}
+
+// AÑADIR ESTAS FUNCIONES:
+
+bool ConfigParser::isValidIPAddress(const std::string& ip) {
+    if (ip.empty()) return false;
+
+    // Casos especiales válidos
+    if (ip == "0.0.0.0" || ip == "localhost" || ip == "127.0.0.1") {
+        return true;
+    }
+
+    // TU VALIDACIÓN PREFERIDA:
+    std::string temp = "";
+    std::istringstream iss(ip);
+    int count = 0;
+
+    while (std::getline(iss, temp, '.')) {
+        count++;
+        if (count > 4) return false;  // Máximo 4 octetos
+
+        if (temp.empty()) return false;  // Octeto vacío
+
+        for (int j = 0; j < (int)temp.size(); j++) {
+            if (!isdigit(temp[j])) return false;
+        }
+
+        // Verificar rango 0-255
+        int value = atoi(temp.c_str());
+        if (value < 0 || value > 255) return false;
+    }
+
+    // Debe tener exactamente 4 octetos
+    return (count == 4);
+}
+
+
+bool ConfigParser::isValidHost(const std::string& host) {
+    // Verificar si es IP válida
+    if (isValidIPAddress(host)) {
+        return true;
+    }
+
+    // Para hostnames, validación muy básica
+    if (host == "localhost") return true;
+
+    // Permitir hostnames simples (sin validación exhaustiva)
+    for (size_t i = 0; i < host.length(); ++i) {
+        char c = host[i];
+        if (!isalnum(c) && c != '.' && c != '-') {
+            return false;
         }
     }
 
