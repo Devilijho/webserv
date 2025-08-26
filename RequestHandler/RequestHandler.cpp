@@ -128,7 +128,7 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 	+ "\r\nLast-Modified: " + getFileDate(data.FileName)
 	+ "\r\nDate: " + getDate()
 	+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
-	+ "\r\nContent-Type: text/" + data.FileContentType
+	+ "\r\nContent-Type: text/" + (data.FileContentType == "js" ? "javascript" : data.FileContentType)
 	+ "\r\nAccept-Ranges: bytes"
 	+ "\r\nETag: " + getETag(data.FileName)
 	+ "\r\nServer: " + srv.server_name
