@@ -1,0 +1,47 @@
+
+
+3. Server must remain non-blocking at all times and properly handle client disconnections
+
+⚠️ Partially –
+
+acceptClient() and sockets are set O_NONBLOCK.
+
+poll() is used, but your current handleReadEvent calls read_all() which loops until EOF, effectively blocking for large requests.
+
+This violates the non-blocking requirement for big requests or slow clients.
+
+5. poll() must monitor reading and writing simultaneously
+
+⚠️ Not fully –
+
+You check POLLOUT in your event loop, but handleWriteEvent() is empty.
+
+Large responses that can’t fit in the socket buffer aren’t handled in a non-blocking way.
+
+So technically, you aren’t monitoring writes properly for big responses.
+
+6. Never read/write without poll()
+
+⚠️ Partially –
+
+For small requests, your synchronous read_all()/send_all() works, but you bypass poll for large payloads.
+
+This could violate the rule if the server receives a big POST or serves a large file.
+
+8. Request should never hang indefinitely
+
+⚠️ Partially –
+
+Works for small requests, but read_all() on slow clients or huge uploads can block, so not guaranteed.
+
+14. Clients must be able to upload files
+
+⚠️ Check – You have /upload handling in config, but need to confirm your POST parsing saves files properly. Uploads may block if done with read_all().
+
+16. Stress test / remain available
+
+⚠️ Partially –
+
+Works for small concurrent requests.
+
+Large requests or slow clients may block because of read_all()/send_all().
