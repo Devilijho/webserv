@@ -44,7 +44,6 @@ bool ConfigParser::parseFile(const std::string &filename) {
 
     _is_parsed = true;
 
-    // AÑADIR VALIDACIÓN:
     if (!validateConfig()) {
         std::cerr << "Configuration validation failed" << std::endl;
         _is_parsed = false;
@@ -303,7 +302,7 @@ bool ConfigParser::validateConfig() {
         return false;
     }
 
-    // Validar cada servidor individualmente
+    // Validar cada servidor
     for (size_t i = 0; i < _servers.size(); ++i) {
         const ServerConfig& srv = _servers[i];
 
@@ -313,8 +312,7 @@ bool ConfigParser::validateConfig() {
             return false;
         }
 
-        // REEMPLAZAR la validación de host:
-        // Validar host - VERSIÓN MEJORADA
+        // VALIDAR HOST - AÑADIR ESTA SECCIÓN:
         if (srv.host.empty()) {
             std::cerr << "Server " << i << ": Host cannot be empty" << std::endl;
             return false;
@@ -322,7 +320,7 @@ bool ConfigParser::validateConfig() {
 
         if (!isValidHost(srv.host)) {
             std::cerr << "Server " << i << ": Invalid host format '" << srv.host
-                      << "'. Expected IP address (e.g., 0.0.0.0, 127.0.0.1) or valid hostname" << std::endl;
+                      << "'. Expected valid IP address (e.g., 0.0.0.0, 127.0.0.1)" << std::endl;
             return false;
         }
 
@@ -423,7 +421,7 @@ bool ConfigParser::validateConfig() {
     return true;
 }
 
-// AÑADIR ESTAS FUNCIONES:
+// AÑADIR ESTAS FUNCIONES AL FINAL DEL ARCHIVO:
 
 bool ConfigParser::isValidIPAddress(const std::string& ip) {
     if (ip.empty()) return false;
@@ -433,7 +431,7 @@ bool ConfigParser::isValidIPAddress(const std::string& ip) {
         return true;
     }
 
-    // TU VALIDACIÓN PREFERIDA:
+    // Tu validación preferida:
     std::string temp = "";
     std::istringstream iss(ip);
     int count = 0;
@@ -444,6 +442,7 @@ bool ConfigParser::isValidIPAddress(const std::string& ip) {
 
         if (temp.empty()) return false;  // Octeto vacío
 
+        // Solo dígitos permitidos
         for (int j = 0; j < (int)temp.size(); j++) {
             if (!isdigit(temp[j])) return false;
         }
@@ -453,28 +452,11 @@ bool ConfigParser::isValidIPAddress(const std::string& ip) {
         if (value < 0 || value > 255) return false;
     }
 
-    // Debe tener exactamente 4 octetos
-    return (count == 4);
+    return (count == 4);  // Debe tener exactamente 4 octetos
 }
 
-
 bool ConfigParser::isValidHost(const std::string& host) {
-    // Verificar si es IP válida
-    if (isValidIPAddress(host)) {
-        return true;
-    }
-
-    // Para hostnames, validación muy básica
-    if (host == "localhost") return true;
-
-    // Permitir hostnames simples (sin validación exhaustiva)
-    for (size_t i = 0; i < host.length(); ++i) {
-        char c = host[i];
-        if (!isalnum(c) && c != '.' && c != '-') {
-            return false;
-        }
-    }
-
-    return true;
+    // Por ahora, solo validar IPs
+    return isValidIPAddress(host);
 }
 
