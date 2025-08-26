@@ -57,7 +57,7 @@ void Server::eventLoop()
 		for (int i = static_cast<int>(poll_fds.size()) - 1; i >= 0; --i)
 		{
 			struct pollfd& pfd = poll_fds[i];
-		
+
 			if (pfd.revents == 0) continue;
 
 			if (pfd.revents & (POLLERR | POLLHUP | POLLNVAL)) {
@@ -119,7 +119,7 @@ void Server::acceptClient(int server_fd)
 
 	clientSockets[client_fd] = new RequestHandlerData();
 
-	// Initialize client buffer
+	// Initialize client	closeConnection(client_fd); buffer
 	clientBuffers[client_fd] = "";
 
 	// Map the client to the server config
@@ -131,25 +131,6 @@ void Server::acceptClient(int server_fd)
 	std::cout << "Client connected on fd " << client_fd << std::endl;
 }
 
-// bool Server::isMethodAllowed(const LocationConfig &loc, const std::string &method)
-// {
-// 	const std::vector<std::string> &allowed = loc.methods;
-// 	return std::find(allowed.begin(), allowed.end(), method) != allowed.end();
-// }
-
-// bool Server::isBodySizeAllowed(const std::string &raw_request, size_t max_size)
-// {
-// 	std::istringstream req_stream(raw_request);
-// 	std::string line;
-// 	while (std::getline(req_stream, line) && line != "\r") {
-// 		if (line.find("Content-Length:") == 0) {
-// 			size_t length = std::atoi(line.substr(15).c_str());
-// 			return length <= max_size;
-// 		}
-// 	}
-// 	return true;
-// }
-
 void Server::closeConnection(int client_fd)
 {
 	// Remove from poll_fds by marking fd as -1
@@ -158,12 +139,12 @@ void Server::closeConnection(int client_fd)
 			it->fd = -1; // Mark for cleanup instead of erasing immediately
 			break;
 		}
-	}		
+	}
 	// Clean up client data - no pointers, just erase directly
 	clientSockets.erase(client_fd);
 	clientBuffers.erase(client_fd);
 	client_to_server_config.erase(client_fd);
-		
+
 	// Close the socket
 	close(client_fd);
 	std::cout << "[INFO] Closed connection on fd " << client_fd << std::endl;

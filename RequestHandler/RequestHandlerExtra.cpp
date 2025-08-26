@@ -1,4 +1,10 @@
 #include "RequestHandler.hpp"
+#include <fstream>
+#include <istream>
+#include <streambuf>
+#include <string.h>
+#include <string>
+#include <unistd.h>
 
 /*get the extension of a file */
 
@@ -97,11 +103,14 @@ std::string toString(int value)
 std::string getRequestContentType(RequestHandlerData &data)
 {
 	size_t posStart = data.rawRequest.find("Content-Type: ");
-	size_t posEnd = data.rawRequest.find("Upgrade-Insecure-Requests: ");
-	if (posStart != std::string::npos && posEnd != std::string::npos)
-		return data.rawRequest.substr(posStart + 14, posEnd - posStart - 16);
-	else
-		return "";
+	if (posStart != std::string::npos)
+	{
+		size_t lineEnd = data.rawRequest.find("\r\n", posStart);
+		if (lineEnd != std::string::npos) {
+			return data.rawRequest.substr(posStart + 14, lineEnd - posStart - 14);
+		}
+	}
+	return "";
 }
 
 /*return an string of the status message based on the parameter code)*/
@@ -117,4 +126,36 @@ std::string getStatusMessage(int code)
 		case 500: return "HTTP/1.1 500 Internal Server Error";
 		default:  return "HTTP/1.1 501 Not Implemented";
 	}
+}
+
+int send_all(int socket, const char *buffer, size_t length, int flags)
+{
+	ssize_t sent;
+	const char *ptr = buffer;
+	while (length > 0)
+	{
+		sent = send(socket, ptr, length, flags);
+		if (sent <= 0)
+			return -1;
+		ptr += sent;
+		length -= sent;
+	}
+	return 0;
+}
+
+std::string read_all(int socket)
+{
+	ssize_t read_data;
+	std::string output;
+	char buffer[128];
+
+	while (1)
+	{
+		memset(buffer, 0, sizeof(buffer));
+		read_data = read(socket, buffer, (sizeof(buffer) - 1));
+		output += buffer;
+		if (read_data <= 0)
+			return (output);
+	}
+	return output;
 }

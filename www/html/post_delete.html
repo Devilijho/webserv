@@ -5,9 +5,20 @@
 		<link rel="stylesheet" href="../css/style.css" />
 	</head>
 	<body>
-		<form class="delete" method="POST" action="../script/uploads/p.c"
-			<input type="hidden" name="_method" value="delete">
-			<input type="submit" value="DELETE FILE">
+		<form>
+			<input
+				id="name"
+				class="inputField"
+				type="text"
+				required="required"
+			/>
+			<input
+				id="clickBtn"
+				class="myButton"
+				type="submit"
+				value="submit"
+			/>
+			<script src="../js/buttonDelete.js"></script>
 		</form>
 	</body>
 </html>

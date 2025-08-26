@@ -18,14 +18,6 @@
 #define SUCCESS 0
 #define ERROR 1
 
-//Linux
-#define PATH_INFO "/usr/bin/php-cgi"
-// #define PATH_INFO "/usr/bin/php" //Como en mi default.conf
-
-//MacOS
-// #define PATH_INFO "/opt/homebrew/bin/php-cgi"
-
-
 struct RequestHandlerData
 {
 	std::vector<std::string> args_str;
@@ -54,9 +46,9 @@ struct RequestHandlerData
 
 void errorHandling(RequestHandlerData &data, const ServerConfig &srv, int code);
 void	handle_delete_request(RequestHandlerData &data);
-int	handle_dynamic_request(RequestHandlerData &data);
+int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi);
 int	handle_static_request(RequestHandlerData &data);
-int	setData(RequestHandlerData &data, ServerConfig &dataServer);
+int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const LocationConfig *loc);
 int	htpp_request(ServerConfig &dataServer);
 std::string http_response(RequestHandlerData &data, ServerConfig &srv);
 
@@ -73,3 +65,7 @@ std::string getFileDate(std::string fileName);
 std::string toString(int value);
 std::string getStatusMessage(int code);
 std::string getAbsolutePath(std::string);
+
+/*Server functions */
+int send_all(int socket, const char *buffer, size_t length, int flags);
+std::string read_all(int socket);
