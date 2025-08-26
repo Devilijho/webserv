@@ -12,17 +12,12 @@ std::string Server::toString(int value) {
 
 bool Server::handleReadEvent(int client_fd)
 {
-	char buffer[4096];
-	std::memset(buffer, 0, sizeof(buffer));
-	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer) - 1);
-
-	if (bytes_read <= 0) {
+	std::string raw_request = read_all(client_fd);
+	if (raw_request == "")
+	{
 		closeConnection(client_fd);
-		perror("read");
 		return false;
 	}
-
-	std::string raw_request(buffer);
 	std::cout << "Pedido recibido:\n" << raw_request << std::endl;
 
 	std::map<int, ServerConfig>::iterator config_it = client_to_server_config.find(client_fd);
@@ -34,13 +29,8 @@ bool Server::handleReadEvent(int client_fd)
 
 	ServerConfig &serverConfig = config_it->second;
 	std::string response = buildHttpResponse(raw_request, serverConfig);
-	ssize_t sent = send(client_fd, response.c_str(), response.size(), 0);
-	if (sent < 0) {
-		perror("send");
-		closeConnection(client_fd);
+	if (send_all(client_fd, response.c_str(), response.size(), 0) == -1)
 		return false;
-	}
-	sleep(1);
 	closeConnection(client_fd);
 	return true;
 }

@@ -65,3 +65,7 @@ std::string getFileDate(std::string fileName);
 std::string toString(int value);
 std::string getStatusMessage(int code);
 std::string getAbsolutePath(std::string);
+
+/*Server functions */
+int send_all(int socket, const char *buffer, size_t length, int flags);
+std::string read_all(int socket);
