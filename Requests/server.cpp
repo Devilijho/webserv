@@ -66,7 +66,7 @@ void Server::eventLoop()
 			}
 
 			if (listeningSockets.count(pfd.fd)) { // If fd is a listening socket (server socket):
-				acceptClient(pfd.fd); // Accept new client
+				acceptClient(pfd.fd);
 				continue;
 			}
 

@@ -47,7 +47,7 @@ class Server
 	// --- Setup / Initialization ---
 	bool loadConfig(const std::string& configFile);
 	int setupSocket(const ServerConfig& cfg);
-	struct addrinfo* resolveAddress(const ServerConfig& cfg);
+	struct addrinfo* getBindAddress(const ServerConfig& cfg);
 	void addServerSocketToPoll(int fd);
 
 		// --- Event loop ---
