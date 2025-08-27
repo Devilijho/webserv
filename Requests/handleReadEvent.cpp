@@ -41,6 +41,7 @@ bool Server::hasCompleteRequest(int client_fd) {
 
 bool Server::handleReadEvent(int client_fd)
 {
+	std::cout << "handlereadevent !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 	char buffer[4096];
 	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
 		
