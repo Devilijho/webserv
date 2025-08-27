@@ -43,13 +43,13 @@ int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const Loca
 the server (not yet but easy to implement)*/
 
 
-int	handle_static_request(RequestHandlerData &data)
+int	handle_static_request(RequestHandlerData &data, const ServerConfig &srv)
 {
 	std::string buffer;
 	std::ostringstream oss;
 
-	if (data.FileName == "./www/")
-		data.FileName = "./www/index.html";
+	if (data.FileName == (srv.root + std::string("/")))
+		data.FileName = srv.root + std::string("/") + srv.index;
 	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
 		return (ERROR);
@@ -112,7 +112,7 @@ void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code)
 	data.StatusLine = getStatusMessage(code);
 	if (access(data.FileName.c_str(), R_OK | F_OK) != 0)
 		return ;
-	if (handle_static_request(data) != 0)
+	if (handle_static_request(data, srv) != 0)
 		return ;
 }
 
