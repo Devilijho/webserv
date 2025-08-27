@@ -101,12 +101,8 @@ void Server::acceptClient(int server_fd)
 
 	// Accept the new client
 	int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
-	if (client_fd < 0) {
-		if (errno != EAGAIN && errno != EWOULDBLOCK) {
-			perror("accept");
-		}
+	if (client_fd < 0)
 		return;
-	}
 
 	// Set client socket to non-blocking
 	fcntl(client_fd, F_SETFL, O_NONBLOCK);
