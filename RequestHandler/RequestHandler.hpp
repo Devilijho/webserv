@@ -42,6 +42,10 @@ struct RequestHandlerData
 
 	int	fdOut[2];
 	int fdIn[2];
+
+	std::string requestBuffer;   // Accumulated request
+	std::string responseBuffer;  // Response to send
+	size_t bytesSent;
 };
 
 /*Main functions */

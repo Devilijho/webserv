@@ -7,53 +7,78 @@ std::string Server::toString(int value) {
 	return oss.str();
 }
 
-bool Server::handleReadEvent(int client_fd)
-{
-	char buffer[4096];
-	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
-	if (bytes_read <= 0) {
-		closeConnection(client_fd);
+bool Server::hasCompleteRequest(int client_fd) {
+	RequestHandlerData* data = clientSockets[client_fd];
+	if (!data)
 		return false;
-	}
 
-	// Append the newly read data to the per-client buffer
-	clientBuffers[client_fd].append(buffer, bytes_read);
+	std::string& buffer = data->requestBuffer;
 
-	// Check if we have a complete HTTP request
-	std::string& raw_request = clientBuffers[client_fd];
-	size_t end_of_headers = raw_request.find("\r\n\r\n");
-	if (end_of_headers == std::string::npos) {
-		// Request not complete yet, wait for more data
-		return true;
-	}
+	// Look for end of headers
+	size_t headers_end = buffer.find("\r\n\r\n");
+	if (headers_end == std::string::npos)
+		return false; // headers not complete yet
 
-	// Full request received, we can process it
-	std::map<int, ServerConfig>::iterator config_it = client_to_server_config.find(client_fd);
-	if (config_it == client_to_server_config.end()) {
-		std::cerr << "No server config found for client fd " << client_fd << std::endl;
-		closeConnection(client_fd);
-		return false;
-	}
+	// Check for Content-Length
+	size_t content_length_pos = buffer.find("Content-Length:");
+	if (content_length_pos == std::string::npos)
+		return true; // no body, headers complete = full request
 
-	ServerConfig& serverConfig = config_it->second;
-	std::string response = buildHttpResponse(raw_request, serverConfig);
+	// Extract content length value
+	std::istringstream iss(buffer.substr(content_length_pos + 15));
+	int content_length = 0;
+	iss >> content_length;
 
-	// Send the response
-	ssize_t sent = send(client_fd, response.c_str(), response.size(), 0);
-	if (sent < 0) {
-		perror("send");
-		closeConnection(client_fd);
-		return false;
-	}
+	// Total request size = headers + 4 (\r\n\r\n) + content_length
+	size_t total_size = headers_end + 4 + content_length;
 
-	// Optionally, clear the buffer if the connection will be closed
-	closeConnection(client_fd);
-	clientBuffers.erase(client_fd);
-
-	return true;
+	return buffer.size() >= total_size;
 }
 
 
+bool Server::handleReadEvent(int client_fd)
+{
+	std::cout << "handlereadevent !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+	char buffer[4096];
+	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
+		
+	if (bytes_read <= 0) {
+		if (bytes_read == 0)
+			std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
+		else
+			perror("read");
+
+		closeConnection(client_fd);
+		return false;
+	}
+
+   // Append to per-client buffer
+	clientSockets[client_fd]->requestBuffer.append(buffer, bytes_read);
+
+	// Check if full request has been received
+	if (!hasCompleteRequest(client_fd))
+		return true; // wait for more data
+
+	// Process request and prepare response
+	std::string response = buildHttpResponse(clientSockets[client_fd]->requestBuffer,
+											 client_to_server_config[client_fd]);
+
+	RequestHandlerData* data = clientSockets[client_fd];
+	data->responseBuffer = response;
+	data->bytesSent = 0;
+
+	// Enable POLLOUT for this fd so we can send the response
+	for (size_t i = 0; i < poll_fds.size(); ++i) {
+		if (poll_fds[i].fd == client_fd) {
+			poll_fds[i].events |= POLLOUT;
+			break;
+		}
+	}
+
+	// Clear request buffer after processing
+	data->requestBuffer.clear();
+	return true;
+}
 
 
 std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig)

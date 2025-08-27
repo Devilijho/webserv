@@ -74,8 +74,8 @@ void Server::eventLoop()
 				if (!handleReadEvent(pfd.fd))
 					continue;	// Connection closed or error
 
-			// if (pfd.revents & POLLOUT)
-			// 	handleWriteEvent(pfd.fd);
+			if (pfd.revents & POLLOUT)
+				handleWriteEvent(pfd.fd);
 		}
 
 		// cleanup closed fds

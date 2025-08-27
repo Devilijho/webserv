@@ -35,38 +35,39 @@ class Server
 
 	private:
 		// --- Server Configuration ---
-	std::vector<ServerConfig> configs;					// List of server configs
-	std::map<int, ServerConfig> listeningSockets;		// Server socket FD -> config
-	std::map<int, ServerConfig> client_to_server_config;// Client FD -> selected server config
+		std::vector<ServerConfig> configs;					// List of server configs
+		std::map<int, ServerConfig> listeningSockets;		// Server socket FD -> config
+		std::map<int, ServerConfig> client_to_server_config;// Client FD -> selected server config
 
-	// --- Client Connections ---
-	std::map<int, RequestHandlerData*> clientSockets;	// Client FD -> state/data
-	std::map<int, std::string> clientBuffers;			// Client FD -> accumulated request buffer
+		// --- Client Connections ---
+		std::map<int, RequestHandlerData*> clientSockets;	// Client FD -> state/data
+		std::map<int, std::string> clientBuffers;			// Client FD -> accumulated request buffer
 
-	// --- Sockets & Polling ---
-	std::vector<struct pollfd> poll_fds;				// poll() structures for event loop
+		// --- Sockets & Polling ---
+		std::vector<struct pollfd> poll_fds;				// poll() structures for event loop
 
-	// --- Setup / Initialization ---
-	bool loadConfig(const std::string& configFile);
-	int setupSocket(const ServerConfig& cfg);
-	struct addrinfo* getBindAddress(const ServerConfig& cfg);
-	void addServerSocketToPoll(int fd);
+		// --- Setup / Initialization ---
+		bool loadConfig(const std::string& configFile);
+		int setupSocket(const ServerConfig& cfg);
+		struct addrinfo* getBindAddress(const ServerConfig& cfg);
+		void addServerSocketToPoll(int fd);
 
 		// --- Event loop ---
 		void eventLoop();
-		void handleWriteEvent(int fd);
+		bool handleWriteEvent(int fd);
 		void handleError(int fd);
 		bool handleReadEvent(int fd);
 		//
 		// --- Client handling ---
 		void acceptClient(int server_fd);
-
 		void closeConnection(int client_fd);
 		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig);
-
-		int clientFdToServerFd(int client_fd);
-
+	
 		std::string toString(int value);
+		bool accumulateRequest(int client_fd, char* buffer, ssize_t bytes_read);
+		std::string processRequest(int client_fd);
+		bool sendResponse(int client_fd, const std::string& response);
+		bool hasCompleteRequest(int client_fd);
 
 
 };
