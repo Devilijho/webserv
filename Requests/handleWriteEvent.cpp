@@ -4,9 +4,6 @@
 #include "server.hpp"
 
 bool Server::handleWriteEvent(int client_fd) {
-
-	std::cout << "im HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEE" << std::endl;
-
 	RequestHandlerData* data = clientSockets[client_fd];
 	if (!data || data->responseBuffer.empty()) {
 		// Nothing to write

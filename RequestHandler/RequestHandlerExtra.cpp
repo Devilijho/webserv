@@ -159,3 +159,21 @@ std::string read_all(int socket)
 	}
 	return output;
 }
+
+int	get_file_type(std::string filename)
+{
+	struct stat s;
+
+
+	if( stat(filename.c_str(),&s) == 0 )
+	{
+		if( s.st_mode & S_IFDIR )
+			return (DIRECTORY);
+		else if( s.st_mode & S_IFREG )
+			return (FILE);
+		else
+			return (ERROR);
+	}
+	else
+		return ERROR;
+}
