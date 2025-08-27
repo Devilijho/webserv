@@ -34,6 +34,7 @@ bool Server::handleReadEvent(int client_fd)
 		closeConnection(client_fd);
 		return false;
 	}
+	std::cout << raw_request << std::endl;
 
 	ServerConfig& serverConfig = config_it->second;
 	std::string response = buildHttpResponse(raw_request, serverConfig);
@@ -79,7 +80,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "GET"){
-		if (handle_static_request(data) != SUCCESS)
+		if (handle_static_request(data, srv) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "DELETE")
