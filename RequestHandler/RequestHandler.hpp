@@ -20,6 +20,9 @@
 #define SUCCESS 0
 #define ERROR 1
 
+#define DIRECTORY 0
+#define FILE 2
+
 struct RequestHandlerData
 {
 	std::vector<std::string> args_str;
@@ -51,12 +54,12 @@ void	handle_delete_request(RequestHandlerData &data);
 int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi);
 int	handle_static_request(RequestHandlerData &data, const ServerConfig &srv);
 int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const LocationConfig *loc);
-int	htpp_request(ServerConfig &dataServer);
 std::string http_response(RequestHandlerData &data, ServerConfig &srv);
 
 
 /*Helper functions */
 
+int	get_file_type(std::string filename);
 void	setRequestBody(RequestHandlerData &data);
 void setQueryData(RequestHandlerData &data);
 std::string getRequestContentType(RequestHandlerData &data);

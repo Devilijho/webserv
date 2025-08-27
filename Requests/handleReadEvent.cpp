@@ -74,6 +74,8 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
 		errorHandling(data, srv, 404);
 	}
+	else if (get_file_type(data.FileName) == DIRECTORY && data.FileName != (srv.root + std::string("/")))
+		errorHandling(data, srv, 403);
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
