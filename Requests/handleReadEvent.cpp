@@ -10,63 +10,76 @@ std::string Server::toString(int value) {
 	return oss.str();
 }
 
+bool Server::hasCompleteRequest(int client_fd) {
+	RequestHandlerData* data = clientSockets[client_fd];
+	if (!data)
+		return false;
+
+	std::string& buffer = data->requestBuffer;
+
+	// Look for end of headers
+	size_t headers_end = buffer.find("\r\n\r\n");
+	if (headers_end == std::string::npos)
+		return false; // headers not complete yet
+
+	// Check for Content-Length
+	size_t content_length_pos = buffer.find("Content-Length:");
+	if (content_length_pos == std::string::npos)
+		return true; // no body, headers complete = full request
+
+	// Extract content length value
+	std::istringstream iss(buffer.substr(content_length_pos + 15));
+	int content_length = 0;
+	iss >> content_length;
+
+	// Total request size = headers + 4 (\r\n\r\n) + content_length
+	size_t total_size = headers_end + 4 + content_length;
+
+	return buffer.size() >= total_size;
+}
+
+
 bool Server::handleReadEvent(int client_fd)
 {
-    char buffer[4096];
-    ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
-    
-    if (bytes_read <= 0) {
-        if (bytes_read == 0) {
-            std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
-        } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            perror("read");
-        }
-        closeConnection(client_fd);
-        return false;
-    }
-    
-    // Accumulate request data in clientBuffers
-    clientBuffers[client_fd].append(buffer, bytes_read);
-    
-    // Check if we have a complete HTTP request (headers end with \r\n\r\n)
-    std::string& raw_request = clientBuffers[client_fd];
-    size_t end_of_headers = raw_request.find("\r\n\r\n");
-    
-    if (end_of_headers == std::string::npos) {
-        // Request not complete yet, continue reading
-        return true;
-    }
-    
-    // Find the server config for this client
-    std::map<int, ServerConfig>::iterator config_it = client_to_server_config.find(client_fd);
-    if (config_it == client_to_server_config.end()) {
-        std::cerr << "[ERROR] No server config found for client fd " << client_fd << std::endl;
-        closeConnection(client_fd);
-        return false;
-    }
-    
-    // Build HTTP response using the existing method
-    std::string response = buildHttpResponse(raw_request, config_it->second);
-    
-    if (response.empty()) {
-        std::cerr << "[ERROR] Failed to build HTTP response for client fd " << client_fd << std::endl;
-        closeConnection(client_fd);
-        return false;
-    }
-    
-    // Send the response immediately
-    ssize_t bytes_sent = send(client_fd, response.c_str(), response.size(), 0);
-    if (bytes_sent < 0) {
-        if (errno != EAGAIN && errno != EWOULDBLOCK) {
-            perror("send");
-        }
-        closeConnection(client_fd);
-        return false;
-    }
-    
-    // Close connection after sending response (HTTP/1.0 style)
-    closeConnection(client_fd);
-    return true;
+	char buffer[4096];
+	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
+		
+	if (bytes_read <= 0) {
+		if (bytes_read == 0)
+			std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
+		else
+			perror("read");
+
+		closeConnection(client_fd);
+		return false;
+	}
+
+   // Append to per-client buffer
+	clientSockets[client_fd]->requestBuffer.append(buffer, bytes_read);
+
+	// Check if full request has been received
+	if (!hasCompleteRequest(client_fd))
+		return true; // wait for more data
+
+	// Process request and prepare response
+	std::string response = buildHttpResponse(clientSockets[client_fd]->requestBuffer,
+											 client_to_server_config[client_fd]);
+
+	RequestHandlerData* data = clientSockets[client_fd];
+	data->responseBuffer = response;
+	data->bytesSent = 0;
+
+	// Enable POLLOUT for this fd so we can send the response
+	for (size_t i = 0; i < poll_fds.size(); ++i) {
+		if (poll_fds[i].fd == client_fd) {
+			poll_fds[i].events |= POLLOUT;
+			break;
+		}
+	}
+
+	// Clear request buffer after processing
+	data->requestBuffer.clear();
+	return true;
 }
 
 

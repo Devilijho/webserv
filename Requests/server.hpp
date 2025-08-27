@@ -52,7 +52,7 @@ class Server
 
 		// --- Event loop ---
 		void eventLoop();
-		void handleWriteEvent(int fd);
+		bool handleWriteEvent(int fd);
 		void handleError(int fd);
 		bool handleReadEvent(int fd);
 		//
@@ -65,6 +65,8 @@ class Server
 		bool accumulateRequest(int client_fd, char* buffer, ssize_t bytes_read);
 		std::string processRequest(int client_fd);
 		bool sendResponse(int client_fd, const std::string& response);
+		bool hasCompleteRequest(int client_fd);
+
 
 };
 
