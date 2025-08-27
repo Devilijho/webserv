@@ -12,51 +12,62 @@ std::string Server::toString(int value) {
 
 bool Server::handleReadEvent(int client_fd)
 {
-	char buffer[4096];
-	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
-	if (bytes_read <= 0) {
-		closeConnection(client_fd);
-		return false;
-	}
-
-	// Append the newly read data to the per-client buffer
-	clientBuffers[client_fd].append(buffer, bytes_read);
-
-	// Check if we have a complete HTTP request
-	std::string& raw_request = clientBuffers[client_fd];
-	size_t end_of_headers = raw_request.find("\r\n\r\n");
-	if (end_of_headers == std::string::npos) {
-		// Request not complete yet, wait for more data
-		return true;
-	}
-
-	// Full request received, we can process it
-	std::map<int, ServerConfig>::iterator config_it = client_to_server_config.find(client_fd);
-	if (config_it == client_to_server_config.end()) {
-		std::cerr << "No server config found for client fd " << client_fd << std::endl;
-		closeConnection(client_fd);
-		return false;
-	}
-
-	ServerConfig& serverConfig = config_it->second;
-	std::string response = buildHttpResponse(raw_request, serverConfig);
-
-	// Send the response
-	ssize_t sent = send(client_fd, response.c_str(), response.size(), 0);
-	if (sent < 0) {
-		perror("send");
-		closeConnection(client_fd);
-		return false;
-	}
-
-	// Optionally, clear the buffer if the connection will be closed
-	closeConnection(client_fd);
-	clientBuffers.erase(client_fd);
-
-	return true;
+    char buffer[4096];
+    ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
+    
+    if (bytes_read <= 0) {
+        if (bytes_read == 0) {
+            std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
+        } else if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            perror("read");
+        }
+        closeConnection(client_fd);
+        return false;
+    }
+    
+    // Accumulate request data in clientBuffers
+    clientBuffers[client_fd].append(buffer, bytes_read);
+    
+    // Check if we have a complete HTTP request (headers end with \r\n\r\n)
+    std::string& raw_request = clientBuffers[client_fd];
+    size_t end_of_headers = raw_request.find("\r\n\r\n");
+    
+    if (end_of_headers == std::string::npos) {
+        // Request not complete yet, continue reading
+        return true;
+    }
+    
+    // Find the server config for this client
+    std::map<int, ServerConfig>::iterator config_it = client_to_server_config.find(client_fd);
+    if (config_it == client_to_server_config.end()) {
+        std::cerr << "[ERROR] No server config found for client fd " << client_fd << std::endl;
+        closeConnection(client_fd);
+        return false;
+    }
+    
+    // Build HTTP response using the existing method
+    std::string response = buildHttpResponse(raw_request, config_it->second);
+    
+    if (response.empty()) {
+        std::cerr << "[ERROR] Failed to build HTTP response for client fd " << client_fd << std::endl;
+        closeConnection(client_fd);
+        return false;
+    }
+    
+    // Send the response immediately
+    ssize_t bytes_sent = send(client_fd, response.c_str(), response.size(), 0);
+    if (bytes_sent < 0) {
+        if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            perror("send");
+        }
+        closeConnection(client_fd);
+        return false;
+    }
+    
+    // Close connection after sending response (HTTP/1.0 style)
+    closeConnection(client_fd);
+    return true;
 }
-
-
 
 
 std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig)
