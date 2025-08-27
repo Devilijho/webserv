@@ -41,19 +41,35 @@ bool ConfigParser::parseFile(const std::string &filename) {
 }
 
 bool ConfigParser::finalizeConfig() {
+    // Validar cada servidor por separado
+    std::vector<ServerConfig> validServers;
+
+    for (size_t i = 0; i < _servers.size(); ++i) {
+        ServerConfig& server = _servers[i];
+
+        // ✅ APLICAR HERENCIA ANTES DE VALIDAR
+        for (size_t j = 0; j < server.locations.size(); ++j) {
+            LocationConfig& location = server.locations[j];
+
+            // Si no está configurado (valor 0), heredar del servidor
+            if (location.client_max_body_size == 0) {
+                location.client_max_body_size = server.client_max_body_size;
+            }
+        }
+
+        if (validateServer(i, server)) {
+            validServers.push_back(server);
+        }
+    }
+
+    _servers = validServers;
+
     if (_servers.empty()) {
         std::cerr << "Error: No valid server configurations found" << std::endl;
         return false;
     }
 
     _is_parsed = true;
-
-    if (!validateConfig()) {
-        std::cerr << "Configuration validation failed" << std::endl;
-        _is_parsed = false;
-        return false;
-    }
-
     std::cout << "ConfigParser: Successfully loaded " << _servers.size() << " server(s)" << std::endl;
     return true;
 }

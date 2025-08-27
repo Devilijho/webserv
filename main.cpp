@@ -7,33 +7,34 @@
 #include <iostream>
 #include <vector>
 
-// FUNCIÓN DE DEBUG (definida ANTES del main):
-void debugConfig(const ServerConfig& config) {
-    std::cout << "\n=== DEBUG: TESTING CONFIG INTEGRATION ===" << std::endl;
+// // FUNCIÓN DE DEBUG (definida ANTES del main):
+// void debugConfig(const ServerConfig& config) {
+//     std::cout << "\n=== DEBUG: TESTING CONFIG INTEGRATION ===" << std::endl;
 
-    // Test location finding
-    const LocationConfig* loc_root = config.findLocation("/");
-    const LocationConfig* loc_cgi = config.findLocation("/cgi-bin/test.php");
-    const LocationConfig* loc_upload = config.findLocation("/upload");
+//     // Test location finding
+//     const LocationConfig* loc_root = config.findLocation("/");
+//     const LocationConfig* loc_cgi = config.findLocation("/cgi-bin/test.php");
+//     const LocationConfig* loc_upload = config.findLocation("/upload");
 
-    std::cout << "🔍 Location tests:" << std::endl;
-    std::cout << "  / -> " << (loc_root ? "FOUND" : "NOT FOUND") << std::endl;
-    std::cout << "  /cgi-bin/test.php -> " << (loc_cgi ? loc_cgi->path : "NOT FOUND") << std::endl;
-    std::cout << "  /upload -> " << (loc_upload ? "FOUND" : "NOT FOUND") << std::endl;
+//     std::cout << "🔍 Location tests:" << std::endl;
+//     std::cout << "  / -> " << (loc_root ? "FOUND" : "NOT FOUND") << std::endl;
+//     std::cout << "  /cgi-bin/test.php -> " << (loc_cgi ? loc_cgi->path : "NOT FOUND") << std::endl;
+//     std::cout << "  /upload -> " << (loc_upload ? "FOUND" : "NOT FOUND") << std::endl;
 
-    if (loc_cgi) {
-        std::cout << "🔧 CGI config:" << std::endl;
-        std::cout << "  Extension: " << loc_cgi->cgi_extension << std::endl;
-        std::cout << "  Path: " << loc_cgi->cgi_path << std::endl;
-        std::cout << "  Root: " << loc_cgi->root << std::endl;
-    }
+//     if (loc_cgi) {
+//         std::cout << "🔧 CGI config:" << std::endl;
+//         std::cout << "  Extension: " << loc_cgi->cgi_extension << std::endl;
+//         std::cout << "  Path: " << loc_cgi->cgi_path << std::endl;
+//         std::cout << "  Root: " << loc_cgi->root << std::endl;
+//     }
 
-    std::cout << "📄 Error pages:" << std::endl;
-    for (std::map<int, std::string>::const_iterator it = config.error_pages.begin();
-         it != config.error_pages.end(); ++it) {
-        std::cout << "  " << it->first << " -> " << it->second << std::endl;
-    }
-}
+//     std::cout << "📄 Error pages:" << std::endl;
+//     for (std::map<int, std::string>::const_iterator it = config.error_pages.begin();
+//          it != config.error_pages.end(); ++it) {
+//         std::cout << "  " << it->first << " -> " << it->second << std::endl;
+//     }
+// }
+
 
 int main(int argc, char* argv[])
 {
@@ -75,30 +76,3 @@ int main(int argc, char* argv[])
 
     return 0;
 }
-
-// int main() {
-//	 ConfigParser parser;
-
-//	 // Test parsing
-//	 if (parser.parseFile("default.conf")) {
-//	 std::cout << "✅ Parsing successful" << std::endl;
-//	 parser.printConfig();
-
-//	 // Test server access
-//	 const std::vector<ServerConfig>& servers = parser.getServers();
-//	 if (!servers.empty()) {
-//	 const ServerConfig& server = servers[0];
-//	 std::cout << "✅ First server port: " << server.port << std::endl;
-
-//	 // Test location finding
-//	 const LocationConfig* loc = server.findLocation("/upload");
-//	 if (loc) {
-//	 std::cout << "✅ Found /upload location with " << loc->methods.size() << " methods" << std::endl;
-//	 }
-//	 }
-//	 } else {
-//	 std::cout << "❌ Parsing failed" << std::endl;
-//	 }
-
-//	 return 0;
-// }
