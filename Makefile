@@ -5,8 +5,12 @@ sources =	main.cpp \
 			Requests/handleWriteEvent.cpp \
 			RequestHandler/RequestHandler.cpp \
 			RequestHandler/RequestHandlerExtra.cpp \
-			config/ConfigParser.cpp \
-			config/ServerConfig.cpp
+			config/ConfigParser_1.cpp \
+			config/ConfigParser_2.cpp \
+			config/ConfigParser_3.cpp \
+			config/ConfigParser_4.cpp \
+			config/ConfigParser_5.cpp \
+			config/ServerConfig2.cpp
 
 OBJ_DIR = build
 
