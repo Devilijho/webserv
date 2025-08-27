@@ -164,7 +164,7 @@ int	get_file_type(std::string filename)
 {
 	struct stat s;
 
-	
+
 	if( stat(filename.c_str(),&s) == 0 )
 	{
 		if( s.st_mode & S_IFDIR )

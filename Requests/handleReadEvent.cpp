@@ -71,10 +71,10 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
 	setData(data, srv, loc);
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
+	if (access(data.FileName.c_str(), F_OK) != SUCCESS){
 		errorHandling(data, srv, 404);
 	}
-	else if (get_file_type(data.FileName) == DIRECTORY && data.FileName != (srv.root + std::string("/")))
+	else if ((get_file_type(data.FileName) != FILE && data.FileName != (srv.root + std::string("/"))) || access(data.FileName.c_str(), R_OK) != SUCCESS)
 		errorHandling(data, srv, 403);
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
 		data.FileContentType = "html";
