@@ -16,8 +16,10 @@
 #include <algorithm>
 #include <netdb.h>
 
+// #include "../config/ConfigParser.hpp"
+// #include "../config/ServerConfig.hpp"
 #include "../config/ConfigParser.hpp"
-#include "../config/ServerConfig.hpp"
+#include "../config/ServerConfig2.hpp"
 #include "../RequestHandler/RequestHandler.hpp"
 
 struct RequestHandlerData;
@@ -61,7 +63,7 @@ class Server
 
 		void closeConnection(int client_fd);
 		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig);
-		
+
 		int clientFdToServerFd(int client_fd);
 
 		std::string toString(int value);
