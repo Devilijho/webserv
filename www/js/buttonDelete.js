@@ -1,8 +1,15 @@
+
 document.getElementById("clickBtn").addEventListener("click", retrieve);
 
+
 function retrieve() {
-	alert("Deleting file named " + document.getElementById("name").value);
-	fetch("../uploads/" + document.getElementById("name").value, {
-		method: "DELETE",
-	});
+	const url = "http://localhost:8080/uploads/"
+	const file = url + document.getElementById("name").value
+	const xhr = new XMLHttpRequest();
+	xhr.open("DELETE", file);
+	xhr.send();
+	// alert("Deleting file in->" + file);
+	// fetch(file, {
+	// 	method: "DELETE"
+	// });
 }
