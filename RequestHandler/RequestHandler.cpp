@@ -48,8 +48,8 @@ int	handle_static_request(RequestHandlerData &data, const ServerConfig &srv)
 	std::string buffer;
 	std::ostringstream oss;
 
-	if (data.FileName == srv.root)
-		data.FileName = srv.index;
+	if (data.FileName == (srv.root + std::string("/")))
+		data.FileName = srv.root + std::string("/") + srv.index;
 	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
 		return (ERROR);
