@@ -1,6 +1,7 @@
 // test_parsing.cpp - Test independiente para ConfigParser
 #include "config/ConfigParser.hpp"
-#include "config/ServerConfig.hpp"
+#include "config/ServerConfig2.hpp"
+// #include "config/ServerConfig.hpp"
 #include <iostream>
 
 void testBasicParsing() {

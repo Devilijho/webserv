@@ -43,7 +43,7 @@ LocationConfig::LocationConfig()
 	  upload_dir(""),              // ← Inicializar explícitamente
 	  cgi_extension(""),           // ← Inicializar explícitamente
 	  cgi_path(""),                 // ← Inicializar explícitamente
-	  client_max_body_size(1000000) // ← ¡CRÍTICO! Estaba sin inicializar
+	  client_max_body_size(0) // ← ¡CRÍTICO! Estaba sin inicializar
 {
 	// methods vector se auto-inicializa vacío
 }
