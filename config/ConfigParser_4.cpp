@@ -114,6 +114,10 @@ bool ConfigParser::validateLocation(size_t serverIndex, const ServerConfig& srv,
         return false;
     }
 
+    if (!validateSpecialLocationMethods(serverIndex, loc)) {
+        return false;
+    }
+
     return validateLocationFiles(serverIndex, srv, loc);
 }
 
@@ -144,6 +148,52 @@ bool ConfigParser::validateLocationFiles(size_t serverIndex, const ServerConfig&
         if (loc.cgi_extension.empty()) {
             std::cerr << "Server " << serverIndex << " Location '" << loc.path
                       << "': CGI path defined but no extension" << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool ConfigParser::validateSpecialLocationMethods(size_t serverIndex, const LocationConfig& loc) {
+    // Validar location /upload - solo POST permitido
+    if (loc.path == "/upload") {
+        if (loc.methods.size() != 1 || loc.methods[0] != "POST") {
+            std::cerr << "Server " << serverIndex << " Location '/upload': "
+                      << "Only POST method is allowed for upload locations" << std::endl;
+            std::cerr << "       Found methods: ";
+            for (size_t i = 0; i < loc.methods.size(); ++i) {
+                std::cerr << loc.methods[i];
+                if (i < loc.methods.size() - 1) std::cerr << ", ";
+            }
+            std::cerr << std::endl;
+            return false;
+        }
+
+        // Verificar que tiene upload_dir configurado
+        if (loc.upload_dir.empty()) {
+            std::cerr << "Server " << serverIndex << " Location '/upload': "
+                      << "upload_dir must be configured for upload locations" << std::endl;
+            return false;
+        }
+    }
+
+    // Validar location /script - solo GET y POST permitidos
+    if (loc.path == "/script") {
+        // Verificar que solo tiene GET y/o POST
+        for (size_t i = 0; i < loc.methods.size(); ++i) {
+            if (loc.methods[i] != "GET" && loc.methods[i] != "POST") {
+                std::cerr << "Server " << serverIndex << " Location '/script': "
+                          << "Only GET and POST methods are allowed for script locations" << std::endl;
+                std::cerr << "       Found invalid method: " << loc.methods[i] << std::endl;
+                return false;
+            }
+        }
+
+        // Verificar que tiene configuración CGI
+        if (loc.cgi_extension.empty() || loc.cgi_path.empty()) {
+            std::cerr << "Server " << serverIndex << " Location '/script': "
+                      << "cgi_extension and cgi_path must be configured for script locations" << std::endl;
             return false;
         }
     }

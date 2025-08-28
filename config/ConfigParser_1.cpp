@@ -41,24 +41,36 @@ bool ConfigParser::parseFile(const std::string &filename) {
 }
 
 bool ConfigParser::finalizeConfig() {
-    // Validar cada servidor por separado
-    std::vector<ServerConfig> validServers;
-
+    // ✅ 1. PRIMERO APLICAR HERENCIA SIN FILTRAR
     for (size_t i = 0; i < _servers.size(); ++i) {
         ServerConfig& server = _servers[i];
 
-        // ✅ APLICAR HERENCIA ANTES DE VALIDAR
+        // Aplicar herencia de valores del servidor a las locations
         for (size_t j = 0; j < server.locations.size(); ++j) {
-            LocationConfig& location = server.locations[j];
+            LocationConfig& loc = server.locations[j];
 
-            // Si no está configurado (valor 0), heredar del servidor
-            if (location.client_max_body_size == 0) {
-                location.client_max_body_size = server.client_max_body_size;
+            if (loc.root.empty()) {
+                loc.root = server.root;
+            }
+            if (loc.index.empty()) {
+                loc.index = server.index;
+            }
+            if (loc.client_max_body_size == 0) {
+                loc.client_max_body_size = server.client_max_body_size;
             }
         }
+    }
 
-        if (validateServer(i, server)) {
-            validServers.push_back(server);
+    // ✅ 2. VALIDAR TODO ANTES DE FILTRAR
+    if (!validateConfig()) {  // ← AQUÍ SE LLAMA validateDuplicateServers()
+        return false;
+    }
+
+    // ✅ 3. DESPUÉS FILTRAR SOLO LOS VÁLIDOS (SI QUIERES)
+    std::vector<ServerConfig> validServers;
+    for (size_t i = 0; i < _servers.size(); ++i) {
+        if (validateServer(i, _servers[i])) {
+            validServers.push_back(_servers[i]);
         }
     }
 
