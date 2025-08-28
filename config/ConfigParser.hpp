@@ -43,6 +43,7 @@ private:
     bool parseServerNameDirective(const std::vector<std::string>& tokens, ServerConfig& server);
     bool parseServerClientMaxBodySizeDirective(const std::vector<std::string>& tokens, ServerConfig& server);
     bool parseServerErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server);
+    bool parseServerDefaultErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server);
 
     // PARSING LOCATION DIRECTIVES
     bool parseLocationHeader(const std::string& line, LocationConfig& location);

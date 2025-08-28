@@ -146,7 +146,7 @@ bool ConfigParser::parseServerClientMaxBodySizeDirective(const std::vector<std::
     return true;
 }
 
-bool ConfigParser::parseServerErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
+bool ConfigParser::parseServerErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server){
     if (tokens.size() < 3) {
         std::cerr << "Error: error_page requires code and path" << std::endl;
         return false;
@@ -171,5 +171,27 @@ bool ConfigParser::parseServerErrorPageDirective(const std::vector<std::string>&
     }
 
     server.error_pages[errorCode] = path;
+    return true;
+}
+
+bool ConfigParser::parseServerDefaultErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
+
+    if (tokens.size() < 2) {
+        std::cerr << "Error: Empty default_error_page directive" << std::endl;
+        return false;
+    }
+
+    std::string value = tokens[1];
+
+    if (!value.empty() && value[value.length() - 1] == ';') {
+        value = value.substr(0, value.length() - 1);
+    }
+
+    if (value.empty()) {
+        std::cerr << "Error: default_error_page cannot be empty" << std::endl;
+        return false;
+    }
+
+    server.default_error_page = value;
     return true;
 }

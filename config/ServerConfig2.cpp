@@ -7,7 +7,8 @@ ServerConfig::ServerConfig()
 	  server_name(""),
 	  root("./www"),
 	  index("index.html"),
-	  client_max_body_size(1000000)
+	  client_max_body_size(1000000),
+	  default_error_page("")
 {
 	// locations vector se auto-inicializa vacío
 	// error_pages map se auto-inicializa vacío

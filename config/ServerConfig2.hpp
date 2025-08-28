@@ -32,6 +32,7 @@ struct ServerConfig {
     std::string index;
     size_t client_max_body_size;
     std::map<int, std::string> error_pages;
+    std::string default_error_page;
     std::vector<LocationConfig> locations;
 
     // Constructor con valores por defecto

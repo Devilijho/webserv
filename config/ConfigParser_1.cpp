@@ -153,6 +153,8 @@ bool ConfigParser::parseServerDirective(const std::vector<std::string>& tokens, 
         return parseServerClientMaxBodySizeDirective(tokens, server);
     } else if (directive == "error_page") {
         return parseServerErrorPageDirective(tokens, server);
+    } else if (directive == "default_error_page") {
+        return parseServerDefaultErrorPageDirective(tokens, server);
     }
 
     return true; // Directiva no reconocida - no crítico
