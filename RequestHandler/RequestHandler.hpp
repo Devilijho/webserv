@@ -1,7 +1,5 @@
 #pragma once
 
-// #include "../config/ConfigParser.hpp"
-// #include "../config/ServerConfig.hpp"
 #include "../config/ConfigParser.hpp"
 #include "../config/ServerConfig2.hpp"
 #include "../Requests/server.hpp"
@@ -16,6 +14,10 @@
 #include <vector>
 #include <sstream>
 #include <sys/stat.h>
+#include <fstream>
+#include <istream>
+#include <streambuf>
+#include <dirent.h>
 
 #define SUCCESS 0
 #define ERROR 1
@@ -63,9 +65,11 @@ std::string http_response(RequestHandlerData &data, ServerConfig &srv);
 
 /*Helper functions */
 
-int	get_file_type(std::string filename);
+int	getFileType(std::string filename);
 void	setRequestBody(RequestHandlerData &data);
 void setQueryData(RequestHandlerData &data);
+bool	isAllowedMethod(std::string method, const LocationConfig *loc);
+void	setCurrentDirFiles(RequestHandlerData &data);
 std::string getRequestContentType(RequestHandlerData &data);
 std::string getETag(std::string fileName);
 std::string getContentType(std::string);
@@ -74,7 +78,3 @@ std::string getFileDate(std::string fileName);
 std::string toString(int value);
 std::string getStatusMessage(int code);
 std::string getAbsolutePath(std::string);
-
-/*Server functions */
-int send_all(int socket, const char *buffer, size_t length, int flags);
-std::string read_all(int socket);

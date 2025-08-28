@@ -1,10 +1,4 @@
 #include "RequestHandler.hpp"
-#include <fstream>
-#include <istream>
-#include <streambuf>
-#include <string.h>
-#include <string>
-#include <unistd.h>
 
 /*get the extension of a file */
 
@@ -128,42 +122,9 @@ std::string getStatusMessage(int code)
 	}
 }
 
-int send_all(int socket, const char *buffer, size_t length, int flags)
-{
-	ssize_t sent;
-	const char *ptr = buffer;
-	while (length > 0)
-	{
-		sent = send(socket, ptr, length, flags);
-		if (sent <= 0)
-			return -1;
-		ptr += sent;
-		length -= sent;
-	}
-	return 0;
-}
-
-std::string read_all(int socket)
-{
-	ssize_t read_data;
-	std::string output;
-	char buffer[128];
-
-	while (1)
-	{
-		memset(buffer, 0, sizeof(buffer));
-		read_data = read(socket, buffer, (sizeof(buffer) - 1));
-		output += buffer;
-		if (read_data <= 0)
-			return (output);
-	}
-	return output;
-}
-
-int	get_file_type(std::string filename)
+int	getFileType(std::string filename)
 {
 	struct stat s;
-
 
 	if( stat(filename.c_str(),&s) == 0 )
 	{
@@ -176,4 +137,38 @@ int	get_file_type(std::string filename)
 	}
 	else
 		return ERROR;
+}
+
+bool	isAllowedMethod(std::string method, const LocationConfig *loc)
+{
+	std::vector<std::string>::const_iterator it;
+
+	for (it = loc->methods.begin(); it != loc->methods.end(); it++)
+	{
+		if (*it == method)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void	setCurrentDirFiles(RequestHandlerData &data)
+{
+	std::string files;
+	DIR *directory;
+	struct dirent *directoryIt;
+
+	directory = opendir(data.FileName.c_str());
+	if (directory == NULL)
+		return ;
+	while (1)
+	{
+		directoryIt = readdir(directory);
+		if (directoryIt == NULL)
+			break ;
+		files = files + directoryIt->d_name + "\n";
+	}
+	data.FileContent = files;
+	closedir(directory);
 }
