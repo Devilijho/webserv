@@ -1,3 +1,5 @@
+
+
 #include "server.hpp"
 #include <arpa/inet.h>
 
@@ -5,14 +7,14 @@ Server::Server() : configs() {}
 
 Server::~Server()
 {
-	for (std::map<int, ServerConfig>::iterator it = listeningSockets.begin(); it != listeningSockets.end(); ++it)
+	for (std::map<int, ServerConfig*>::iterator it = listeningSockets.begin(); it != listeningSockets.end(); ++it)
 	{
 		if (it->first != -1)
 			close(it->first);
 	}
 }
 
-bool Server::start(const std::vector<ServerConfig>& servers, const std::string& configFile)
+bool Server::start(const std::vector<ServerConfig*>& servers, const std::string& configFile)
 {
 	if (!servers.empty())
 		configs = servers;
@@ -24,13 +26,15 @@ bool Server::start(const std::vector<ServerConfig>& servers, const std::string& 
 
 	for (size_t i = 0; i < configs.size(); ++i)
 	{
-		int fd = setupSocket(configs[i]);
-		if (fd < 0)
-		{
-			std::cerr << "[ERROR] Failed to set up socket for "
-					  << configs[i].host << ":" << configs[i].port << std::endl;
-			return false;
-		}
+		ServerConfig* cfg = configs[i]; // pointer instead of value
+
+        int fd = setupSocket(cfg);  // setupSocket must accept ServerConfig*
+		 if (fd < 0)
+        {
+            std::cerr << "[ERROR] Failed to set up socket for "
+                      << cfg->host << ":" << cfg->port << std::endl;
+            return false;
+        }
 		listeningSockets[fd] = configs[i]; //server_fds.push_back(fd);
 		addServerSocketToPoll(fd);
 	}
@@ -117,7 +121,7 @@ void Server::acceptClient(int server_fd)
 	clientBuffers[client_fd] = "";
 
 	// Map the client to the server config
-	std::map<int, ServerConfig>::iterator server_it = listeningSockets.find(server_fd);
+	std::map<int, ServerConfig*>::iterator server_it = listeningSockets.find(server_fd);
 	if (server_it != listeningSockets.end()) {
 		client_to_server_config[client_fd] = server_it->second;
 	}
@@ -136,8 +140,14 @@ void Server::closeConnection(int client_fd)
 			break;
 		}
 	}
-	// Clean up client data - no pointers, just erase directly
-	clientSockets.erase(client_fd);
+	
+	// 2. Clean up client data (delete before erasing pointer from map)
+	std::map<int, RequestHandlerData*>::iterator it = clientSockets.find(client_fd);
+	if (it != clientSockets.end()) {
+		delete it->second;              // free the allocated RequestHandlerData
+		clientSockets.erase(it);        // remove from map
+	}
+
 	clientBuffers.erase(client_fd);
 	client_to_server_config.erase(client_fd);
 

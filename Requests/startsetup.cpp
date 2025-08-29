@@ -13,8 +13,8 @@ bool Server::loadConfig(const std::string& configFile) //check les methodes de C
 		std::cerr << "[ERROR] Invalid configuration in " << configFile << std::endl;
 		return false;
 	}
-	configs = parser.getServers();
-	if (configs.empty())
+	const std::vector<ServerConfig*>& parsed = parser.getServers();
+	if (parsed.empty())
 	{
 		std::cerr << "[ERROR] Configuration file " << configFile
 				  << " did not define any servers.\n";
@@ -23,26 +23,30 @@ bool Server::loadConfig(const std::string& configFile) //check les methodes de C
 	return true;
 }
 
-struct addrinfo* Server::getBindAddress(const ServerConfig& cfg)
+struct addrinfo* Server::getBindAddress(const ServerConfig* cfg)
 {
 	struct addrinfo hints, *res;
 	std::memset(&hints, 0, sizeof(hints));
 	hints.ai_family   = AF_INET;		// IPv4 only
 	hints.ai_socktype = SOCK_STREAM;	// TCP
-	hints.ai_flags	= AI_PASSIVE;		// For binding
+	hints.ai_flags	= AI_PASSIVE;	 // For binding
 
-	std::ostringstream port_str; // Ports in sockets are strings, not integers.
-	port_str << cfg.port;
+	std::ostringstream port_str;		// Ports in sockets are strings, not integers.
+	port_str << cfg->port;			  // Use pointer access
 
-	const char* host = cfg.host.empty() ? NULL : cfg.host.c_str(); // If config has no host, we pass NULL → AI_PASSIVE makes it bind to all available interfaces.
+	const char* host = cfg->host.empty() ? NULL : cfg->host.c_str(); 
+	// If config has no host, pass NULL → AI_PASSIVE binds to all interfaces.
+
 	if (getaddrinfo(host, port_str.str().c_str(), &hints, &res) != 0) {
 		perror("getaddrinfo");
 		return NULL;
 	}
-	return res; // contains a sockaddr_in that has both IP address and port number, ready to be used in bind
+
+	return res; // ready to use in bind()
 }
 
-int Server::setupSocket(const ServerConfig& cfg)
+
+int Server::setupSocket(const ServerConfig* cfg)
 {
 	int fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd < 0) {
@@ -72,7 +76,7 @@ int Server::setupSocket(const ServerConfig& cfg)
 	if (listen(fd, 10) < 0)
 		return perror("listen"), close(fd), -1;
 
-	std::cout << "[INFO] Listening on " << cfg.host << ":" << cfg.port << std::endl;
+	std::cout << "[INFO] Listening on " << cfg->host << ":" << cfg->port << std::endl;
 	return fd;
 }
 

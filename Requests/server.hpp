@@ -30,14 +30,14 @@ class Server
 		Server();
 		~Server();
 
-		bool start(	const std::vector<ServerConfig>& servers,
+		bool start(	const std::vector<ServerConfig*>& servers,
 					const std::string& configFile = "default.conf");
 
 	private:
 		// --- Server Configuration ---
-		std::vector<ServerConfig> configs;					// List of server configs
-		std::map<int, ServerConfig> listeningSockets;		// Server socket FD -> config
-		std::map<int, ServerConfig> client_to_server_config;// Client FD -> selected server config
+		std::vector<ServerConfig*> configs;					// List of server configs
+		std::map<int, ServerConfig*> listeningSockets;		// Server socket FD -> config
+		std::map<int, ServerConfig*> client_to_server_config;// Client FD -> selected server config
 
 		// --- Client Connections ---
 		std::map<int, RequestHandlerData*> clientSockets;	// Client FD -> state/data
@@ -48,8 +48,8 @@ class Server
 
 		// --- Setup / Initialization ---
 		bool loadConfig(const std::string& configFile);
-		int setupSocket(const ServerConfig& cfg);
-		struct addrinfo* getBindAddress(const ServerConfig& cfg);
+		int setupSocket(const ServerConfig* cfg);
+		struct addrinfo* getBindAddress(const ServerConfig* cfg);
 		void addServerSocketToPoll(int fd);
 
 		// --- Event loop ---
@@ -61,7 +61,7 @@ class Server
 		// --- Client handling ---
 		void acceptClient(int server_fd);
 		void closeConnection(int client_fd);
-		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig);
+		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig);
 	
 		std::string toString(int value);
 		bool accumulateRequest(int client_fd, char* buffer, ssize_t bytes_read);

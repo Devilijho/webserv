@@ -1,5 +1,6 @@
 #include "server.hpp"
 
+
 std::string Server::toString(int value) {
 	std::ostringstream oss;
 	oss << value;
@@ -37,9 +38,10 @@ bool Server::hasCompleteRequest(int client_fd) {
 
 bool Server::handleReadEvent(int client_fd)
 {
+	std::cout << "handlereadevent !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 	char buffer[4096];
 	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
-
+		
 	if (bytes_read <= 0) {
 		if (bytes_read == 0)
 			std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
@@ -50,7 +52,7 @@ bool Server::handleReadEvent(int client_fd)
 		return false;
 	}
 
-   // Append to per-client buffer
+	// Append to per-client buffer
 	clientSockets[client_fd]->requestBuffer.append(buffer, bytes_read);
 
 	// Check if full request has been received
@@ -79,42 +81,38 @@ bool Server::handleReadEvent(int client_fd)
 }
 
 
-std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig& serverConfig)
+std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig)
 {
 	std::istringstream req_stream(raw_request);
 	std::string method, path, protocol;
 	req_stream >> method >> path >> protocol;
 
-	const ServerConfig &srv = serverConfig;
-	const LocationConfig *loc = srv.findLocation(path);
-	RequestHandlerData data;
+	const ServerConfig* srv = serverConfig;
+	const LocationConfig *loc = srv->findLocation(path);
 
-	data.FileName = srv.root + path;
+	RequestHandlerData data;
+	data.FileName = srv->root + path;
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
-	setData(data, srv, loc);
-	if (access(data.FileName.c_str(), F_OK) != SUCCESS){
-		errorHandling(data, srv, 404);
+
+	setData(data, *srv, loc);
+
+	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
+		errorHandling(data, *srv, 404);
 	}
-	else if ((getFileType(data.FileName) != FILE && data.FileName != (srv.root + std::string("/"))) || access(data.FileName.c_str(), R_OK) != SUCCESS)
-	{
-		if (getFileType(data.FileName) == DIRECTORY)
-			setCurrentDirFiles(data);
-		else
-			errorHandling(data, srv, 403);
-	}
-	else if (data.FileContentType == "php" && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
+	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
-			errorHandling(data, srv, 500);
+			errorHandling(data, *srv, 500);
 	}
-	else if (method == "GET" && isAllowedMethod(method, loc)){
-		if (handle_static_request(data, srv) != SUCCESS)
-			errorHandling(data, srv, 500);
+	else if (method == "GET"){
+		if (handle_static_request(data, *srv) != SUCCESS)
+			errorHandling(data, *srv, 500);
 	}
-	else if (method == "DELETE" && isAllowedMethod(method, loc))
+	else if (method == "DELETE")
 		handle_delete_request(data);
 	else
-		errorHandling(data, srv, 405);
-	return (http_response(data, const_cast<ServerConfig&>(srv)));
+		errorHandling(data, *srv, 405);
+
+	return (http_response(data, const_cast<ServerConfig&>(*srv)));
 }

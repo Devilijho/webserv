@@ -7,8 +7,7 @@ ServerConfig::ServerConfig()
 	  server_name(""),
 	  root("./www"),
 	  index("index.html"),
-	  client_max_body_size(1000000),
-	  default_error_page("")
+	  client_max_body_size(1000000)
 {
 	// locations vector se auto-inicializa vacío
 	// error_pages map se auto-inicializa vacío
@@ -21,16 +20,15 @@ const LocationConfig *ServerConfig::findLocation(const std::string &path) const
 	size_t longestMatch = 0;
 
 	// Find the most specific location that matches the path
-	for (std::vector<LocationConfig>::const_iterator it = locations.begin();
-		 it != locations.end(); ++it)
-	{
-		const LocationConfig &loc = *it;
-		if (path.find(loc.path) == 0 && loc.path.length() > longestMatch)
-		{
-			bestMatch = &loc;
-			longestMatch = loc.path.length();
-		}
-	}
+	 for (std::vector<LocationConfig*>::const_iterator it = locations.begin(); it != locations.end(); ++it)
+    {
+        const LocationConfig* loc = *it;  // dereference pointer
+        if (path.find(loc->path) == 0 && loc->path.length() > longestMatch)
+        {
+            bestMatch = loc;
+            longestMatch = loc->path.length();
+        }
+    }
 
 	return bestMatch;
 }
