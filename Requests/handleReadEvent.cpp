@@ -39,7 +39,6 @@ bool Server::hasCompleteRequest(int client_fd) {
 
 bool Server::handleReadEvent(int client_fd)
 {
-	std::cout << "handlereadevent !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 	char buffer[4096];
 	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
 
@@ -99,7 +98,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	setData(data, *srv, loc);
 
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
-		errorHandling(data, *srv, 404);
+		errorHandling(data, srv, 404);
 	}
 	else if ((getFileType(data.FileName) != FILE || access(data.FileName.c_str(), R_OK) != SUCCESS))
 	{
@@ -108,7 +107,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 			&& method == "GET"
 		 	&& loc->autoindex == true)
 		{
-			if (handle_static_request(data, srv) != SUCCESS)
+			if (handle_static_request(data) != SUCCESS)
 				errorHandling(data, srv, 500);
 		}
 		else if (getFileType(data.FileName) == DIRECTORY && isAllowedMethod(method, loc) && loc->autoindex == true && method == "GET")
@@ -119,16 +118,16 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
-			errorHandling(data, *srv, 500);
+			errorHandling(data, srv, 500);
 	}
 	else if (method == "GET"){
-		if (handle_static_request(data, *srv) != SUCCESS)
-			errorHandling(data, *srv, 500);
+		if (handle_static_request(data) != SUCCESS)
+			errorHandling(data, srv, 500);
 	}
 	else if (method == "DELETE")
 		handle_delete_request(data);
 	else
-		errorHandling(data, *srv, 405);
+		errorHandling(data, srv, 405);
 
 	return (http_response(data, const_cast<ServerConfig&>(*srv)));
 }
