@@ -63,7 +63,6 @@ private:
     bool validateServerLocations(size_t serverIndex, const ServerConfig& srv);
     bool validateLocation(size_t serverIndex, const ServerConfig& srv, size_t locationIndex, const LocationConfig& loc);
     bool validateLocationFiles(size_t serverIndex, const ServerConfig& srv, const LocationConfig& loc);
-    bool validateSpecialLocationMethods(size_t serverIndex, const LocationConfig& loc);
     bool validateDuplicateServers();
 
     // UTILIDADES
