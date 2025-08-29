@@ -1,6 +1,3 @@
-
-
-
 #include "server.hpp"
 
 bool Server::handleWriteEvent(int client_fd) {
@@ -33,4 +30,3 @@ bool Server::handleWriteEvent(int client_fd) {
 
 	return true;
 }
-

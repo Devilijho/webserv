@@ -1,5 +1,3 @@
-
-
 #include "server.hpp"
 #include <arpa/inet.h>
 

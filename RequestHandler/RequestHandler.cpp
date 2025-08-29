@@ -1,6 +1,4 @@
 #include "RequestHandler.hpp"
-#include <unistd.h>
-
 /*Sets data and the variables needed for the dynamic file handling*/
 
 int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const LocationConfig *loc)
@@ -109,7 +107,6 @@ void errorHandling(RequestHandlerData &data, const ServerConfig &srv, int code)
     } else {
         data.FileName = srv.default_error_page;
     }
-
     data.FileContentType = "html";
 	data.StatusLine = getStatusMessage(code);
 	if (access(data.FileName.c_str(), R_OK | F_OK) != 0)
