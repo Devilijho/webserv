@@ -162,6 +162,12 @@ void	setCurrentDirFiles(RequestHandlerData &data)
 	directory = opendir(data.FileName.c_str());
 	if (directory == NULL)
 		return ;
+	for (int time = 0; time < 2; time++)
+	{
+		directoryIt = readdir(directory);
+		if (directoryIt == NULL)
+			return ;
+	}
 	while (1)
 	{
 		directoryIt = readdir(directory);
