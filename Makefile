@@ -35,7 +35,7 @@ all: $(NAME)
 	$(cc) $(cflags) -c $< -o $@
 
 clean:
-	rm -f $(OBJ_DIR)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(NAME)
