@@ -4,7 +4,7 @@
 // FUNCIONES UTILITARIAS Y VALIDACIONES
 //============================================================================
 
-const std::vector<ServerConfig> &ConfigParser::getServers() const {
+const std::vector<ServerConfig*> &ConfigParser::getServers() const {
     return _servers;
 }
 
@@ -15,12 +15,12 @@ bool ConfigParser::isValid() const {
 void ConfigParser::printConfig() const {
     std::cout << "\n=== WEBSERV CONFIGURATION ===" << std::endl;
     for (size_t i = 0; i < _servers.size(); ++i) {
-        const ServerConfig &srv = _servers[i];
+        const ServerConfig *srv = _servers[i];
         std::cout << "Server " << i << ":" << std::endl;
-        std::cout << "  Listen: " << srv.host << ":" << srv.port << std::endl;
-        std::cout << "  Root: " << srv.root << std::endl;
-        std::cout << "  Index: " << srv.index << std::endl;
-        std::cout << "  Locations: " << srv.locations.size() << std::endl;
+        std::cout << "  Listen: " << srv->host << ":" << srv->port << std::endl;
+        std::cout << "  Root: " << srv->root << std::endl;
+        std::cout << "  Index: " << srv->index << std::endl;
+        std::cout << "  Locations: " << srv->locations.size() << std::endl;
     }
     std::cout << "================================\n" << std::endl;
 }
@@ -96,6 +96,3 @@ bool ConfigParser::isValidIPAddress(const std::string& ip) {
 bool ConfigParser::isValidHost(const std::string& host) {
     return isValidIPAddress(host);
 }
-
-
-

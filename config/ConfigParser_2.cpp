@@ -4,7 +4,7 @@
 // PARSING DE DIRECTIVAS SERVER
 //============================================================================
 
-bool ConfigParser::parseServerPortDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
+bool ConfigParser::parseServerPortDirective(const std::vector<std::string>& tokens, ServerConfig* server) {
     if (tokens.size() < 2) {
         std::cerr << "Error: Empty listen directive" << std::endl;
         return false;
@@ -21,11 +21,11 @@ bool ConfigParser::parseServerPortDirective(const std::vector<std::string>& toke
         return false;
     }
 
-    server.port = port;
+    server->port = port;
     return true;
 }
 
-bool ConfigParser::parseServerHostDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
+bool ConfigParser::parseServerHostDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
     if (tokens.size() < 2) {
         std::cerr << "Error: Empty host directive" << std::endl;
         return false;
@@ -46,11 +46,11 @@ bool ConfigParser::parseServerHostDirective(const std::vector<std::string>& toke
         return false;
     }
 
-    server.host = value;
+    server->host = value;
     return true;
 }
 
-bool ConfigParser::parseServerRootDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
+bool ConfigParser::parseServerRootDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
     if (tokens.size() < 2) {
         std::cerr << "Error: Empty root directive" << std::endl;
         return false;
@@ -66,11 +66,11 @@ bool ConfigParser::parseServerRootDirective(const std::vector<std::string>& toke
         return false;
     }
 
-    server.root = value;
+    server->root = value;
     return true;
 }
 
-bool ConfigParser::parseServerIndexDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
+bool ConfigParser::parseServerIndexDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
     if (tokens.size() < 2) {
         std::cerr << "Error: Empty index directive" << std::endl;
         return false;
@@ -91,11 +91,11 @@ bool ConfigParser::parseServerIndexDirective(const std::vector<std::string>& tok
         return false;
     }
 
-    server.index = value;
+    server->index = value;
     return true;
 }
 
-bool ConfigParser::parseServerNameDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
+bool ConfigParser::parseServerNameDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
     if (tokens.size() < 2) {
         std::cerr << "Warning: Empty server_name directive" << std::endl;
         return true;
@@ -111,11 +111,11 @@ bool ConfigParser::parseServerNameDirective(const std::vector<std::string>& toke
         return true;
     }
 
-    server.server_name = value;
+    server->server_name = value;
     return true;
 }
 
-bool ConfigParser::parseServerClientMaxBodySizeDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
+bool ConfigParser::parseServerClientMaxBodySizeDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
     if (tokens.size() < 2) {
         std::cerr << "Error: Empty client_max_body_size directive" << std::endl;
         return false;
@@ -142,11 +142,11 @@ bool ConfigParser::parseServerClientMaxBodySizeDirective(const std::vector<std::
         return false;
     }
 
-    server.client_max_body_size = static_cast<size_t>(size);
+    server->client_max_body_size = static_cast<size_t>(size);
     return true;
 }
 
-bool ConfigParser::parseServerErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server){
+bool ConfigParser::parseServerErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
     if (tokens.size() < 3) {
         std::cerr << "Error: error_page requires code and path" << std::endl;
         return false;
@@ -170,28 +170,6 @@ bool ConfigParser::parseServerErrorPageDirective(const std::vector<std::string>&
         return false;
     }
 
-    server.error_pages[errorCode] = path;
-    return true;
-}
-
-bool ConfigParser::parseServerDefaultErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server) {
-
-    if (tokens.size() < 2) {
-        std::cerr << "Error: Empty default_error_page directive" << std::endl;
-        return false;
-    }
-
-    std::string value = tokens[1];
-
-    if (!value.empty() && value[value.length() - 1] == ';') {
-        value = value.substr(0, value.length() - 1);
-    }
-
-    if (value.empty()) {
-        std::cerr << "Error: default_error_page cannot be empty" << std::endl;
-        return false;
-    }
-
-    server.default_error_page = value;
+    server->error_pages[errorCode] = path;
     return true;
 }

@@ -9,30 +9,30 @@
 
 // // FUNCIÓN DE DEBUG (definida ANTES del main):
 // void debugConfig(const ServerConfig& config) {
-//     std::cout << "\n=== DEBUG: TESTING CONFIG INTEGRATION ===" << std::endl;
+//	 std::cout << "\n=== DEBUG: TESTING CONFIG INTEGRATION ===" << std::endl;
 
-//     // Test location finding
-//     const LocationConfig* loc_root = config.findLocation("/");
-//     const LocationConfig* loc_cgi = config.findLocation("/cgi-bin/test.php");
-//     const LocationConfig* loc_upload = config.findLocation("/upload");
+//	 // Test location finding
+//	 const LocationConfig* loc_root = config.findLocation("/");
+//	 const LocationConfig* loc_cgi = config.findLocation("/cgi-bin/test.php");
+//	 const LocationConfig* loc_upload = config.findLocation("/upload");
 
-//     std::cout << "🔍 Location tests:" << std::endl;
-//     std::cout << "  / -> " << (loc_root ? "FOUND" : "NOT FOUND") << std::endl;
-//     std::cout << "  /cgi-bin/test.php -> " << (loc_cgi ? loc_cgi->path : "NOT FOUND") << std::endl;
-//     std::cout << "  /upload -> " << (loc_upload ? "FOUND" : "NOT FOUND") << std::endl;
+//	 std::cout << "🔍 Location tests:" << std::endl;
+//	 std::cout << "  / -> " << (loc_root ? "FOUND" : "NOT FOUND") << std::endl;
+//	 std::cout << "  /cgi-bin/test.php -> " << (loc_cgi ? loc_cgi->path : "NOT FOUND") << std::endl;
+//	 std::cout << "  /upload -> " << (loc_upload ? "FOUND" : "NOT FOUND") << std::endl;
 
-//     if (loc_cgi) {
-//         std::cout << "🔧 CGI config:" << std::endl;
-//         std::cout << "  Extension: " << loc_cgi->cgi_extension << std::endl;
-//         std::cout << "  Path: " << loc_cgi->cgi_path << std::endl;
-//         std::cout << "  Root: " << loc_cgi->root << std::endl;
-//     }
+//	 if (loc_cgi) {
+//		 std::cout << "🔧 CGI config:" << std::endl;
+//		 std::cout << "  Extension: " << loc_cgi->cgi_extension << std::endl;
+//		 std::cout << "  Path: " << loc_cgi->cgi_path << std::endl;
+//		 std::cout << "  Root: " << loc_cgi->root << std::endl;
+//	 }
 
-//     std::cout << "📄 Error pages:" << std::endl;
-//     for (std::map<int, std::string>::const_iterator it = config.error_pages.begin();
-//          it != config.error_pages.end(); ++it) {
-//         std::cout << "  " << it->first << " -> " << it->second << std::endl;
-//     }
+//	 std::cout << "📄 Error pages:" << std::endl;
+//	 for (std::map<int, std::string>::const_iterator it = config.error_pages.begin();
+//		  it != config.error_pages.end(); ++it) {
+//		 std::cout << "  " << it->first << " -> " << it->second << std::endl;
+//	 }
 // }
 
 
@@ -56,23 +56,36 @@ int main(int argc, char* argv[])
 	parser.printConfig();
 
 	// Get servers from configuration
-	std::vector<ServerConfig> servers = parser.getServers();
-    if (servers.empty()) {
-        std::cerr << "No servers defined in configuration." << std::endl;
-        return 1;
-    }
+	std::vector<ServerConfig*> servers = parser.getServers();
+	if (servers.empty()) {
+		std::cerr << "No servers defined in configuration." << std::endl;
+		return 1;
+	}
 
-    // Start each server
-    for (size_t i = 0; i < servers.size(); ++i) {
-        const ServerConfig& cfg = servers[i];
-        std::cout << "Starting server on " << cfg.host << ":" << cfg.port << std::endl;
+	// Convert to vector of pointers
+	std::vector<ServerConfig*> serverPtrs;
+	for (size_t i = 0; i < servers.size(); ++i) {
+		 ServerConfig* server = new ServerConfig(*servers[i]); // heap-allocate a copy
+		serverPtrs.push_back(server);
+	}
 
-        // Create server instance
-        Server server;  // no arguments
-		std::vector<ServerConfig> singleServer;
+	// Start each server
+	for (size_t i = 0; i < serverPtrs.size(); ++i) {
+		ServerConfig* cfg = serverPtrs[i];
+		std::cout << "Starting server on " << cfg->host << ":" << cfg->port << std::endl;
+
+		// Create server instance
+		Server server;
+		std::vector<ServerConfig*> singleServer;
 		singleServer.push_back(cfg);
-		server.start(singleServer);
-    }
 
-    return 0;
+		server.start(singleServer, configFile);
+	}
+
+	// Free memory (avoid leaks)
+	for (size_t i = 0; i < serverPtrs.size(); ++i) {
+		delete serverPtrs[i];
+	}
+
+	return 0;
 }

@@ -21,69 +21,68 @@
 
 class ConfigParser {
 private:
-    std::vector<ServerConfig> _servers;
-    bool _is_parsed;
+	std::vector<ServerConfig*> _servers;
+	bool _is_parsed;
 
-    // FUNCIONES PRINCIPALES
-    bool finalizeConfig();
+	// FUNCIONES PRINCIPALES
+	bool finalizeConfig();
 
-    // PARSING DE BLOQUES
-    bool parseServerBlock(std::ifstream &file, ServerConfig &server);
-    bool parseLocationBlock(std::ifstream &file, LocationConfig &location);
+	// PARSING DE BLOQUES
+	bool parseServerBlock(std::ifstream &file, ServerConfig* server);
+	bool parseLocationBlock(std::ifstream &file, LocationConfig* location);
 
-    // DISPATCHERS
-    bool parseServerDirective(const std::vector<std::string>& tokens, ServerConfig& server);
-    bool parseLocationDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	// DISPATCHERS
+	bool parseServerDirective(const std::vector<std::string>& tokens, ServerConfig* server);
+	bool parseLocationDirective(const std::vector<std::string>& tokens, LocationConfig* location);
 
-    // PARSING SERVER DIRECTIVES
-    bool parseServerPortDirective(const std::vector<std::string>& tokens, ServerConfig& server);
-    bool parseServerHostDirective(const std::vector<std::string>& tokens, ServerConfig& server);
-    bool parseServerRootDirective(const std::vector<std::string>& tokens, ServerConfig& server);
-    bool parseServerIndexDirective(const std::vector<std::string>& tokens, ServerConfig& server);
-    bool parseServerNameDirective(const std::vector<std::string>& tokens, ServerConfig& server);
-    bool parseServerClientMaxBodySizeDirective(const std::vector<std::string>& tokens, ServerConfig& server);
-    bool parseServerErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server);
-    bool parseServerDefaultErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig& server);
+	// PARSING SERVER DIRECTIVES
+	bool parseServerPortDirective(const std::vector<std::string>& tokens, ServerConfig* server);
+	bool parseServerHostDirective(const std::vector<std::string>& tokens, ServerConfig* server);
+	bool parseServerRootDirective(const std::vector<std::string>& tokens, ServerConfig* server);
+	bool parseServerIndexDirective(const std::vector<std::string>& tokens, ServerConfig* server);
+	bool parseServerNameDirective(const std::vector<std::string>& tokens, ServerConfig* server);
+	bool parseServerClientMaxBodySizeDirective(const std::vector<std::string>& tokens, ServerConfig* server);
+	bool parseServerErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig* server);
 
-    // PARSING LOCATION DIRECTIVES
-    bool parseLocationHeader(const std::string& line, LocationConfig& location);
-    bool parseLocationMethodsDirective(const std::vector<std::string>& tokens, LocationConfig& location);
-    bool parseLocationRootDirective(const std::vector<std::string>& tokens, LocationConfig& location);
-    bool parseLocationIndexDirective(const std::vector<std::string>& tokens, LocationConfig& location);
-    bool parseLocationAutoindexDirective(const std::vector<std::string>& tokens, LocationConfig& location);
-    bool parseLocationUploadDirDirective(const std::vector<std::string>& tokens, LocationConfig& location);
-    bool parseLocationCgiExtensionDirective(const std::vector<std::string>& tokens, LocationConfig& location);
-    bool parseLocationCgiPathDirective(const std::vector<std::string>& tokens, LocationConfig& location);
-    bool parseLocationClientMaxBodySizeDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	// PARSING LOCATION DIRECTIVES
+	bool parseLocationHeader(const std::string& line, LocationConfig& location);
+	bool parseLocationMethodsDirective(const std::vector<std::string>& tokens, LocationConfig* location);
+	bool parseLocationRootDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	bool parseLocationIndexDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	bool parseLocationAutoindexDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	bool parseLocationUploadDirDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	bool parseLocationCgiExtensionDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	bool parseLocationCgiPathDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	bool parseLocationClientMaxBodySizeDirective(const std::vector<std::string>& tokens, LocationConfig& location);
 
-    // VALIDACIÓN MODULAR
-    bool validateServer(size_t serverIndex, const ServerConfig& srv);
-    bool validateServerBasics(size_t serverIndex, const ServerConfig& srv);
-    bool validateServerFiles(size_t serverIndex, const ServerConfig& srv);
-    bool validateServerLocations(size_t serverIndex, const ServerConfig& srv);
-    bool validateLocation(size_t serverIndex, const ServerConfig& srv, size_t locationIndex, const LocationConfig& loc);
-    bool validateLocationFiles(size_t serverIndex, const ServerConfig& srv, const LocationConfig& loc);
-    bool validateDuplicateServers();
+	// VALIDACIÓN MODULAR
+	bool validateServer(size_t serverIndex, const ServerConfig* srv);
+	bool validateServerBasics(size_t serverIndex, const ServerConfig* srv);
+	bool validateServerFiles(size_t serverIndex, const ServerConfig* srv);
+	bool validateServerLocations(size_t serverIndex, const ServerConfig* srv);
+	bool validateLocation(size_t serverIndex, const ServerConfig* srv, size_t locationIndex, const LocationConfig& loc);
+	bool validateLocationFiles(size_t serverIndex, const ServerConfig* srv, const LocationConfig& loc);
+	bool validateDuplicateServers();
 
-    // UTILIDADES
-    std::string trim(const std::string& str);
-    std::vector<std::string> split(const std::string& str, char delimiter);
-    std::string removeInlineComment(const std::string& str);
-    bool isValidMethod(const std::string& method);
-    bool isValidPort(int port);
-    bool isValidIPAddress(const std::string& ip);
-    bool isValidHost(const std::string& host);
+	// UTILIDADES
+	std::string trim(const std::string& str);
+	std::vector<std::string> split(const std::string& str, char delimiter);
+	std::string removeInlineComment(const std::string& str);
+	bool isValidMethod(const std::string& method);
+	bool isValidPort(int port);
+	bool isValidIPAddress(const std::string& ip);
+	bool isValidHost(const std::string& host);
 
 public:
-    ConfigParser();
-    ~ConfigParser();
+	ConfigParser();
+	~ConfigParser();
 
-    // FUNCIONES PÚBLICAS
-    bool parseFile(const std::string &filename);
-    bool validateConfig();
-    const std::vector<ServerConfig> &getServers() const;
-    bool isValid() const;
-    void printConfig() const;
+	// FUNCIONES PÚBLICAS
+	bool parseFile(const std::string &filename);
+	bool validateConfig();
+	const std::vector<ServerConfig*> &getServers() const;
+	bool isValid() const;
+	void printConfig() const;
 };
 
 #endif

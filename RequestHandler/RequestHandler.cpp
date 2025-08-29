@@ -1,4 +1,6 @@
 #include "RequestHandler.hpp"
+#include <unistd.h>
+
 /*Sets data and the variables needed for the dynamic file handling*/
 
 int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const LocationConfig *loc)
@@ -46,8 +48,9 @@ int	handle_static_request(RequestHandlerData &data, const ServerConfig &srv)
 	std::string buffer;
 	std::ostringstream oss;
 
-	if (data.FileName == (srv.root + std::string("/")))
-		data.FileName = srv.root + std::string("/") + srv.index;
+	(void)srv;
+	if (getFileType(data.FileName) == DIRECTORY)
+		data.FileName = (std::string(data.FileName) + std::string("index.html"));
 	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
 		return (ERROR);
@@ -98,16 +101,15 @@ int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi)
 
 /*fills some variables and returns a error page */
 
-void errorHandling(RequestHandlerData &data, const ServerConfig &srv, int code)
+void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code)
 {
-    std::map<int, std::string>::const_iterator it = srv.error_pages.find(code);
-
-    if (it != srv.error_pages.end()) {
-        data.FileName = it->second;
-    } else {
-        data.FileName = srv.default_error_page;
-    }
-    data.FileContentType = "html";
+	std::map<int, std::string>::const_iterator it = srv.error_pages.find(code);
+	std::string returnData;
+	if (it != srv.error_pages.end())
+		data.FileName = it->second;
+	else
+		data.FileName = "./www/error/default.html";
+	data.FileContentType = "html";
 	data.StatusLine = getStatusMessage(code);
 	if (access(data.FileName.c_str(), R_OK | F_OK) != 0)
 		return ;
