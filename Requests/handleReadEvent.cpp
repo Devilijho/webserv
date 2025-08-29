@@ -1,4 +1,5 @@
 #include "server.hpp"
+#include <unistd.h>
 
 
 std::string Server::toString(int value) {
@@ -41,7 +42,7 @@ bool Server::handleReadEvent(int client_fd)
 	std::cout << "handlereadevent !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 	char buffer[4096];
 	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
-		
+
 	if (bytes_read <= 0) {
 		if (bytes_read == 0)
 			std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
@@ -100,7 +101,22 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
 		errorHandling(data, *srv, 404);
 	}
-	else if (data.FileContentType == "php" && (method == "GET" || method == "POST")){
+	else if ((getFileType(data.FileName) != FILE || access(data.FileName.c_str(), R_OK) != SUCCESS))
+	{
+		if (access((data.FileName + std::string("index.html")).c_str(), F_OK | R_OK) == SUCCESS
+			&& isAllowedMethod(method, loc)
+			&& method == "GET"
+		 	&& loc->autoindex == true)
+		{
+			if (handle_static_request(data, srv) != SUCCESS)
+				errorHandling(data, srv, 500);
+		}
+		else if (getFileType(data.FileName) == DIRECTORY && isAllowedMethod(method, loc) && loc->autoindex == true && method == "GET")
+			setCurrentDirFiles(data);
+		else
+			errorHandling(data, srv, 403);
+	}
+	else if (data.FileContentType == "php" && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
 			errorHandling(data, *srv, 500);
