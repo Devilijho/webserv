@@ -62,6 +62,17 @@ bool ConfigParser::validateServerFiles(size_t serverIndex, const ServerConfig *s
         return false;
     }
 
+    if (srv->default_error_page.empty()) {
+        std::cerr << "Server " << serverIndex << ": default_error_page not configured" << std::endl;
+        return false;
+    }
+
+    if (access(srv->default_error_page.c_str(), R_OK) != 0) {
+        std::cerr << "Server " << serverIndex << ": Default error page not found or not readable: "
+                  << srv->default_error_page << std::endl;
+        return false;
+    }
+
     return true;
 }
 

@@ -103,11 +103,11 @@ int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi)
 void errorHandling(RequestHandlerData &data,const ServerConfig *srv, int code)
 {
 	std::map<int, std::string>::const_iterator it = srv->error_pages.find(code);
-	std::string returnData;
+	// std::string returnData;
 	if (it != srv->error_pages.end())
 		data.FileName = it->second;
 	else
-		data.FileName = "./www/error/default.html";
+		data.FileName = srv->default_error_page;
 	data.FileContentType = "html";
 	data.StatusLine = getStatusMessage(code);
 	if (access(data.FileName.c_str(), R_OK | F_OK) != 0)
