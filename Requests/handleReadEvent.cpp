@@ -115,7 +115,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 		else
 			errorHandling(data, srv, 403);
 	}
-	else if (data.FileContentType == "php" && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
+	else if (("." + data.FileContentType) == loc->cgi_extension && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
 			errorHandling(data, srv, 500);

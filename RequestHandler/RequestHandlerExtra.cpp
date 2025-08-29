@@ -1,10 +1,4 @@
 #include "RequestHandler.hpp"
-#include <fstream>
-#include <istream>
-#include <streambuf>
-#include <string.h>
-#include <string>
-#include <unistd.h>
 
 /*get the extension of a file */
 
