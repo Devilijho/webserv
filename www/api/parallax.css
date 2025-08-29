@@ -1,0 +1,68 @@
+ 
+.parallax {
+    height: 100vh;
+    /* Set background image to fixed (don't scroll along with the page) */
+    background-attachment: fixed;
+    /* Center the background image */
+    background-position: center;
+    /* Set the background image to no repeat */
+    background-repeat: no-repeat;
+    /* Scale the background image to be as large as possible */
+    background-size: cover;
+  }
+
+
+
+
+.section {
+    /* Needed for children to be absolutely positioned relative to the parent. */
+    position: relative;
+    /* The height of the container. Must be set, but it doesn't really matter what the value is. */
+    height: 100vh;
+  
+    /* For text formatting. */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 0 0 5px #000;
+  }
+
+
+
+/* The styling for the static div. */
+.fondnoir{
+    box-sizing: border-box;
+    color: white;
+    background-color: black;
+    width: 100vw;
+    /*padding: 80px 80px;*/
+    height: 50vh;
+  }
+
+.parallax1 {
+    background-image: url("https://cdn.pixabay.com/photo/2023/06/07/18/36/salar-de-uyuni-8047872_1280.jpg");
+  }
+  
+.parallax2 {
+    background-image: url("https://c.files.bbci.co.uk/E97C/production/_128027795_gettyimages-636379014.jpg");
+  }
+  
+
+.mot{
+    color: white;
+    text-align: center;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 30px;
+}
+
+
+
+/*    display: flex;
+align-items: center;
+justify-content: center;
+*/
+
