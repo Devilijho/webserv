@@ -46,8 +46,9 @@ int	handle_static_request(RequestHandlerData &data, const ServerConfig &srv)
 	std::string buffer;
 	std::ostringstream oss;
 
-	if (data.FileName == (srv.root + std::string("/")))
-		data.FileName = srv.root + std::string("/") + srv.index;
+	(void)srv;
+	if (getFileType(data.FileName) == DIRECTORY)
+		data.FileName = (std::string(data.FileName) + std::string("index.html"));
 	data.staticFile.open(data.FileName.c_str());
 	if (data.staticFile.is_open() == false)
 		return (ERROR);

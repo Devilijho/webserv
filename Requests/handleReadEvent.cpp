@@ -1,4 +1,5 @@
 #include "server.hpp"
+#include <unistd.h>
 
 std::string Server::toString(int value) {
 	std::ostringstream oss;
@@ -96,9 +97,17 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	if (access(data.FileName.c_str(), F_OK) != SUCCESS){
 		errorHandling(data, srv, 404);
 	}
-	else if ((getFileType(data.FileName) != FILE && data.FileName != (srv.root + std::string("/"))) || access(data.FileName.c_str(), R_OK) != SUCCESS)
+	else if ((getFileType(data.FileName) != FILE || access(data.FileName.c_str(), R_OK) != SUCCESS))
 	{
-		if (getFileType(data.FileName) == DIRECTORY)
+		if (access((data.FileName + std::string("index.html")).c_str(), F_OK | R_OK) == SUCCESS
+			&& isAllowedMethod(method, loc)
+			&& method == "GET"
+		 	&& loc->autoindex == true)
+		{
+			if (handle_static_request(data, srv) != SUCCESS)
+				errorHandling(data, srv, 500);
+		}
+		else if (getFileType(data.FileName) == DIRECTORY && isAllowedMethod(method, loc) && loc->autoindex == true && method == "GET")
 			setCurrentDirFiles(data);
 		else
 			errorHandling(data, srv, 403);
