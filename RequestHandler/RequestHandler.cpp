@@ -43,12 +43,11 @@ int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const Loca
 the server (not yet but easy to implement)*/
 
 
-int	handle_static_request(RequestHandlerData &data, const ServerConfig &srv)
+int	handle_static_request(RequestHandlerData &data)
 {
 	std::string buffer;
 	std::ostringstream oss;
 
-	(void)srv;
 	if (getFileType(data.FileName) == DIRECTORY)
 		data.FileName = (std::string(data.FileName) + std::string("index.html"));
 	data.staticFile.open(data.FileName.c_str());
@@ -101,11 +100,11 @@ int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi)
 
 /*fills some variables and returns a error page */
 
-void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code)
+void errorHandling(RequestHandlerData &data,const ServerConfig *srv, int code)
 {
-	std::map<int, std::string>::const_iterator it = srv.error_pages.find(code);
+	std::map<int, std::string>::const_iterator it = srv->error_pages.find(code);
 	std::string returnData;
-	if (it != srv.error_pages.end())
+	if (it != srv->error_pages.end())
 		data.FileName = it->second;
 	else
 		data.FileName = "./www/error/default.html";
@@ -113,7 +112,7 @@ void errorHandling(RequestHandlerData &data,const ServerConfig &srv, int code)
 	data.StatusLine = getStatusMessage(code);
 	if (access(data.FileName.c_str(), R_OK | F_OK) != 0)
 		return ;
-	if (handle_static_request(data, srv) != 0)
+	if (handle_static_request(data) != 0)
 		return ;
 }
 
