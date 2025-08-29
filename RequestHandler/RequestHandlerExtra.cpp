@@ -122,6 +122,8 @@ std::string getStatusMessage(int code)
 	}
 }
 
+/*return a type of file taking as parameter the filename (relative or absolute path) */
+
 int	getFileType(std::string filename)
 {
 	struct stat s;
@@ -139,6 +141,8 @@ int	getFileType(std::string filename)
 		return ERROR;
 }
 
+/*returns true or false depending if all the methods located in the current directory are allowed or not */
+
 bool	isAllowedMethod(std::string method, const LocationConfig *loc)
 {
 	std::vector<std::string>::const_iterator it;
@@ -152,6 +156,8 @@ bool	isAllowedMethod(std::string method, const LocationConfig *loc)
 	}
 	return false;
 }
+
+/* fills data.FileContent with the files that are currently on the directory */
 
 void	setCurrentDirFiles(RequestHandlerData &data)
 {

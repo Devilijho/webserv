@@ -7,16 +7,11 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string>
-#include <ostream>
-#include <iostream>
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <vector>
-#include <sstream>
 #include <sys/stat.h>
 #include <fstream>
-#include <istream>
-#include <streambuf>
 #include <dirent.h>
 
 #define SUCCESS 0
@@ -48,8 +43,8 @@ struct RequestHandlerData
 	int	fdOut[2];
 	int fdIn[2];
 
-	std::string requestBuffer;   // Accumulated request
-	std::string responseBuffer;  // Response to send
+	std::string requestBuffer;
+	std::string responseBuffer;
 	size_t bytesSent;
 };
 

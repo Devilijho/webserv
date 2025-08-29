@@ -1,6 +1,5 @@
 #include "server.hpp"
 
-
 std::string Server::toString(int value) {
 	std::ostringstream oss;
 	oss << value;
