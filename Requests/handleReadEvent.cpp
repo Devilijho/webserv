@@ -98,10 +98,12 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 		errorHandling(data, srv, 404);
 	}
 	else if ((getFileType(data.FileName) != FILE && data.FileName != (srv.root + std::string("/"))) || access(data.FileName.c_str(), R_OK) != SUCCESS)
+	{
 		if (getFileType(data.FileName) == DIRECTORY)
 			setCurrentDirFiles(data);
 		else
 			errorHandling(data, srv, 403);
+	}
 	else if (data.FileContentType == "php" && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
