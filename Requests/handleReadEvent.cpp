@@ -91,7 +91,8 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	const LocationConfig *loc = srv->findLocation(path);
 
 	RequestHandlerData data;
-	data.FileName = srv->root + path;
+	data.path = path;
+	data.FileName = srv->root + data.path;
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
 

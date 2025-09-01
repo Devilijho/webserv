@@ -168,18 +168,18 @@ void	setCurrentDirFiles(RequestHandlerData &data)
 	directory = opendir(data.FileName.c_str());
 	if (directory == NULL)
 		return ;
-	for (int time = 0; time < 2; time++)
-	{
-		directoryIt = readdir(directory);
-		if (directoryIt == NULL)
-			return ;
-	}
+	directoryIt = readdir(directory); // this is to get rid of the "." directory
+	if (directoryIt == NULL)
+		return ;
 	while (1)
 	{
 		directoryIt = readdir(directory);
 		if (directoryIt == NULL)
 			break ;
-		files = files + directoryIt->d_name + "\n";
+		if (data.path[data.path.length() - 1] == '/')
+			files = files + "<a href=http://localhost:8080/" + data.path  +  directoryIt->d_name + ">" + directoryIt->d_name + "</a>\n";
+		else
+			files = files + "<a href=http://localhost:8080/" + data.path + "/" +  directoryIt->d_name + ">" + directoryIt->d_name + "</a>\n";;
 	}
 	data.FileContent = files;
 	closedir(directory);

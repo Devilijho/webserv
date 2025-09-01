@@ -30,6 +30,7 @@ struct RequestHandlerData
 	std::ifstream staticFile;
 	std::string	FileName;
 	std::string FileContentType;
+	std::string path;
 
 	std::string FileContent;
 	std::string StatusLine;
