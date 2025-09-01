@@ -65,7 +65,7 @@ int	getFileType(std::string filename);
 void	setRequestBody(RequestHandlerData &data);
 void setQueryData(RequestHandlerData &data);
 bool	isAllowedMethod(std::string method, const LocationConfig *loc);
-void	setCurrentDirFiles(RequestHandlerData &data);
+void	setCurrentDirFiles(RequestHandlerData &data, const ServerConfig &srv, const LocationConfig *loc);
 std::string getRequestContentType(RequestHandlerData &data);
 std::string getETag(std::string fileName);
 std::string getContentType(std::string);

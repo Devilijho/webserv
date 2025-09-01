@@ -159,7 +159,7 @@ bool	isAllowedMethod(std::string method, const LocationConfig *loc)
 
 /* fills data.FileContent with the files that are currently on the directory */
 
-void	setCurrentDirFiles(RequestHandlerData &data)
+void	setCurrentDirFiles(RequestHandlerData &data, const ServerConfig &srv, const LocationConfig *loc)
 {
 	std::string files;
 	DIR *directory;
@@ -171,15 +171,17 @@ void	setCurrentDirFiles(RequestHandlerData &data)
 	directoryIt = readdir(directory); // this is to get rid of the "." directory
 	if (directoryIt == NULL)
 		return ;
+	(void)loc;
 	while (1)
 	{
 		directoryIt = readdir(directory);
+		std::cout << data.path[data.path.length() - 1];
 		if (directoryIt == NULL)
 			break ;
 		if (data.path[data.path.length() - 1] == '/')
-			files = files + "<a href=http://localhost:8080/" + data.path  +  directoryIt->d_name + ">" + directoryIt->d_name + "</a>\n";
+			files = files + "<a href=http://localhost:" + toString(srv.port) + data.path  +  directoryIt->d_name + ">" + directoryIt->d_name + "</a>\n";
 		else
-			files = files + "<a href=http://localhost:8080/" + data.path + "/" +  directoryIt->d_name + ">" + directoryIt->d_name + "</a>\n";;
+			files = files + "<a href=http://localhost:" + toString(srv.port) + data.path  + "/" +  directoryIt->d_name + ">" + directoryIt->d_name + "</a>\n";
 	}
 	data.FileContent = files;
 	closedir(directory);

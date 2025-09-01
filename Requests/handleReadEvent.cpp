@@ -112,7 +112,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 				errorHandling(data, srv, 500);
 		}
 		else if (getFileType(data.FileName) == DIRECTORY && isAllowedMethod(method, loc) && loc->autoindex == true && method == "GET")
-			setCurrentDirFiles(data);
+			setCurrentDirFiles(data, *srv, loc);
 		else
 			errorHandling(data, srv, 403);
 	}
