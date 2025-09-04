@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
 	std::string configFile = (argc > 1) ? argv[1] : "default.conf";
 
 	if (!parser.parseFile(configFile)) {
-	std::cerr << "Error: Failed to parse configuration file" << std::endl;
-	return 1;
+		std::cerr << "Error: Failed to parse configuration file" << std::endl;
+		return 1;
 	}
 
 	if (!parser.isValid()) {
@@ -62,30 +62,37 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	// Convert to vector of pointers
-	std::vector<ServerConfig*> serverPtrs;
-	for (size_t i = 0; i < servers.size(); ++i) {
-		 ServerConfig* server = new ServerConfig(*servers[i]); // heap-allocate a copy
-		serverPtrs.push_back(server);
-	}
+	// Create one Server instance to manage all sockets
+    Server server;
+    if (!server.start(servers, configFile)) {
+        std::cerr << "Error: Failed to start servers" << std::endl;
+        return 1;
+    }
 
-	// Start each server
-	for (size_t i = 0; i < serverPtrs.size(); ++i) {
-		ServerConfig* cfg = serverPtrs[i];
-		std::cout << "Starting server on " << cfg->host << ":" << cfg->port << std::endl;
+	// // Convert to vector of pointers
+	// std::vector<ServerConfig*> serverPtrs;
+	// for (size_t i = 0; i < servers.size(); ++i) {
+	// 	 ServerConfig* server = new ServerConfig(*servers[i]); // heap-allocate a copy
+	// 	serverPtrs.push_back(server);
+	// }
 
-		// Create server instance
-		Server server;
-		std::vector<ServerConfig*> singleServer;
-		singleServer.push_back(cfg);
+	// // Start each server
+	// for (size_t i = 0; i < serverPtrs.size(); ++i) {
+	// 	ServerConfig* cfg = serverPtrs[i];
+	// 	std::cout << "Starting server on " << cfg->host << ":" << cfg->port << std::endl;
 
-		server.start(singleServer, configFile);
-	}
+	// 	// Create server instance
+	// 	Server server;
+	// 	std::vector<ServerConfig*> singleServer;
+	// 	singleServer.push_back(cfg);
 
-	// Free memory (avoid leaks)
-	for (size_t i = 0; i < serverPtrs.size(); ++i) {
-		delete serverPtrs[i];
-	}
+	// 	server.start(singleServer, configFile);
+	// }
+
+	// // Free memory (avoid leaks)
+	// for (size_t i = 0; i < serverPtrs.size(); ++i) {
+	// 	delete serverPtrs[i];
+	// }
 
 	return 0;
 }

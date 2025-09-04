@@ -28,13 +28,13 @@ bool Server::start(const std::vector<ServerConfig*>& servers, const std::string&
 	{
 		ServerConfig* cfg = configs[i]; // pointer instead of value
 
-        int fd = setupSocket(cfg);  // setupSocket must accept ServerConfig*
+		int fd = setupSocket(cfg);  // setupSocket must accept ServerConfig*
 		 if (fd < 0)
-        {
-            std::cerr << "[ERROR] Failed to set up socket for "
-                      << cfg->host << ":" << cfg->port << std::endl;
-            return false;
-        }
+		{
+			std::cerr << "[ERROR] Failed to set up socket for "
+					  << cfg->host << ":" << cfg->port << std::endl;
+			return false;
+		}
 		listeningSockets[fd] = configs[i]; //server_fds.push_back(fd);
 		addServerSocketToPoll(fd);
 	}
@@ -144,8 +144,8 @@ void Server::closeConnection(int client_fd)
 	// 2. Clean up client data (delete before erasing pointer from map)
 	std::map<int, RequestHandlerData*>::iterator it = clientSockets.find(client_fd);
 	if (it != clientSockets.end()) {
-		delete it->second;              // free the allocated RequestHandlerData
-		clientSockets.erase(it);        // remove from map
+		delete it->second;			  // free the allocated RequestHandlerData
+		clientSockets.erase(it);		// remove from map
 	}
 
 	clientBuffers.erase(client_fd);
