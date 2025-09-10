@@ -83,52 +83,73 @@ bool Server::handleReadEvent(int client_fd)
 
 std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig)
 {
-	std::istringstream req_stream(raw_request);
-	std::string method, path, protocol;
-	req_stream >> method >> path >> protocol;
+    std::istringstream req_stream(raw_request);
+    std::string method, path, protocol;
+    req_stream >> method >> path >> protocol;
 
-	const ServerConfig* srv = serverConfig;
-	const LocationConfig *loc = srv->findLocation(path);
+    const ServerConfig* srv = serverConfig;
+    const LocationConfig *loc = srv->findLocation(path);
 
-	RequestHandlerData data;
-	data.path = path;
-	data.FileName = srv->root + data.path;
-	data.requestMethod = method;
-	data.rawRequest = raw_request;
+    RequestHandlerData data;
+    data.path = path;
+    data.requestMethod = method;
+    data.rawRequest = raw_request;
 
-	setData(data, *srv, loc);
+    // ✅ CONSTRUCCIÓN DE FILENAME SIN DEBUG
+    if (loc && !loc->root.empty()) {
+        std::string remaining_path = path.substr(loc->path.length());
+        if (remaining_path.empty()) {
+            remaining_path = "/";
+        }
+        data.FileName = loc->root + remaining_path;
 
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
-		errorHandling(data, srv, 404);
-	}
-	else if ((getFileType(data.FileName) != FILE || access(data.FileName.c_str(), R_OK) != SUCCESS))
-	{
-		if (access((data.FileName + std::string("index.html")).c_str(), F_OK | R_OK) == SUCCESS
-			&& isAllowedMethod(method, loc)
-			&& method == "GET"
-		 	&& loc->autoindex == true)
-		{
-			if (handle_static_request(data) != SUCCESS)
-				errorHandling(data, srv, 500);
-		}
-		else if (getFileType(data.FileName) == DIRECTORY && isAllowedMethod(method, loc) && loc->autoindex == true && method == "GET")
-			setCurrentDirFiles(data, *srv, loc);
-		else
-			errorHandling(data, srv, 403);
-	}
-	else if (("." + data.FileContentType) == loc->cgi_extension && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
-		data.FileContentType = "html";
-		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
-			errorHandling(data, srv, 500);
-	}
-	else if (method == "GET"){
-		if (handle_static_request(data) != SUCCESS)
-			errorHandling(data, srv, 500);
-	}
-	else if (method == "DELETE")
-		handle_delete_request(data);
-	else
-		errorHandling(data, srv, 405);
+        // ✅ AÑADIR INDEX SI TERMINA EN /
+        if (!data.FileName.empty() && data.FileName[data.FileName.size() - 1] == '/') {
+            std::string index_file = loc->index.empty() ? srv->index : loc->index;
+            data.FileName += index_file;
+        }
+    } else {
+        data.FileName = srv->root + path;
 
-	return (http_response(data, const_cast<ServerConfig&>(*srv)));
+        // ✅ AÑADIR INDEX SI TERMINA EN /
+        if (!data.FileName.empty() && data.FileName[data.FileName.size() - 1] == '/') {
+            data.FileName += srv->index;
+        }
+    }
+
+    setData(data, *srv, loc);
+
+    if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
+        errorHandling(data, srv, 404);
+    }
+    else if ((getFileType(data.FileName) != FILE || access(data.FileName.c_str(), R_OK) != SUCCESS))
+    {
+        if (access((data.FileName + std::string("index.html")).c_str(), F_OK | R_OK) == SUCCESS
+            && isAllowedMethod(method, loc)
+            && method == "GET"
+            && loc->autoindex == true)
+        {
+            if (handle_static_request(data) != SUCCESS)
+                errorHandling(data, srv, 500);
+        }
+        else if (getFileType(data.FileName) == DIRECTORY && isAllowedMethod(method, loc) && loc->autoindex == true && method == "GET")
+            setCurrentDirFiles(data, *srv, loc);
+        else
+            errorHandling(data, srv, 403);
+    }
+    else if (("." + data.FileContentType) == loc->cgi_extension && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
+        data.FileContentType = "html";
+        if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
+            errorHandling(data, srv, 500);
+    }
+    else if (method == "GET"){
+        if (handle_static_request(data) != SUCCESS)
+            errorHandling(data, srv, 500);
+    }
+    else if (method == "DELETE")
+        handle_delete_request(data);
+    else
+        errorHandling(data, srv, 405);
+
+    return (http_response(data, const_cast<ServerConfig&>(*srv)));
 }
