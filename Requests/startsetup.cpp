@@ -73,7 +73,7 @@ int Server::setupSocket(const ServerConfig* cfg)
 	}
 	freeaddrinfo(res);
 
-	if (listen(fd, 10) < 0)
+	if (listen(fd, 100) < 0)
 		return perror("listen"), close(fd), -1;
 
 	std::cout << "[INFO] Listening on " << cfg->host << ":" << cfg->port << std::endl;
