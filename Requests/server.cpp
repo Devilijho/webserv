@@ -46,15 +46,20 @@ bool Server::start(const std::vector<ServerConfig*>& servers, const std::string&
 
 void Server::eventLoop()
 {
-	while (true)
-	{
-		int ret = poll(&poll_fds[0], poll_fds.size(), -1);
+	std::cout << "[INFO] Entering event loop" << std::endl;
+
+	while (g_running) {
+		int ret = poll(&poll_fds[0], poll_fds.size(), 100);
 		if (ret < 0)
 		{
-			if (errno == EINTR) continue;
+			if (errno == EINTR) {
+				std::cout << "[DEBUG] Poll interrupted by signal, g_running = " << g_running << std::endl;
+				// continue;
+			}
 			perror("poll");
 			break;
 		}
+		if (ret == 0) continue;
 
 		for (int i = static_cast<int>(poll_fds.size()) - 1; i >= 0; --i)
 		{
@@ -89,6 +94,32 @@ void Server::eventLoop()
 				++it;
 		}
 	}
+	std::cout << "[INFO] Exited event loop, running cleanup" << std::endl;
+	cleanup();
+}
+
+void Server::cleanup()
+{
+	std::cout << "[INFO] Cleaning up before exit..." << std::endl;
+
+	// Close all client sockets
+	for (std::map<int, RequestHandlerData*>::iterator it = clientSockets.begin(); it != clientSockets.end(); ++it) {
+		close(it->first);
+		delete it->second;
+	}
+	clientSockets.clear();
+
+	// Close listening sockets
+	for (std::map<int, ServerConfig*>::iterator it = listeningSockets.begin(); it != listeningSockets.end(); ++it) {
+		close(it->first);
+	}
+	listeningSockets.clear();
+
+	poll_fds.clear();
+	clientBuffers.clear();
+	client_to_server_config.clear();
+
+	std::cout << "[INFO] Cleanup complete, exiting." << std::endl;
 }
 
 void Server::handleError(int fd) {
