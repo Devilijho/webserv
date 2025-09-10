@@ -101,6 +101,9 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS){
 		errorHandling(data, srv, 404);
 	}
+	else if (!isAllowedMethod(method, loc)){
+		errorHandling(data, srv, 403);
+	}
 	else if ((getFileType(data.FileName) != FILE || access(data.FileName.c_str(), R_OK) != SUCCESS))
 	{
 		if (access((data.FileName + std::string("index.html")).c_str(), F_OK | R_OK) == SUCCESS
