@@ -140,7 +140,9 @@ bool ConfigParser::parseLocationBlock(std::ifstream &file, LocationConfig* locat
         if (line == "}") return true;
 
         std::vector<std::string> tokens = split(line, ' ');
-        if (tokens.size() < 2) continue;
+        // if (tokens.size() < 2) continue;
+        // Permitir locations vacías (sin directivas)
+        if (tokens.empty()) continue;
 
         if (!parseLocationDirective(tokens, location)) {
             return false;

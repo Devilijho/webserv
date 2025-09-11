@@ -110,32 +110,22 @@ bool ConfigParser::validateLocation(size_t serverIndex, const ServerConfig* srv,
         return false;
     }
 
-    if (loc.methods.empty()) {
-        std::cerr << "Server " << serverIndex << " Location '" << loc.path
-                  << "': No methods defined" << std::endl;
-        return false;
-    }
-
     return validateLocationFiles(serverIndex, srv, loc);
 }
 
 bool ConfigParser::validateLocationFiles(size_t serverIndex, const ServerConfig *srv,
                                         const LocationConfig& loc) {
+    // Permitir que el root de la location no exista físicamente (nginx-like)
+    // Solo validar si el string está vacío, pero no si existe en disco
     std::string effectiveRoot = loc.root.empty() ? srv->root : loc.root;
-    if (access(effectiveRoot.c_str(), R_OK) != 0) {
+    if (effectiveRoot.empty()) {
         std::cerr << "Server " << serverIndex << " Location '" << loc.path
-                  << "': Root directory not accessible: " << effectiveRoot << std::endl;
+                  << "': Root directory not specified" << std::endl;
         return false;
     }
 
-    if (!loc.index.empty()) {
-        std::string fullLocationIndexPath = effectiveRoot + "/" + loc.index;
-        if (access(fullLocationIndexPath.c_str(), R_OK) != 0) {
-            std::cerr << "Server " << serverIndex << " Location '" << loc.path
-                      << "': Index file not found: " << fullLocationIndexPath << std::endl;
-            return false;
-        }
-    }
+    // No validar existencia de directorio ni index aquí
+    // Eso se gestiona en tiempo de petición
 
     if (!loc.cgi_path.empty()) {
         if (access(loc.cgi_path.c_str(), X_OK) != 0) {

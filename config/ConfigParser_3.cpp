@@ -30,10 +30,10 @@ bool ConfigParser::parseLocationHeader(const std::string& line, LocationConfig& 
 }
 
 bool ConfigParser::parseLocationMethodsDirective(const std::vector<std::string>& tokens, LocationConfig *location) {
-    if (tokens.size() < 2) {
-        std::cerr << "Error: Empty methods directive in location" << std::endl;
-        return false;
-    }
+    // if (tokens.size() < 2) {
+    //     std::cerr << "Error: Empty methods directive in location" << std::endl;
+    //     return false;
+    // }
 
     location->methods.clear();
 
@@ -54,10 +54,10 @@ bool ConfigParser::parseLocationMethodsDirective(const std::vector<std::string>&
         location->methods.push_back(method);
     }
 
-    if (location->methods.empty()) {
-        std::cerr << "Error: No valid methods found in location" << std::endl;
-        return false;
-    }
+    // if (location->methods.empty()) {
+    //     std::cerr << "Error: No valid methods found in location" << std::endl;
+    //     return false;
+    // }
 
     return true;
 }
