@@ -220,8 +220,8 @@ var close = document.getElementsByClassName("close");
 var i;
 for (i = 0; i < close.length; i++) {
   close[i].onclick = function() {
-    var div = this.parentElement;
-    div.style.display = "none";
+	var div = this.parentElement;
+	div.style.display = "none";
   }
 }
 
@@ -229,7 +229,7 @@ for (i = 0; i < close.length; i++) {
 var list = document.querySelector('ul');
 list.addEventListener('click', function(ev) {
   if (ev.target.tagName === 'LI') {
-    ev.target.classList.toggle('checked');
+	ev.target.classList.toggle('checked');
   }
 }, false);
 
@@ -240,9 +240,9 @@ function newElement() {
   var t = document.createTextNode(inputValue);
   li.appendChild(t);
   if (inputValue === '') {
-    alert("You must write something!");
+	alert("You must write something!");
   } else {
-    document.getElementById("myUL").appendChild(li);
+	document.getElementById("myUL").appendChild(li);
   }
   document.getElementById("myInput").value = "";
 
@@ -253,10 +253,10 @@ function newElement() {
   li.appendChild(span);
 
   for (i = 0; i < close.length; i++) {
-    close[i].onclick = function() {
-      var div = this.parentElement;
-      div.style.display = "none";
-    }
+	close[i].onclick = function() {
+	  var div = this.parentElement;
+	  div.style.display = "none";
+	}
   }
 }
 </script>

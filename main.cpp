@@ -63,11 +63,11 @@ int main(int argc, char* argv[])
 	}
 
 	// Create one Server instance to manage all sockets
-    Server server;
-    if (!server.start(servers, configFile)) {
-        std::cerr << "Error: Failed to start servers" << std::endl;
-        return 1;
-    }
+	Server server;
+	if (!server.start(servers, configFile)) {
+		std::cerr << "Error: Failed to start servers" << std::endl;
+		return 1;
+	}
 
 	// // Convert to vector of pointers
 	// std::vector<ServerConfig*> serverPtrs;
