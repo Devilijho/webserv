@@ -8,7 +8,8 @@ std::string Server::toString(int value) {
 	return oss.str();
 }
 
-bool Server::hasCompleteRequest(int client_fd) {
+bool Server::hasCompleteRequest(int client_fd)
+{
 	RequestHandlerData* data = clientSockets[client_fd];
 	if (!data)
 		return false;
