@@ -9,13 +9,13 @@ ConfigParser::ConfigParser() : _is_parsed(false) {}
 ConfigParser::~ConfigParser() {
 	for (size_t i = 0; i < _servers.size(); ++i) {
 		ServerConfig* server = _servers[i];
-		
+
 		// Delete all LocationConfig objects first
 		for (size_t j = 0; j < server->locations.size(); ++j) {
 			delete server->locations[j];
 		}
 		server->locations.clear();
-		
+
 		// Then delete the ServerConfig
 		delete server;
 	}
@@ -149,7 +149,9 @@ bool ConfigParser::parseLocationBlock(std::ifstream &file, LocationConfig* locat
 		if (line == "}") return true;
 
 		std::vector<std::string> tokens = split(line, ' ');
-		if (tokens.size() < 2) continue;
+		// if (tokens.size() < 2) continue;
+		// Permitir locations vacías (sin directivas)
+		if (tokens.empty()) continue;
 
 		if (!parseLocationDirective(tokens, location)) {
 			return false;

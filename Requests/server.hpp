@@ -67,8 +67,14 @@ class Server
 		// --- Client handling ---
 		void acceptClient(int server_fd);
 		void closeConnection(int client_fd);
+
+		bool isMethodAllowed(const LocationConfig* loc, const std::string& method) const;
+		std::string getFullPath(const LocationConfig* loc, const ServerConfig* srv, const std::string& path) const;
+		void handleResource(RequestHandlerData& data, const LocationConfig* loc, const ServerConfig* srv, const std::string& method);
+		void handleFileRequest(RequestHandlerData& data, const LocationConfig* loc, const ServerConfig* srv, const std::string& method, bool isAllowed);
+
 		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig);
-	
+
 		std::string toString(int value);
 		bool accumulateRequest(int client_fd, char* buffer, ssize_t bytes_read);
 		std::string processRequest(int client_fd);

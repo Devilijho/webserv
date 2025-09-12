@@ -74,6 +74,6 @@ int main(int argc, char* argv[])
 	 std::cout << "[INFO] Starting server..." << std::endl;
     server.start(servers, configFile);
     std::cout << "[INFO] Server stopped" << std::endl;
-    
+
 	return 0;
 }
