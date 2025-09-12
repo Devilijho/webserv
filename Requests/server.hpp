@@ -15,12 +15,15 @@
 #include <poll.h>
 #include <algorithm>
 #include <netdb.h>
+#include <csignal>
 
 // #include "../config/ConfigParser.hpp"
 // #include "../config/ServerConfig.hpp"
 #include "../config/ConfigParser.hpp"
 #include "../config/ServerConfig2.hpp"
 #include "../RequestHandler/RequestHandler.hpp"
+
+static volatile sig_atomic_t g_running = 1;
 
 struct RequestHandlerData;
 
@@ -75,7 +78,7 @@ class Server
 		bool sendResponse(int client_fd, const std::string& response);
 		bool hasCompleteRequest(int client_fd);
 
-
+		void cleanup();
 };
 
 struct ClientData {

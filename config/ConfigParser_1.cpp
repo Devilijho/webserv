@@ -8,7 +8,16 @@ ConfigParser::ConfigParser() : _is_parsed(false) {}
 
 ConfigParser::~ConfigParser() {
 	for (size_t i = 0; i < _servers.size(); ++i) {
-		delete _servers[i];
+		ServerConfig* server = _servers[i];
+
+		// Delete all LocationConfig objects first
+		for (size_t j = 0; j < server->locations.size(); ++j) {
+			delete server->locations[j];
+		}
+		server->locations.clear();
+
+		// Then delete the ServerConfig
+		delete server;
 	}
 	_servers.clear();
 }
