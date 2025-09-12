@@ -28,8 +28,7 @@ bool Server::start(const std::vector<ServerConfig*>& servers, const std::string&
 		int fd = setupSocket(cfg);  // setupSocket must accept ServerConfig*
 		if (fd < 0)
 		{
-			std::cerr << "[ERROR] Failed to set up socket for "
-					  << cfg->host << ":" << cfg->port << std::endl;
+			std::cerr << "[ERROR] Failed to set up socket for " << cfg->host << ":" << cfg->port << std::endl;
 			return false;
 		}
 		listeningSockets[fd] = configs[i]; //server_fds.push_back(fd);
@@ -54,7 +53,7 @@ void Server::eventLoop()
 			perror("poll");
 			break;
 		}
-		if (ret == 0) continue;
+		if (ret == 0) continue; // no events occurred within timeout, loop again
 
 		// Process all events returned by poll (reading, writing, accepting new clients, and error events)
 		processPollEvents();
@@ -81,13 +80,13 @@ void Server::cleanup()
 		close(it->first);
 		delete it->second;
 	}
-	clientSockets.clear();
+	clientSockets.clear(); // Clear the map
 
 	// Close listening sockets
 	for (std::map<int, ServerConfig*>::iterator it = listeningSockets.begin(); it != listeningSockets.end(); ++it) {
 		close(it->first);
 	}
-	listeningSockets.clear();
+	listeningSockets.clear(); // Clear the map
 
 	poll_fds.clear();
 	clientBuffers.clear();
