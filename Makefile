@@ -10,6 +10,7 @@ sources =	main.cpp \
 			config/ConfigParser_3.cpp \
 			config/ConfigParser_4.cpp \
 			config/ConfigParser_5.cpp \
+			config/ConfigParser_6.cpp \
 			config/ServerConfig2.cpp
 
 OBJ_DIR = build

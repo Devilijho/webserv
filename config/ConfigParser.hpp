@@ -80,6 +80,11 @@ private:
 	bool isValidHostnameLabel(const std::string& label);
 	bool containsOnlyValidChars(const std::string& str);
 
+	bool isValidClientMaxBodySize(long size);
+    bool validateAndSetClientMaxBodySize(const std::string& value, size_t& target, const std::string& context);
+    bool validateAndSetPort(const std::string& value, int& target);
+    bool validateAndSetHost(const std::string& value, std::string& target);
+
 
 public:
 	ConfigParser();

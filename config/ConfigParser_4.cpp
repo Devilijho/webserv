@@ -26,13 +26,14 @@ bool ConfigParser::validateServer(size_t serverIndex, const ServerConfig *srv) {
 }
 
 bool ConfigParser::validateServerBasics(size_t serverIndex, const ServerConfig *srv) {
-	if (!isValidPort(srv->port)) {
+	// ✅ SOLO VERIFICAR VALORES FINALES, NO RE-VALIDAR
+	if (srv->port <= 0 || srv->port > 65535) {
 		std::cerr << "Server " << serverIndex << ": Invalid port " << srv->port << std::endl;
 		return false;
 	}
 
-	if (srv->host.empty() || !isValidHost(srv->host)) {
-		std::cerr << "Server " << serverIndex << ": Invalid host format '" << srv->host << "'" << std::endl;
+	if (srv->host.empty()) {
+		std::cerr << "Server " << serverIndex << ": Host cannot be empty" << std::endl;
 		return false;
 	}
 
@@ -41,9 +42,15 @@ bool ConfigParser::validateServerBasics(size_t serverIndex, const ServerConfig *
 		return false;
 	}
 
-	if (srv->client_max_body_size < 1024) {
-		std::cerr << "Server " << serverIndex << ": client_max_body_size too small: "
-				  << srv->client_max_body_size << " (minimum: 1024 bytes)" << std::endl;
+	// ✅ AÑADIR VALIDACIÓN DE server_name
+	if (srv->server_name.empty()) {
+		std::cerr << "Server " << serverIndex << ": server_name cannot be empty" << std::endl;
+		return false;
+	}
+
+	// ✅ NO RE-VALIDAR client_max_body_size (ya validado en parsing)
+	if (srv->client_max_body_size == 0) {
+		std::cerr << "Server " << serverIndex << ": client_max_body_size not set" << std::endl;
 		return false;
 	}
 

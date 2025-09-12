@@ -193,32 +193,16 @@ bool ConfigParser::parseLocationCgiPathDirective(const std::vector<std::string>&
 }
 
 bool ConfigParser::parseLocationClientMaxBodySizeDirective(const std::vector<std::string>& tokens, LocationConfig& location) {
-	if (tokens.size() < 2) {
-		std::cerr << "Error: Empty client_max_body_size directive in location" << std::endl;
-		return false;
-	}
+    if (tokens.size() < 2) {
+        std::cerr << "Error: Empty client_max_body_size directive in location" << std::endl;
+        return false;
+    }
 
-	std::string value = tokens[1];
-	if (!value.empty() && value[value.length() - 1] == ';') {
-		value = value.substr(0, value.length() - 1);
-	}
+    std::string value = tokens[1];
+    if (!value.empty() && value[value.length() - 1] == ';') {
+        value = value.substr(0, value.length() - 1);
+    }
 
-	if (value.empty()) {
-		std::cerr << "Error: client_max_body_size cannot be empty in location" << std::endl;
-		return false;
-	}
-
-	long size = atol(value.c_str());
-	if (size < 1024) {
-		std::cerr << "Error: client_max_body_size too small in location: " << size << " (minimum: 1024 bytes)" << std::endl;
-		return false;
-	}
-
-	if (size > 1073741824) {
-		std::cerr << "Error: client_max_body_size too large in location: " << size << " (maximum: 1GB)" << std::endl;
-		return false;
-	}
-
-	location.client_max_body_size = static_cast<size_t>(size);
-	return true;
+    // ✅ USAR FUNCIÓN CENTRALIZADA
+    return validateAndSetClientMaxBodySize(value, location.client_max_body_size, " in location");
 }
