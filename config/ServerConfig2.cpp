@@ -14,6 +14,17 @@ ServerConfig::ServerConfig()
 	// error_pages map se auto-inicializa vacío
 }
 
+ServerConfig::~ServerConfig() {
+    std::cout << "ServerConfig destructor: freeing " << locations.size() << " locations" << std::endl;
+    for (size_t i = 0; i < locations.size(); ++i) {
+        std::cout << "Deleting location " << i << ": " << locations[i]->path << std::endl;
+        delete locations[i];
+    }
+    locations.clear();
+    std::cout << "ServerConfig destructor: done" << std::endl;
+}
+
+
 // Critical method for Part C - finds the best matching location for a given path
 const LocationConfig *ServerConfig::findLocation(const std::string &path) const
 {

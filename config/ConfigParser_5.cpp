@@ -96,3 +96,55 @@ bool ConfigParser::isValidIPAddress(const std::string& ip) {
 bool ConfigParser::isValidHost(const std::string& host) {
 	return isValidIPAddress(host);
 }
+
+bool ConfigParser::isValidClientMaxBodySize(long size) {
+    return (size >= 1024 && size <= 1073741824);  // 1GB max
+}
+
+bool ConfigParser::validateAndSetClientMaxBodySize(const std::string& value, size_t& target, const std::string& context) {
+    if (value.empty()) {
+        std::cerr << "Error: client_max_body_size cannot be empty" << context << std::endl;
+        return false;
+    }
+
+    long size = atol(value.c_str());
+    if (size < 1024) {
+        std::cerr << "Error: client_max_body_size too small" << context << ": "
+                  << size << " (minimum: 1024 bytes)" << std::endl;
+        return false;
+    }
+
+    if (size > 1073741824) {  // 1GB
+        std::cerr << "Error: client_max_body_size too large" << context << ": "
+                  << size << " (maximum: 1GB)" << std::endl;
+        return false;
+    }
+
+    target = static_cast<size_t>(size);
+    return true;
+}
+
+bool ConfigParser::validateAndSetPort(const std::string& value, int& target) {
+    int port = atoi(value.c_str());
+    if (!isValidPort(port)) {
+        std::cerr << "Error: Invalid port '" << value << "' (must be 1-65535)" << std::endl;
+        return false;
+    }
+    target = port;
+    return true;
+}
+
+bool ConfigParser::validateAndSetHost(const std::string& value, std::string& target) {
+    if (value.empty()) {
+        std::cerr << "Error: Host cannot be empty" << std::endl;
+        return false;
+    }
+
+    if (!isValidHost(value)) {
+        std::cerr << "Error: Invalid host format '" << value << "'" << std::endl;
+        return false;
+    }
+
+    target = value;
+    return true;
+}

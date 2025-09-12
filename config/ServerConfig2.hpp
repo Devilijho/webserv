@@ -1,6 +1,7 @@
 #ifndef SERVERCONFIG_HPP
 #define SERVERCONFIG_HPP
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <map>
@@ -37,6 +38,7 @@ struct ServerConfig {
 
 	// Constructor con valores por defecto
 	ServerConfig();
+	~ServerConfig();
 
 	// Critical methods for Part C
 	const LocationConfig *findLocation(const std::string &path) const;
