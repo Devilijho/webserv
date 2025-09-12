@@ -12,6 +12,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <map>
+#include <algorithm>
 
 #include "ServerConfig2.hpp"
 
@@ -73,6 +74,12 @@ private:
 	bool isValidPort(int port);
 	bool isValidIPAddress(const std::string& ip);
 	bool isValidHost(const std::string& host);
+
+	// Validación básica de hostnames (sin wildcards)
+	bool isValidHostname(const std::string& hostname);
+	bool isValidHostnameLabel(const std::string& label);
+	bool containsOnlyValidChars(const std::string& str);
+
 
 public:
 	ConfigParser();
