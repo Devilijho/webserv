@@ -11,6 +11,7 @@ int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const Loca
 	setQueryData(data);
 
 	data.args_str.push_back(data.FileName);
+	// data.args_str.push_back(loc->cgi_path);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
 	data.env_str.push_back("REDIRECT_STATUS=CGI");
