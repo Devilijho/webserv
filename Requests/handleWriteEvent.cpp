@@ -6,10 +6,8 @@
 bool Server::handleWriteEvent(int client_fd)
 {
 	RequestHandlerData* data = clientSockets[client_fd];
-	if (!data || data->responseBuffer.empty()) {
-		// Nothing to write
-		return true;
-	}
+	if (!data || data->responseBuffer.empty())
+		return true; // Nothing to write
 
 	ssize_t bytes_to_send = data->responseBuffer.size() - data->bytesSent;
 	ssize_t sent = send(client_fd, data->responseBuffer.c_str() + data->bytesSent, bytes_to_send, 0);
@@ -21,11 +19,12 @@ bool Server::handleWriteEvent(int client_fd)
 
 	// data->bytesSent += sent;
 
-	// If fully sent, we can close the connection (HTTP/1.0 style)
+	 
 	if (data->bytesSent >= data->responseBuffer.size())
 	{
 		data->responseBuffer.clear();
 		data->bytesSent = 0;
+		// Since we have nothing left to send; disable POLLOUT for this socket in poll
 		for (size_t i = 0; i < poll_fds.size(); ++i) {
 				if (poll_fds[i].fd == client_fd) {
 						poll_fds[i].events &= ~POLLOUT;
