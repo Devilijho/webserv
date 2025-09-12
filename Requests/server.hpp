@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <netdb.h>
 #include <csignal>
+// #include <arpa/inet.h>
+
 
 // #include "../config/ConfigParser.hpp"
 // #include "../config/ServerConfig.hpp"
@@ -57,6 +59,7 @@ class Server
 
 		// --- Event loop ---
 		void eventLoop();
+		void processPollEvents();
 		bool handleWriteEvent(int fd);
 		void handleError(int fd);
 		bool handleReadEvent(int fd);

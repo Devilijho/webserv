@@ -37,3 +37,27 @@ bool Server::handleWriteEvent(int client_fd)
 	return true;
 }
 
+void Server::closeConnection(int client_fd)
+{
+	// Remove from poll_fds by marking fd as -1
+	for (std::vector<struct pollfd>::iterator it = poll_fds.begin(); it != poll_fds.end(); ++it) {
+		if (it->fd == client_fd) {
+			it->fd = -1; // Mark for cleanup instead of erasing immediately
+			break;
+		}
+	}
+	
+	// 2. Clean up client data (delete before erasing pointer from map)
+	std::map<int, RequestHandlerData*>::iterator it = clientSockets.find(client_fd);
+	if (it != clientSockets.end()) {
+		delete it->second;			  // free the allocated RequestHandlerData
+		clientSockets.erase(it);		// remove from map
+	}
+
+	clientBuffers.erase(client_fd);
+	client_to_server_config.erase(client_fd);
+
+	// Close the socket
+	close(client_fd);
+	std::cout << "[INFO] Closed connection on fd " << client_fd << std::endl;
+}

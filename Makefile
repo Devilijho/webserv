@@ -1,5 +1,6 @@
 sources =	main.cpp \
 			Requests/server.cpp \
+			Requests/utils.cpp \
 			Requests/startsetup.cpp \
 			Requests/handleReadEvent.cpp \
 			Requests/handleWriteEvent.cpp \
