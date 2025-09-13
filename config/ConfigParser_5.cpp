@@ -98,7 +98,7 @@ bool ConfigParser::isValidHost(const std::string& host) {
 }
 
 bool ConfigParser::isValidClientMaxBodySize(long size) {
-    return (size >= 1024 && size <= 1073741824);  // 1GB max
+    return (size > 0 && size <= 1073741824);  // 1GB max
 }
 
 bool ConfigParser::validateAndSetClientMaxBodySize(const std::string& value, size_t& target, const std::string& context) {
@@ -108,9 +108,9 @@ bool ConfigParser::validateAndSetClientMaxBodySize(const std::string& value, siz
     }
 
     long size = atol(value.c_str());
-    if (size < 1024) {
-        std::cerr << "Error: client_max_body_size too small" << context << ": "
-                  << size << " (minimum: 1024 bytes)" << std::endl;
+    if (size <= 0) {
+        std::cerr << "Error: client_max_body_size negative" << context << ": "
+                  << size << std::endl;
         return false;
     }
 
