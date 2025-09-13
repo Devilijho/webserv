@@ -116,7 +116,7 @@ std::string getStatusMessage(int code)
 		case 403: return "HTTP/1.1 403 Forbidden";
 		case 404: return "HTTP/1.1 404 Not Found";
 		case 405: return "HTTP/1.1 405 Method Not Allowed";
-		case 408: return "HTTP/1.1 408 Request Timeout"; 
+		case 508: return "HTTP/1.1 508 Loop Detected";
 		case 413: return "HTTP/1.1 413 Payload Too Large";
 		case 500: return "HTTP/1.1 500 Internal Server Error";
 		default:  return "HTTP/1.1 501 Not Implemented";
