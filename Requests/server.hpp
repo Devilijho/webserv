@@ -61,8 +61,8 @@ class Server
 		// --- Client handling ---
 		void acceptClient(int server_fd);
 		void closeConnection(int client_fd);
-		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig);
-	
+		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig, std::vector<struct pollfd> pollfd);
+
 		std::string toString(int value);
 		bool accumulateRequest(int client_fd, char* buffer, ssize_t bytes_read);
 		std::string processRequest(int client_fd);

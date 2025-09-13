@@ -4,6 +4,7 @@
 #include "../config/ServerConfig2.hpp"
 #include "../Requests/server.hpp"
 #include <fstream>
+#include <sys/poll.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string>
@@ -53,7 +54,7 @@ struct RequestHandlerData
 
 void errorHandling(RequestHandlerData &data, const ServerConfig *srv, int code);
 void	handle_delete_request(RequestHandlerData &data);
-int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi);
+int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi, std::vector<struct pollfd> pollfd);
 int	handle_static_request(RequestHandlerData &data);
 int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const LocationConfig *loc);
 std::string http_response(RequestHandlerData &data, ServerConfig &srv);

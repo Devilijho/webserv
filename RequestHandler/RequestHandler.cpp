@@ -1,6 +1,8 @@
 #include "RequestHandler.hpp"
 #include <complex>
+#include <sys/poll.h>
 #include <unistd.h>
+#include <vector>
 
 /*Sets data and the variables needed for the dynamic file handling*/
 
@@ -62,7 +64,7 @@ int	handle_static_request(RequestHandlerData &data)
 
 /*Executes a script such as PHP with phpCGI, returns the output trough a pipe*/
 
-int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi)
+int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi, std::vector<struct pollfd> pollfds)
 {
 	pid_t pid;
 	int		return_value;
@@ -80,6 +82,10 @@ int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi)
 		close(data.fdIn[1]);
 		dup2(data.fdOut[1], STDOUT_FILENO);
 		dup2(data.fdIn[0], STDIN_FILENO);
+		close(data.fdIn[0]);
+		close(data.fdOut[1]);
+		for (unsigned long i = 0; i < pollfds.size(); i++)
+			close(pollfds[i].fd);
 		child_status = execve(path_cgi, data.args.data(), data.env.data());
 		_exit(child_status);
 	}

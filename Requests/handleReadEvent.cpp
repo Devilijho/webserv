@@ -1,5 +1,7 @@
 #include "server.hpp"
+#include <sys/poll.h>
 #include <unistd.h>
+#include <vector>
 
 
 std::string Server::toString(int value) {
@@ -61,7 +63,7 @@ bool Server::handleReadEvent(int client_fd)
 
 	// Process request and prepare response
 	std::string response = buildHttpResponse(clientSockets[client_fd]->requestBuffer,
-											 client_to_server_config[client_fd]);
+											 client_to_server_config[client_fd], this->poll_fds);
 
 	RequestHandlerData* data = clientSockets[client_fd];
 	data->responseBuffer = response;
@@ -81,7 +83,7 @@ bool Server::handleReadEvent(int client_fd)
 }
 
 
-std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig)
+std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig, std::vector<struct pollfd> pollfd)
 {
 	std::istringstream req_stream(raw_request);
 	std::string method, path, protocol;
@@ -121,7 +123,7 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	}
 	else if (("." + data.FileContentType) == loc->cgi_extension && (method == "GET" || method == "POST") && isAllowedMethod(method, loc)){
 		data.FileContentType = "html";
-		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
+		if (handle_dynamic_request(data, loc->cgi_path.c_str(), pollfd) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "GET"){
