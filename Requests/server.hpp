@@ -38,6 +38,8 @@ class Server
 		bool start(	const std::vector<ServerConfig*>& servers,
 					const std::string& configFile = "default.conf");
 
+		std::vector<struct pollfd> poll_fds;				// poll() structures for event loop
+		std::map<int, RequestHandlerData*> clientSockets;	// Client FD -> state/data
 	private:
 		// --- Server Configuration ---
 		std::vector<ServerConfig*> configs;					// List of server configs
@@ -45,11 +47,9 @@ class Server
 		std::map<int, ServerConfig*> client_to_server_config;// Client FD -> selected server config
 
 		// --- Client Connections ---
-		std::map<int, RequestHandlerData*> clientSockets;	// Client FD -> state/data
 		std::map<int, std::string> clientBuffers;			// Client FD -> accumulated request buffer
 
 		// --- Sockets & Polling ---
-		std::vector<struct pollfd> poll_fds;				// poll() structures for event loop
 
 		// --- Setup / Initialization ---
 		bool loadConfig(const std::string& configFile);

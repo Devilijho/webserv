@@ -13,7 +13,6 @@ int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const Loca
 	setQueryData(data);
 
 	data.args_str.push_back(data.FileName);
-	// data.args_str.push_back(loc->cgi_path);
 	data.env_str.push_back("REQUEST_METHOD=" + data.requestMethod);
 	data.env_str.push_back(std::string("SCRIPT_FILENAME=") + data.FileName);
 	data.env_str.push_back("REDIRECT_STATUS=CGI");
@@ -64,7 +63,7 @@ int	handle_static_request(RequestHandlerData &data)
 
 /*Executes a script such as PHP with phpCGI, returns the output trough a pipe*/
 
-int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi, std::vector<struct pollfd> pollfds)
+int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi, Server *srv)
 {
 	pid_t pid;
 	int		return_value;
@@ -84,8 +83,8 @@ int	handle_dynamic_request(RequestHandlerData &data, const char *path_cgi, std::
 		dup2(data.fdIn[0], STDIN_FILENO);
 		close(data.fdIn[0]);
 		close(data.fdOut[1]);
-		for (unsigned long i = 0; i < pollfds.size(); i++)
-			close(pollfds[i].fd);
+		for (unsigned long i = 0; i < srv->poll_fds.size() ; i++)
+			close(srv->poll_fds[i].fd);
 		child_status = execve(path_cgi, data.args.data(), data.env.data());
 		_exit(child_status);
 	}

@@ -140,7 +140,7 @@ void Server::handleFileRequest(RequestHandlerData& data, const LocationConfig* l
 {
 	if (("." + data.FileContentType) == loc->cgi_extension && (method == "GET" || method == "POST") && isAllowed) {
 		data.FileContentType = "html";
-		if (handle_dynamic_request(data, loc->cgi_path.c_str(), this->poll_fds) != SUCCESS)
+		if (handle_dynamic_request(data, loc->cgi_path.c_str(), this) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "GET") {
