@@ -15,14 +15,8 @@ bool ConfigParser::parseServerPortDirective(const std::vector<std::string>& toke
         value = value.substr(0, value.length() - 1);
     }
 
-    int port = atoi(value.c_str());
-    if (port <= 0 || port > 65535) {
-        std::cerr << "Error: Invalid port '" << value << "' (must be 1-65535)" << std::endl;
-        return false;
-    }
-
-    server->port = port;
-    return true;
+    // ✅ USAR FUNCIÓN CENTRALIZADA
+    return validateAndSetPort(value, server->port);
 }
 
 bool ConfigParser::parseServerHostDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
@@ -36,69 +30,59 @@ bool ConfigParser::parseServerHostDirective(const std::vector<std::string>& toke
         value = value.substr(0, value.length() - 1);
     }
 
-    if (value.empty()) {
-        std::cerr << "Error: Host cannot be empty" << std::endl;
-        return false;
-    }
-
-    if (!isValidHost(value)) {
-        std::cerr << "Error: Invalid host format '" << value << "'" << std::endl;
-        return false;
-    }
-
-    server->host = value;
-    return true;
+    // ✅ USAR FUNCIÓN CENTRALIZADA
+    return validateAndSetHost(value, server->host);
 }
 
 bool ConfigParser::parseServerRootDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
-    if (tokens.size() < 2) {
-        std::cerr << "Error: Empty root directive" << std::endl;
-        return false;
-    }
+	if (tokens.size() < 2) {
+		std::cerr << "Error: Empty root directive" << std::endl;
+		return false;
+	}
 
-    std::string value = tokens[1];
-    if (!value.empty() && value[value.length() - 1] == ';') {
-        value = value.substr(0, value.length() - 1);
-    }
+	std::string value = tokens[1];
+	if (!value.empty() && value[value.length() - 1] == ';') {
+		value = value.substr(0, value.length() - 1);
+	}
 
-    if (value.empty()) {
-        std::cerr << "Error: Root directory cannot be empty" << std::endl;
-        return false;
-    }
+	if (value.empty()) {
+		std::cerr << "Error: Root directory cannot be empty" << std::endl;
+		return false;
+	}
 
-    server->root = value;
-    return true;
+	server->root = value;
+	return true;
 }
 
 bool ConfigParser::parseServerIndexDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
-    if (tokens.size() < 2) {
-        std::cerr << "Error: Empty index directive" << std::endl;
-        return false;
-    }
+	if (tokens.size() < 2) {
+		std::cerr << "Error: Empty index directive" << std::endl;
+		return false;
+	}
 
-    std::string value = tokens[1];
-    if (!value.empty() && value[value.length() - 1] == ';') {
-        value = value.substr(0, value.length() - 1);
-    }
+	std::string value = tokens[1];
+	if (!value.empty() && value[value.length() - 1] == ';') {
+		value = value.substr(0, value.length() - 1);
+	}
 
-    if (value.empty()) {
-        std::cerr << "Error: Index file cannot be empty" << std::endl;
-        return false;
-    }
+	if (value.empty()) {
+		std::cerr << "Error: Index file cannot be empty" << std::endl;
+		return false;
+	}
 
-    if (value.find('.') == std::string::npos) {
-        std::cerr << "Error: Index file '" << value << "' must have extension" << std::endl;
-        return false;
-    }
+	if (value.find('.') == std::string::npos) {
+		std::cerr << "Error: Index file '" << value << "' must have extension" << std::endl;
+		return false;
+	}
 
-    server->index = value;
-    return true;
+	server->index = value;
+	return true;
 }
 
 bool ConfigParser::parseServerNameDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
     if (tokens.size() < 2) {
-        std::cerr << "Warning: Empty server_name directive" << std::endl;
-        return true;
+        std::cerr << "Error: Empty server_name directive" << std::endl;
+        return false;
     }
 
     std::string value = tokens[1];
@@ -107,11 +91,25 @@ bool ConfigParser::parseServerNameDirective(const std::vector<std::string>& toke
     }
 
     if (value.empty()) {
-        std::cerr << "Warning: server_name is empty" << std::endl;
-        return true;
+        std::cerr << "Error: server_name cannot be empty" << std::endl;
+        return false;
+    }
+
+    // ✅ SOLO AÑADIR VALIDACIÓN BÁSICA
+    if (!isValidHostname(value)) {
+        std::cerr << "Error: Invalid server_name: " << value << std::endl;
+        return false;
     }
 
     server->server_name = value;
+    std::cout << "Server name set to: " << value << std::endl;
+
+    // ⚠️ ADVERTIR SI HAY MÁS DE UNO (PERO NO FALLAR)
+    if (tokens.size() > 2) {
+        std::cout << "Error: Multiple server_names detected. Using only the first one: " << value << std::endl;
+		return false;
+    }
+
     return true;
 }
 
@@ -126,71 +124,55 @@ bool ConfigParser::parseServerClientMaxBodySizeDirective(const std::vector<std::
         value = value.substr(0, value.length() - 1);
     }
 
-    if (value.empty()) {
-        std::cerr << "Error: client_max_body_size cannot be empty" << std::endl;
-        return false;
-    }
-
-    long size = atol(value.c_str());
-    if (size < 1024) {
-        std::cerr << "Error: client_max_body_size too small: " << size << " (minimum: 1024 bytes)" << std::endl;
-        return false;
-    }
-
-    if (size > 1073741824) {
-        std::cerr << "Error: client_max_body_size too large: " << size << " (maximum: 1GB)" << std::endl;
-        return false;
-    }
-
-    server->client_max_body_size = static_cast<size_t>(size);
-    return true;
+    // ✅ USAR FUNCIÓN CENTRALIZADA
+    return validateAndSetClientMaxBodySize(value, server->client_max_body_size, " in server");
 }
 
 bool ConfigParser::parseServerErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig *server) {
-    if (tokens.size() < 3) {
-        std::cerr << "Error: error_page requires code and path" << std::endl;
-        return false;
-    }
+	if (tokens.size() < 3) {
+		std::cerr << "Error: error_page requires code and path" << std::endl;
+		return false;
+	}
 
-    std::string codeStr = tokens[1];
-    std::string path = tokens[2];
+	std::string codeStr = tokens[1];
+	std::string path = tokens[2];
 
-    if (!path.empty() && path[path.length() - 1] == ';') {
-        path = path.substr(0, path.length() - 1);
-    }
+	if (!path.empty() && path[path.length() - 1] == ';') {
+		path = path.substr(0, path.length() - 1);
+	}
 
-    int errorCode = atoi(codeStr.c_str());
-    if (errorCode < 400 || errorCode > 599) {
-        std::cerr << "Error: Invalid HTTP error code: " << errorCode << std::endl;
-        return false;
-    }
+	int errorCode = atoi(codeStr.c_str());
+	if (errorCode < 400 || errorCode > 599) {
+		std::cerr << "Error: Invalid HTTP error code: " << errorCode << std::endl;
+		return false;
+	}
 
-    if (path.empty()) {
-        std::cerr << "Error: Error page path cannot be empty" << std::endl;
-        return false;
-    }
+	if (path.empty()) {
+		std::cerr << "Error: Error page path cannot be empty" << std::endl;
+		return false;
+	}
 
-    server->error_pages[errorCode] = path;
-    return true;
+	server->error_pages[errorCode] = path;
+	return true;
 }
 
 bool ConfigParser::parseServerDefaultErrorPageDirective(const std::vector<std::string>& tokens, ServerConfig* server) {
-    if (tokens.size() < 2) {
-        std::cerr << "Error: Empty default_error_page directive" << std::endl;
-        return false;
-    }
+	if (tokens.size() < 2) {
+		std::cerr << "Error: Empty default_error_page directive" << std::endl;
+		return false;
+	}
 
-    std::string value = tokens[1];
+	std::string value = tokens[1];
 
-    if (!value.empty() && value[value.length() - 1] == ';') {
-        value = value.substr(0, value.length() - 1);
-    }
+	if (!value.empty() && value[value.length() - 1] == ';') {
+		value = value.substr(0, value.length() - 1);
+	}
 
-    if (value.empty()) {
-        std::cerr << "Error: default_error_page cannot be empty" << std::endl;
-        return false;
-    }
+	if (value.empty()) {
+		std::cerr << "Error: default_error_page cannot be empty" << std::endl;
+		return false;
+	}
 
-    server->default_error_page = value;
-    return true;
+	server->default_error_page = value;
+	return true;
 }

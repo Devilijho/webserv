@@ -15,12 +15,17 @@
 #include <poll.h>
 #include <algorithm>
 #include <netdb.h>
+#include <csignal>
+// #include <arpa/inet.h>
+
 
 // #include "../config/ConfigParser.hpp"
 // #include "../config/ServerConfig.hpp"
 #include "../config/ConfigParser.hpp"
 #include "../config/ServerConfig2.hpp"
 #include "../RequestHandler/RequestHandler.hpp"
+
+static volatile sig_atomic_t g_running = 1;
 
 struct RequestHandlerData;
 
@@ -54,6 +59,7 @@ class Server
 
 		// --- Event loop ---
 		void eventLoop();
+		void processPollEvents();
 		bool handleWriteEvent(int fd);
 		void handleError(int fd);
 		bool handleReadEvent(int fd);
@@ -61,7 +67,13 @@ class Server
 		// --- Client handling ---
 		void acceptClient(int server_fd);
 		void closeConnection(int client_fd);
-		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig, std::vector<struct pollfd> pollfd);
+
+		bool isMethodAllowed(const LocationConfig* loc, const std::string& method) const;
+		std::string getFullPath(const LocationConfig* loc, const ServerConfig* srv, const std::string& path) const;
+		void handleResource(RequestHandlerData& data, const LocationConfig* loc, const ServerConfig* srv, const std::string& method);
+		void handleFileRequest(RequestHandlerData& data, const LocationConfig* loc, const ServerConfig* srv, const std::string& method, bool isAllowed);
+
+		std::string buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig);
 
 		std::string toString(int value);
 		bool accumulateRequest(int client_fd, char* buffer, ssize_t bytes_read);
@@ -69,7 +81,7 @@ class Server
 		bool sendResponse(int client_fd, const std::string& response);
 		bool hasCompleteRequest(int client_fd);
 
-
+		void cleanup();
 };
 
 struct ClientData {

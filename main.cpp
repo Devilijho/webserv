@@ -35,10 +35,17 @@
 //	 }
 // }
 
+void signalHandler(int signum) {
+	if (signum == SIGINT) {
+		// std::cout << "\n[INFO] SIGINT received, shutting down..." << std::endl;
+		g_running = 0;  // tell eventLoop to exit
+	}
+}
 
 int main(int argc, char* argv[])
 {
-	// Parse configuration
+	std::signal(SIGINT, signalHandler);
+
 	ConfigParser parser;
 	std::string configFile = (argc > 1) ? argv[1] : "default.conf";
 
@@ -63,36 +70,10 @@ int main(int argc, char* argv[])
 	}
 
 	// Create one Server instance to manage all sockets
-    Server server;
-    if (!server.start(servers, configFile)) {
-        std::cerr << "Error: Failed to start servers" << std::endl;
-        return 1;
-    }
-
-	// // Convert to vector of pointers
-	// std::vector<ServerConfig*> serverPtrs;
-	// for (size_t i = 0; i < servers.size(); ++i) {
-	// 	 ServerConfig* server = new ServerConfig(*servers[i]); // heap-allocate a copy
-	// 	serverPtrs.push_back(server);
-	// }
-
-	// // Start each server
-	// for (size_t i = 0; i < serverPtrs.size(); ++i) {
-	// 	ServerConfig* cfg = serverPtrs[i];
-	// 	std::cout << "Starting server on " << cfg->host << ":" << cfg->port << std::endl;
-
-	// 	// Create server instance
-	// 	Server server;
-	// 	std::vector<ServerConfig*> singleServer;
-	// 	singleServer.push_back(cfg);
-
-	// 	server.start(singleServer, configFile);
-	// }
-
-	// // Free memory (avoid leaks)
-	// for (size_t i = 0; i < serverPtrs.size(); ++i) {
-	// 	delete serverPtrs[i];
-	// }
+	Server server;
+	 std::cout << "[INFO] Starting server..." << std::endl;
+    server.start(servers, configFile);
+    std::cout << "[INFO] Server stopped" << std::endl;
 
 	return 0;
 }

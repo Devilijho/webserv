@@ -14,6 +14,17 @@ ServerConfig::ServerConfig()
 	// error_pages map se auto-inicializa vacío
 }
 
+ServerConfig::~ServerConfig() {
+    std::cout << "ServerConfig destructor: freeing " << locations.size() << " locations" << std::endl;
+    for (size_t i = 0; i < locations.size(); ++i) {
+        std::cout << "Deleting location " << i << ": " << locations[i]->path << std::endl;
+        delete locations[i];
+    }
+    locations.clear();
+    std::cout << "ServerConfig destructor: done" << std::endl;
+}
+
+
 // Critical method for Part C - finds the best matching location for a given path
 const LocationConfig *ServerConfig::findLocation(const std::string &path) const
 {
@@ -22,27 +33,27 @@ const LocationConfig *ServerConfig::findLocation(const std::string &path) const
 
 	// Find the most specific location that matches the path
 	 for (std::vector<LocationConfig*>::const_iterator it = locations.begin(); it != locations.end(); ++it)
-    {
-        const LocationConfig* loc = *it;  // dereference pointer
-        if (path.find(loc->path) == 0 && loc->path.length() > longestMatch)
-        {
-            bestMatch = loc;
-            longestMatch = loc->path.length();
-        }
-    }
+	{
+		const LocationConfig* loc = *it;  // dereference pointer
+		if (path.find(loc->path) == 0 && loc->path.length() > longestMatch)
+		{
+			bestMatch = loc;
+			longestMatch = loc->path.length();
+		}
+	}
 
 	return bestMatch;
 }
 
 // LocationConfig constructor with default values
 LocationConfig::LocationConfig()
-	: path(""),                    // ← Inicializar explícitamente
-	  root(""),                    // ← Inicializar explícitamente
-	  index(""),                   // ← Inicializar explícitamente
-	  autoindex(false),            // ← Ya estaba bien
-	  upload_dir(""),              // ← Inicializar explícitamente
-	  cgi_extension(""),           // ← Inicializar explícitamente
-	  cgi_path(""),                 // ← Inicializar explícitamente
+	: path(""),					// ← Inicializar explícitamente
+	  root(""),					// ← Inicializar explícitamente
+	  index(""),				   // ← Inicializar explícitamente
+	  autoindex(false),			// ← Ya estaba bien
+	  upload_dir(""),			  // ← Inicializar explícitamente
+	  cgi_extension(""),		   // ← Inicializar explícitamente
+	  cgi_path(""),				 // ← Inicializar explícitamente
 	  client_max_body_size(0) // ← ¡CRÍTICO! Estaba sin inicializar
 {
 	// methods vector se auto-inicializa vacío

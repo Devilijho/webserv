@@ -1,76 +1,76 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>The Balloon</title> 
-        <meta charset="utf-8">
+	<head>
+		<title>The Balloon</title>
+		<meta charset="utf-8">
 
-        <style>
-            #balloon {
-                width: 200px;
-                height: 200px;
-                background-color: red;
-                border-radius: 50%;
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                transition: width 0.3s ease, height 0.3s ease;
-            }
-            button {
-                position: absolute;
-                top: 80%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                padding: 10px 20px;
-                font-size: 16px;
-            }
-        </style>
-    </head>
+		<style>
+			#balloon {
+				width: 200px;
+				height: 200px;
+				background-color: red;
+				border-radius: 50%;
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				transition: width 0.3s ease, height 0.3s ease;
+			}
+			button {
+				position: absolute;
+				top: 80%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				padding: 10px 20px;
+				font-size: 16px;
+			}
+		</style>
+	</head>
 
-    <body>
-        <div id="balloon"></div>
-        <script src="script.js"></script>
-    </body>
+	<body>
+		<div id="balloon"></div>
+		<script src="script.js"></script>
+	</body>
 </html>
 
 
 
 <script>
 document.addEventListener('DOMContentLoaded', (event) => {
-    const balloon = document.getElementById('balloon');
-    let size = 200; // Taille initiale du ballon
-    const maxSize = 400; // Taille maximale du ballon
-    const minSize = 200; // Taille minimale du ballon
-    const colors = ['red', 'green', 'blue']
-    let colorIndex = 0;
+	const balloon = document.getElementById('balloon');
+	let size = 200; // Taille initiale du ballon
+	const maxSize = 400; // Taille maximale du ballon
+	const minSize = 200; // Taille minimale du ballon
+	const colors = ['red', 'green', 'blue']
+	let colorIndex = 0;
 
-    // Fonction pour augmenter la taille du ballon
-    function growBalloon() {
-        if (size < maxSize) {
-            size += 10; // Augmenter la taille de 10px
-            balloon.style.width = size + 'px';
-            balloon.style.height = size + 'px';
+	// Fonction pour augmenter la taille du ballon
+	function growBalloon() {
+		if (size < maxSize) {
+			size += 10; // Augmenter la taille de 10px
+			balloon.style.width = size + 'px';
+			balloon.style.height = size + 'px';
 
-            // Changer la couleur du ballon
-            colorIndex = (colorIndex + 1) % colors.length;
-            balloon.style.backgroundColor = colors[colorIndex];
-        }
-        if (size == maxSize) {
-            size= 190
-            size += 10; // Augmenter la taille de 10px
-            balloon.style.width = size + 'px';
-            balloon.style.height = size + 'px';
+			// Changer la couleur du ballon
+			colorIndex = (colorIndex + 1) % colors.length;
+			balloon.style.backgroundColor = colors[colorIndex];
+		}
+		if (size == maxSize) {
+			size= 190
+			size += 10; // Augmenter la taille de 10px
+			balloon.style.width = size + 'px';
+			balloon.style.height = size + 'px';
 
-            // Changer la couleur du ballon avec module(%), c'est mathematique
-            colorIndex = (colorIndex + 1) % colors.length;
-            balloon.style.backgroundColor = colors[colorIndex];
-        }
-    }
+			// Changer la couleur du ballon avec module(%), c'est mathematique
+			colorIndex = (colorIndex + 1) % colors.length;
+			balloon.style.backgroundColor = colors[colorIndex];
+		}
+	}
 
 
 
-    // Ajouter un écouteur d'événement de clic sur le ballon
-    balloon.addEventListener('click', growBalloon);
+	// Ajouter un écouteur d'événement de clic sur le ballon
+	balloon.addEventListener('click', growBalloon);
 });
 
 </script>
@@ -79,9 +79,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 <!--
 3. Explication du Code
 
-    Liste de Couleurs : Nous avons défini un tableau colors qui contient une liste de couleurs.
-    Index de Couleur : Nous utilisons colorIndex pour garder une trace de la couleur actuelle.
-    Changer la Couleur : À chaque clic, nous incrémentons colorIndex et appliquons une nouvelle couleur à l'élément balloon. En utilisant l'opérateur modulo (%), nous faisons en sorte que colorIndex boucle à travers les couleurs disponibles dans le tableau.
+	Liste de Couleurs : Nous avons défini un tableau colors qui contient une liste de couleurs.
+	Index de Couleur : Nous utilisons colorIndex pour garder une trace de la couleur actuelle.
+	Changer la Couleur : À chaque clic, nous incrémentons colorIndex et appliquons une nouvelle couleur à l'élément balloon. En utilisant l'opérateur modulo (%), nous faisons en sorte que colorIndex boucle à travers les couleurs disponibles dans le tableau.
 
-Avec ce code, chaque fois que vous cliquez sur le ballon pour le faire grandir, sa couleur changera également, et de même lorsqu'il se rétrécit avec le bouton "Défler". Cela rendra l'interaction avec le ballon plus dynamique et visuellement intéressante.    
+Avec ce code, chaque fois que vous cliquez sur le ballon pour le faire grandir, sa couleur changera également, et de même lorsqu'il se rétrécit avec le bouton "Défler". Cela rendra l'interaction avec le ballon plus dynamique et visuellement intéressante.
 -->
