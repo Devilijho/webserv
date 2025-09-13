@@ -21,6 +21,10 @@ struct LocationConfig {
 	std::string cgi_path;
 	size_t client_max_body_size;
 
+	bool has_return;
+	int return_code;
+	std::string return_url;
+
 	// Constructor con valores por defecto
 	LocationConfig();
 };

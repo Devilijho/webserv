@@ -206,3 +206,53 @@ bool ConfigParser::parseLocationClientMaxBodySizeDirective(const std::vector<std
     // ✅ USAR FUNCIÓN CENTRALIZADA
     return validateAndSetClientMaxBodySize(value, location.client_max_body_size, " in location");
 }
+
+bool ConfigParser::parseLocationReturnDirective(const std::vector<std::string>& tokens, LocationConfig& location) {
+    if (tokens.size() < 3) {
+        std::cerr << "Error: return directive requires code and URL" << std::endl;
+        return false;
+    }
+
+    std::string codeStr = tokens[1];
+    std::string url = tokens[2];
+
+    // ✅ REMOVER ; AL FINAL (C++98 COMPATIBLE)
+    if (!url.empty() && url[url.length() - 1] == ';') {
+        url = url.substr(0, url.length() - 1);
+    }
+
+    // ✅ VALIDAR CÓDIGO DE REDIRECT
+    int code = atoi(codeStr.c_str());
+    if (code < 300 || code > 399) {
+        std::cerr << "Error: Invalid redirect code: " << code
+                  << " (must be 300-399)" << std::endl;
+        return false;
+    }
+
+    // ✅ VALIDAR CÓDIGOS ESPECÍFICOS
+    if (code != 301 && code != 302 && code != 303 && code != 307 && code != 308) {
+        std::cerr << "Error: Unsupported redirect code: " << code
+                  << " (supported: 301, 302, 303, 307, 308)" << std::endl;
+        return false;
+    }
+
+    if (url.empty()) {
+        std::cerr << "Error: Redirect URL cannot be empty" << std::endl;
+        return false;
+    }
+
+    // ✅ VALIDACIÓN BÁSICA DE URL
+    if (url[0] != '/' && url.find("http://") != 0 && url.find("https://") != 0) {
+        std::cerr << "Error: Redirect URL must be absolute path or full URL: "
+                  << url << std::endl;
+        return false;
+    }
+
+    location.has_return = true;
+    location.return_code = code;
+    location.return_url = url;
+
+    std::cout << "Redirect configured: " << code << " -> " << url << std::endl;
+    return true;
+}
+

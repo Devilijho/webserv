@@ -56,6 +56,8 @@ private:
 	bool parseLocationCgiExtensionDirective(const std::vector<std::string>& tokens, LocationConfig& location);
 	bool parseLocationCgiPathDirective(const std::vector<std::string>& tokens, LocationConfig& location);
 	bool parseLocationClientMaxBodySizeDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+	bool parseLocationReturnDirective(const std::vector<std::string>& tokens, LocationConfig& location);
+
 
 	// VALIDACIÓN MODULAR
 	bool validateServer(size_t serverIndex, const ServerConfig* srv);

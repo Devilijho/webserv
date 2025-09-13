@@ -124,20 +124,45 @@ void errorHandling(RequestHandlerData &data,const ServerConfig *srv, int code)
 
 /*assembles the http response and returns it as a string */
 
+std::string getRedirectStatusMessage(int code)
+{
+    switch (code) {
+        case 301: return "HTTP/1.1 301 Moved Permanently";
+        case 302: return "HTTP/1.1 302 Found";
+        case 303: return "HTTP/1.1 303 See Other";
+        case 307: return "HTTP/1.1 307 Temporary Redirect";
+        case 308: return "HTTP/1.1 308 Permanent Redirect";
+        default:  return "HTTP/1.1 302 Found";
+    }
+}
+
 std::string http_response(RequestHandlerData &data, ServerConfig &srv)
 {
-	std::string response =
-	data.StatusLine
-	+ "\r\nConnection: keep-alive"
-	+ "\r\nLast-Modified: " + getFileDate(data.FileName)
-	+ "\r\nDate: " + getDate()
-	+ "\r\nContent-Lenght: " + toString(data.FileContent.size())
-	+ "\r\nContent-Type: " + (data.FileContentType == "js" ? ("application/javascript") : ("text/" + data.FileContentType))
-	+ "\r\nAccept-Ranges: bytes"
-	+ "\r\nETag: " + getETag(data.FileName)
-	+ "\r\nServer: " + srv.server_name
-	+ "\r\n\r\n" + data.FileContent;
-	return response;
+    // ✅ HANDLE REDIRECTS FIRST
+    if (data.is_redirect && !data.redirect_location.empty()) {
+        std::string response = getRedirectStatusMessage(data.statusCode);
+        response += "\r\nLocation: " + data.redirect_location;
+        response += "\r\nContent-Length: 0";
+        response += "\r\nConnection: keep-alive";
+        response += "\r\nDate: " + getDate();
+        response += "\r\nServer: " + srv.server_name;
+        response += "\r\n\r\n";
+        return response;
+    }
+
+    // ✅ RESPONSE NORMAL (CÓDIGO EXISTENTE)
+    std::string response =
+    data.StatusLine
+    + "\r\nConnection: keep-alive"
+    + "\r\nLast-Modified: " + getFileDate(data.FileName)
+    + "\r\nDate: " + getDate()
+    + "\r\nContent-Lenght: " + toString(data.FileContent.size())
+    + "\r\nContent-Type: " + (data.FileContentType == "js" ? ("application/javascript") : ("text/" + data.FileContentType))
+    + "\r\nAccept-Ranges: bytes"
+    + "\r\nETag: " + getETag(data.FileName)
+    + "\r\nServer: " + srv.server_name
+    + "\r\n\r\n" + data.FileContent;
+    return response;
 }
 
 

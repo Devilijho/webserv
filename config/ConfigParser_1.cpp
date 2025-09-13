@@ -207,7 +207,9 @@ bool ConfigParser::parseLocationDirective(const std::vector<std::string>& tokens
 		return parseLocationCgiPathDirective(tokens, *location);
 	} else if (directive == "client_max_body_size") {
 		return parseLocationClientMaxBodySizeDirective(tokens, *location);
-	}
+	} else if (directive == "return") {
+        return parseLocationReturnDirective(tokens, *location);
+    }
 
 	return true; // Directiva no reconocida - no crítico
 }

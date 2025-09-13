@@ -50,6 +50,10 @@ struct RequestHandlerData
 	std::string requestBuffer;
 	std::string responseBuffer;
 	size_t bytesSent;
+
+	bool is_redirect;
+	std::string redirect_location;
+	int statusCode;
 };
 
 /*Main functions */

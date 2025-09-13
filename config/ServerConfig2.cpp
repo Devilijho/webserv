@@ -54,7 +54,11 @@ LocationConfig::LocationConfig()
 	  upload_dir(""),			  // ← Inicializar explícitamente
 	  cgi_extension(""),		   // ← Inicializar explícitamente
 	  cgi_path(""),				 // ← Inicializar explícitamente
-	  client_max_body_size(0) // ← ¡CRÍTICO! Estaba sin inicializar
+	  client_max_body_size(0), // ← ¡CRÍTICO! Estaba sin inicializar
+	  has_return(false),        // ✅ INICIALIZAR REDIRECT FLAGS
+	  return_code(0),           // ✅ INICIALIZAR CÓDIGO
+	  return_url("")            // ✅ INICIALIZAR URL
+
 {
 	// methods vector se auto-inicializa vacío
 }
