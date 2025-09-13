@@ -1,4 +1,5 @@
 #include "RequestHandler.hpp"
+#include <unistd.h>
 
 /*get the extension of a file */
 
@@ -25,10 +26,15 @@ std::string getDate(void)
 /*Gets the last time the file was modified and returns it as a string */
 std::string getFileDate(std::string fileName)
 {
-	struct stat info;
-	stat(fileName.c_str(), &info);
-	std::string time(ctime(&info.st_mtime));
-	return (time.substr(0, time.length() - 1));
+	struct stat file_stat;
+
+	memset(&file_stat, 0, sizeof(file_stat));
+    if (stat(fileName.c_str(), &file_stat) != 0)
+    {
+		std::string time(ctime(&file_stat.st_mtime));
+		return (time.substr(0, time.length() - 1));
+	}
+	return ("Thu, 01 Jan 1970 00:00:00 GMT");
 }
 
 /*gets the variables sent by the POST method */
