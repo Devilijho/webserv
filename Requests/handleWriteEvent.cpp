@@ -1,6 +1,3 @@
-
-
-
 #include "server.hpp"
 
 bool Server::handleWriteEvent(int client_fd)
@@ -19,7 +16,7 @@ bool Server::handleWriteEvent(int client_fd)
 
 	// data->bytesSent += sent;
 
-	 
+
 	if (data->bytesSent >= data->responseBuffer.size())
 	{
 		data->responseBuffer.clear();
@@ -45,7 +42,7 @@ void Server::closeConnection(int client_fd)
 			break;
 		}
 	}
-	
+
 	// 2. Clean up client data (delete before erasing pointer from map)
 	std::map<int, RequestHandlerData*>::iterator it = clientSockets.find(client_fd);
 	if (it != clientSockets.end()) {

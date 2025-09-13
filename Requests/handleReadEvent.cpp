@@ -64,7 +64,7 @@ bool Server::handleReadEvent(int client_fd)
 
 	// Process request and prepare response
 	std::string response = buildHttpResponse(clientSockets[client_fd]->requestBuffer,
-											 client_to_server_config[client_fd], this->poll_fds);
+											 client_to_server_config[client_fd]);
 
 	RequestHandlerData* data = clientSockets[client_fd];
 	data->responseBuffer = response;
@@ -140,7 +140,7 @@ void Server::handleFileRequest(RequestHandlerData& data, const LocationConfig* l
 {
 	if (("." + data.FileContentType) == loc->cgi_extension && (method == "GET" || method == "POST") && isAllowed) {
 		data.FileContentType = "html";
-		if (handle_dynamic_request(data, loc->cgi_path.c_str()) != SUCCESS)
+		if (handle_dynamic_request(data, loc->cgi_path.c_str(), this->poll_fds) != SUCCESS)
 			errorHandling(data, srv, 500);
 	}
 	else if (method == "GET") {
