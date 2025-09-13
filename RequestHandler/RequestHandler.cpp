@@ -19,6 +19,7 @@ int	setData(RequestHandlerData &data, const ServerConfig &dataServer, const Loca
 	data.env_str.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	data.env_str.push_back("PATH_INFO=" + loc->cgi_path);
 	data.env_str.push_back("QUERY_STRING=" + data.query);
+	data.env_str.push_back("UPLOAD_DIR=" + loc->upload_dir);
 	data.env_str.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	data.env_str.push_back("SERVER_NAME=" + dataServer.server_name);
 	data.env_str.push_back("REMOTE_ADDR=" + dataServer.host);
