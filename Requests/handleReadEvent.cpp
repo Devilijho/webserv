@@ -10,260 +10,260 @@ std::string Server::toString(int value) {
 	return oss.str();
 }
 
-bool Server::hasCompleteRequest(int client_fd)
-{
-	size_t headers_end;
-	std::string header;
-	std::string method, path, protocol;
-	size_t max_size;
-	const LocationConfig *loc;
-	RequestHandlerData* data = clientSockets[client_fd];
-	if (!data)
-		return false;
-
-	std::string& buffer = data->requestBuffer;
-
-	// Look for end of headers
-	headers_end = buffer.find("\r\n");
-	header = buffer.substr(0, headers_end);
-	std::istringstream req_stream(header);
-	req_stream >> method >> path >> protocol;
-	if (client_to_server_config[client_fd] != NULL)
-		loc = client_to_server_config[client_fd]->findLocation(path);
-	else
-		loc = NULL;
-	if (loc != NULL)
-		max_size = loc->client_max_body_size;
-	else
-		max_size = client_to_server_config[client_fd]->client_max_body_size;
-	// std::cout << data->requestBuffer.size() << "---" << max_size << std::endl;
-	if (data->requestBuffer.size() > max_size)
-	{
-		data->requestBuffer = header;
-		this->error413 = ERROR;
-		return true;
-	}
-	if (headers_end == std::string::npos)
-		return false; // headers not complete yet
-
-	// Check for Content-Length
-	size_t content_length_pos = buffer.find("Content-Length:");
-	if (content_length_pos == std::string::npos)
-		return true; // no body, headers complete = full request
-
-	// Extract content length value
-	std::istringstream iss(buffer.substr(content_length_pos + 15));
-	int content_length = 0;
-	iss >> content_length;
-
-	// Total request size = headers + 4 (\r\n\r\n) + content_length
-	size_t total_size = headers_end + 4 + content_length;
-
-	return buffer.size() >= total_size;
-}
-
-
-bool Server::handleReadEvent(int client_fd)
-{
-	char buffer[4096];
-	ssize_t bytes_read = read(client_fd, buffer, sizeof(buffer));
-
-	if (bytes_read <= 0) {
-		if (bytes_read == 0)
-			std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
-		else
-			perror("read");
-		closeConnection(client_fd);
-		return false;
-	}
-
-	// Append to per-client buffer
-	clientSockets[client_fd]->requestBuffer.append(buffer, bytes_read);
-
-	// Check if full request has been received
-	if (!hasCompleteRequest(client_fd))
-		return true; // wait for more data
-
-	std::cout << "DONE READING" << std::endl;
-	// Process request and prepare response
-	std::string response = buildHttpResponse(clientSockets[client_fd]->requestBuffer,
-											 client_to_server_config[client_fd]);
-	RequestHandlerData* data = clientSockets[client_fd];
-	data->responseBuffer = response;
-	data->bytesSent = 0;
-
-	// Enable POLLOUT for this fd so we can send the response
-	for (size_t i = 0; i < poll_fds.size(); ++i) {
-		if (poll_fds[i].fd == client_fd) {
-			poll_fds[i].events |= POLLOUT;
-			break;
-		}
-	}
-
-	// Clear request buffer after processing
-	data->requestBuffer.clear();
-	return true;
-}
-
-
-
 bool Server::isMethodAllowed(const LocationConfig* loc, const std::string& method) const
 {
-	if (!loc->methods.empty()) {
-		for (size_t i = 0; i < loc->methods.size(); ++i)
-			if (loc->methods[i] == method)
-				return true;
-		return false;
-	}
-	// Si no hay métodos definidos, permite todos (nginx-like)
-	return method == "GET" || method == "POST" || method == "DELETE";
+    // Si no hay location coincidente, permitir un set básico
+    if (!loc)
+        return method == "GET" || method == "POST" || method == "DELETE";
+    if (!loc->methods.empty()) {
+        for (size_t i = 0; i < loc->methods.size(); ++i)
+            if (loc->methods[i] == method)
+                return true;
+        return false;
+    }
+    return method == "GET" || method == "POST" || method == "DELETE";
 }
 
 std::string Server::getFullPath(const LocationConfig* loc, const ServerConfig* srv, const std::string& path) const
 {
-	std::string root = loc->root.empty() ? srv->root : loc->root;
-	if (!root.empty() && root[root.length()-1] == '/')
-		root = root.substr(0, root.length()-1);
-	std::string fullPath = root;
-	if (path[0] == '/')
-		fullPath += path;
-	else
-		fullPath += "/" + path;
-	return fullPath;
+    if (!srv) return path;
+    std::string root = srv->root;
+    if (loc && !loc->root.empty())
+        root = loc->root;
+    if (!root.empty() && root[root.length()-1] == '/')
+        root.erase(root.length()-1);
+    std::string rel = path;
+    if (rel.empty()) rel = "/";
+    if (!rel.empty() && rel[0] == '/')
+        return root + rel;
+    return root + "/" + rel;
 }
 
-void Server::handleResource(RequestHandlerData& data, const LocationConfig* loc, const ServerConfig* srv, const std::string& method)
+bool Server::hasCompleteRequest(int client_fd)
 {
-	if (loc->has_return) {
-		data.is_redirect = true;
-		data.statusCode = loc->return_code;
-		data.redirect_location = loc->return_url;
-		data.FileContent = "";  // No content para redirects
-		return;
-	}
+    RequestHandlerData* data = clientSockets[client_fd];
+    if (!data) return false;
 
-	bool isAllowed = isMethodAllowed(loc, method);
-	if (getFileType(data.FileName) == DIRECTORY) {
-		std::string indexFile = data.FileName;
-		if (!indexFile.empty() && indexFile[indexFile.length()-1] != '/')
-			indexFile += "/";
-		std::string indexName = loc->index.empty() ? srv->index : loc->index;
-		indexFile += indexName;
+    std::string &buf = data->requestBuffer;
 
-		if (access(indexFile.c_str(), R_OK | F_OK) == SUCCESS && isAllowed && method == "GET") {
-			data.FileName = indexFile;
-			if (handle_static_request(data) != SUCCESS)
-				errorHandling(data, srv, 500);
-		}
-		else if (loc->autoindex == true && isAllowed && method == "GET") {
-			setCurrentDirFiles(data, *srv, loc);
-		}
-		else {
-			errorHandling(data, srv, 403);
-		}
-	} else {
-		handleFileRequest(data, loc, srv, method, isAllowed);
-	}
+    // 1. Fin de headers correcto
+    size_t hdr_end = buf.find("\r\n\r\n");
+    if (hdr_end == std::string::npos)
+        return false;
+
+    // 2. Primera línea
+    size_t line_end = buf.find("\r\n");
+    if (line_end == std::string::npos)
+        return false;
+
+    std::string request_line = buf.substr(0, line_end);
+    std::istringstream rl(request_line);
+    std::string method, path, proto;
+    if (!(rl >> method >> path >> proto)) {
+        data->statusCode = 413;
+        return true;
+    }
+
+    // 3. Localización y límite
+    ServerConfig *srv = client_to_server_config[client_fd];
+    const LocationConfig *loc = (srv ? srv->findLocation(path) : NULL);
+
+    size_t max_size = (srv ? srv->client_max_body_size : 0);
+    if (loc && loc->client_max_body_size > 0)
+        max_size = loc->client_max_body_size;
+
+    // 4. Content-Length (si existe)
+    size_t content_length = 0;
+    size_t cl_pos = buf.find("Content-Length:");
+    if (cl_pos != std::string::npos && cl_pos < hdr_end) {
+        size_t cl_line_end = buf.find("\r\n", cl_pos);
+        if (cl_line_end == std::string::npos || cl_line_end > hdr_end)
+            cl_line_end = hdr_end;
+        std::string cl_line = buf.substr(cl_pos + 15, cl_line_end - (cl_pos + 15));
+        // trim
+        size_t a = cl_line.find_first_not_of(" \t");
+        if (a != std::string::npos) {
+            size_t b = cl_line.find_last_not_of(" \t");
+            cl_line = cl_line.substr(a, b - a + 1);
+            std::istringstream iss(cl_line);
+            long long tmp;
+            if (iss >> tmp && tmp >= 0)
+                content_length = static_cast<size_t>(tmp);
+            else {
+                data->statusCode = 413;
+                return true;
+            }
+        }
+    } else {
+        // No hay body -> request completa
+        return true;
+    }
+
+    // 5. Chequeo de límite (solo body)
+    if (max_size > 0 && content_length > max_size) {
+        data->statusCode = 413;
+        return true;
+    }
+
+    // 6. ¿Ya recibimos todo?
+    size_t total_needed = hdr_end + 4 + content_length;
+    return buf.size() >= total_needed;
 }
 
-void Server::handleFileRequest(RequestHandlerData& data, const LocationConfig* loc, const ServerConfig* srv, const std::string& method, bool isAllowed)
+bool Server::handleReadEvent(int client_fd)
 {
-	if (!isAllowed) {
-	errorHandling(data, srv, 405);  // ✅ 405, no 403
-	return;
-	}
+    char tmp[4096];
+    ssize_t n = read(client_fd, tmp, sizeof(tmp));
+    if (n <= 0) {
+        if (n == 0)
+            std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
+        else
+            perror("read");
+        closeConnection(client_fd);
+        return false;
+    }
 
-	if (("." + data.FileContentType) == loc->cgi_extension && (method == "GET" || method == "POST") && isAllowed) {
-		data.FileContentType = "html";
-		if (handle_dynamic_request(data, loc->cgi_path.c_str(), this) != SUCCESS)
-			errorHandling(data, srv, 500);
-	}
-	else if (method == "GET") {
-		if (isAllowed) {
-			if (handle_static_request(data) != SUCCESS)
-				errorHandling(data, srv, 500);
-		} else {
-			errorHandling(data, srv, 405);
-		}
-	}
-	else if (method == "DELETE") {
-		if (isAllowed)
-			handle_delete_request(data);
-		else
-			errorHandling(data, srv, 405);
-	}
-	else {
-		errorHandling(data, srv, 405);
-	}
+    RequestHandlerData *d = clientSockets[client_fd];
+    d->requestBuffer.append(tmp, n);
+
+    if (!hasCompleteRequest(client_fd))
+        return true;
+
+    ServerConfig *srv = client_to_server_config[client_fd];
+
+    // Error temprano (413 / 400 etc)
+    if (d->statusCode == 413) {
+        errorHandling(*d, srv, d->statusCode);
+        d->responseBuffer = http_response(*d, *srv);
+        d->bytesSent = 0;
+        for (size_t i=0;i<poll_fds.size();++i)
+            if (poll_fds[i].fd == client_fd)
+                poll_fds[i].events |= POLLOUT;
+        d->requestBuffer.clear();
+        return true;
+    }
+
+    std::cout << "DONE READING" << std::endl;
+    std::string response = buildHttpResponse(d->requestBuffer, srv);
+    d->responseBuffer = response;
+    d->bytesSent = 0;
+
+    for (size_t i = 0; i < poll_fds.size(); ++i) {
+        if (poll_fds[i].fd == client_fd) {
+            poll_fds[i].events |= POLLOUT;
+            break;
+        }
+    }
+    d->requestBuffer.clear();
+    return true;
 }
 
-std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig)
+void Server::handleResource(RequestHandlerData& data, const LocationConfig* loc,
+                            const ServerConfig* srv, const std::string& method)
 {
-	std::istringstream req_stream(raw_request);
-	std::string method, path, protocol;
-	req_stream >> method >> path >> protocol;
+    // Redirect
+    if (loc && loc->has_return) {
+        data.is_redirect = true;
+        data.statusCode = loc->return_code;
+        data.redirect_location = loc->return_url;
+        data.FileContent.clear();
+        return;
+    }
 
-	const ServerConfig* srv = serverConfig;
-	const LocationConfig *loc = srv->findLocation(path);
+    bool allowed = isMethodAllowed(loc, method);
+    // Path puede no tener location válida
+    if (getFileType(data.FileName) == DIRECTORY) {
+        std::string indexFile = data.FileName;
+        if (!indexFile.empty() && indexFile[indexFile.length()-1] != '/')
+            indexFile += "/";
+        std::string indexName = (loc && !loc->index.empty()) ? loc->index : srv->index;
+        indexFile += indexName;
 
-	RequestHandlerData data;
-	data.path = path;
-	data.FileName = getFullPath(loc, srv, path);
-	data.requestMethod = method;
-	data.rawRequest = raw_request;
-
-	// ✅ INICIALIZAR CAMPOS DE REDIRECT
-	data.is_redirect = false;
-	data.statusCode = 200;
-	data.redirect_location = "";
-
-	setData(data, *srv, loc);
-
-	if (!isMethodAllowed(loc, method)) {
-		errorHandling(data, srv, 405);
-		return (http_response(data, const_cast<ServerConfig&>(*srv)));
-	}
-	if (this->error413 == ERROR) {
-		this->error413 = SUCCESS;
-		errorHandling(data, srv, 413);
-		return (http_response(data, const_cast<ServerConfig&>(*srv)));
-	}
-	if (loc->has_return) {
-		data.is_redirect = true;
-		data.statusCode = loc->return_code;
-		data.redirect_location = loc->return_url;
-		data.FileContent = "";
-		return (http_response(data, const_cast<ServerConfig&>(*srv)));
-	}
-	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS) {
-		errorHandling(data, srv, 404);
-		return (http_response(data, const_cast<ServerConfig&>(*srv)));
-	}
-	handleResource(data, loc, srv, method);
-	return (http_response(data, const_cast<ServerConfig&>(*srv)));
+        if (access(indexFile.c_str(), R_OK | F_OK) == SUCCESS && allowed && method == "GET") {
+            data.FileName = indexFile;
+            if (handle_static_request(data) != SUCCESS)
+                errorHandling(data, srv, 500);
+        }
+        else if (loc && loc->autoindex && allowed && method == "GET") {
+            setCurrentDirFiles(data, *srv, loc);
+        }
+        else {
+            errorHandling(data, srv, 403);
+        }
+        return;
+    }
+    handleFileRequest(data, loc, srv, method, allowed);
 }
 
-// if (!isMethodAllowed(loc, method)) {
-   // 	errorHandling(data, srv, 405);
-   // 	return (http_response(data, const_cast<ServerConfig&>(*srv)));
-// }
-// if (loc->has_return) {
-// 	data.is_redirect = true;
-// 	data.statusCode = loc->return_code;
-// 	data.redirect_location = loc->return_url;
-// 	data.FileContent = "";
-// }
-// else if (this->error413 == ERROR)
-// {
-// 	this->error413 = SUCCESS;
-// 	errorHandling(data, srv, 413);
-// }
-// else if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
-// {
-// 	errorHandling(data, srv, 404);
-// }
-// else {
-// 	handleResource(data, loc, srv, method);
-// }
+void Server::handleFileRequest(RequestHandlerData& data, const LocationConfig* loc,
+                               const ServerConfig* srv, const std::string& method, bool allowed)
+{
+    if (!allowed) {
+        errorHandling(data, srv, 405);
+        return;
+    }
+    // CGI
+    if (loc && ("." + data.FileContentType) == loc->cgi_extension
+        && (method == "GET" || method == "POST")) {
+        data.FileContentType = "html";
+        if (handle_dynamic_request(data, loc->cgi_path.c_str(), this) != SUCCESS)
+            errorHandling(data, srv, 500);
+        return;
+    }
+    if (method == "GET") {
+        if (handle_static_request(data) != SUCCESS)
+            errorHandling(data, srv, 500);
+    }
+    else if (method == "DELETE") {
+        handle_delete_request(data);
+    }
+    else {
+        errorHandling(data, srv, 405);
+    }
+}
 
-// return (http_response(data, const_cast<ServerConfig&>(*srv)));
+std::string Server::buildHttpResponse(const std::string &raw, const ServerConfig* srv)
+{
+    size_t line_end = raw.find("\r\n");
+    if (line_end == std::string::npos) {
+        RequestHandlerData d; d.statusCode = 413;
+        return http_response(d, *const_cast<ServerConfig*>(srv));
+    }
+    std::string line = raw.substr(0, line_end);
+    std::istringstream iss(line);
+    std::string method, path, proto;
+    if (!(iss >> method >> path >> proto)) {
+        RequestHandlerData d; d.statusCode = 413;
+        return http_response(d, *const_cast<ServerConfig*>(srv));
+    }
+    const LocationConfig *loc = srv ? srv->findLocation(path) : NULL;
+
+    RequestHandlerData data;
+    data.path = path;
+    data.requestMethod = method;
+    data.FileName = getFullPath(loc, srv, path);
+    data.rawRequest = raw;
+    data.statusCode = 200;
+    data.is_redirect = false;
+    data.redirect_location.clear();
+
+    setData(data, *srv, loc);
+
+    if (!isMethodAllowed(loc, method)) {
+        errorHandling(data, srv, 405);
+        return http_response(data, *const_cast<ServerConfig*>(srv));
+    }
+    if (loc && loc->has_return) {
+        data.is_redirect = true;
+        data.statusCode = loc->return_code;
+        data.redirect_location = loc->return_url;
+        data.FileContent.clear();
+        return http_response(data, *const_cast<ServerConfig*>(srv));
+    }
+    if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS) {
+        errorHandling(data, srv, 404);
+        return http_response(data, *const_cast<ServerConfig*>(srv));
+    }
+    handleResource(data, loc, srv, method);
+    return http_response(data, *const_cast<ServerConfig*>(srv));
+}
