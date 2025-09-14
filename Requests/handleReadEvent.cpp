@@ -1,65 +1,10 @@
 #include "server.hpp"
-#include <sys/poll.h>
-#include <unistd.h>
-#include <vector>
 
 
 std::string Server::toString(int value) {
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
-}
-
-bool Server::hasCompleteRequest(int client_fd)
-{
-	size_t headers_end;
-	std::string header;
-	std::string method, path, protocol;
-	size_t max_size;
-	const LocationConfig *loc;
-	RequestHandlerData* data = clientSockets[client_fd];
-	if (!data)
-		return false;
-
-	std::string& buffer = data->requestBuffer;
-
-	// Look for end of headers
-	headers_end = buffer.find("\r\n");
-	header = buffer.substr(0, headers_end);
-	std::istringstream req_stream(header);
-	req_stream >> method >> path >> protocol;
-	if (client_to_server_config[client_fd] != NULL)
-		loc = client_to_server_config[client_fd]->findLocation(path);
-	else
-		loc = NULL;
-	if (loc != NULL)
-		max_size = loc->client_max_body_size;
-	else
-		max_size = client_to_server_config[client_fd]->client_max_body_size;
-	// std::cout << data->requestBuffer.size() << "---" << max_size << std::endl;
-	if (data->requestBuffer.size() > max_size)
-	{
-		data->requestBuffer = header;
-		this->error413 = ERROR;
-		return true;
-	}
-	if (headers_end == std::string::npos)
-		return false; // headers not complete yet
-
-	// Check for Content-Length
-	size_t content_length_pos = buffer.find("Content-Length:");
-	if (content_length_pos == std::string::npos)
-		return true; // no body, headers complete = full request
-
-	// Extract content length value
-	std::istringstream iss(buffer.substr(content_length_pos + 15));
-	int content_length = 0;
-	iss >> content_length;
-
-	// Total request size = headers + 4 (\r\n\r\n) + content_length
-	size_t total_size = headers_end + 4 + content_length;
-
-	return buffer.size() >= total_size;
 }
 
 
@@ -169,10 +114,9 @@ void Server::handleResource(RequestHandlerData& data, const LocationConfig* loc,
 void Server::handleFileRequest(RequestHandlerData& data, const LocationConfig* loc, const ServerConfig* srv, const std::string& method, bool isAllowed)
 {
 	if (!isAllowed) {
-	errorHandling(data, srv, 405);  // ✅ 405, no 403
-	return;
+		errorHandling(data, srv, 405);  // ✅ 405, no 403
+		return;
 	}
-
 	if (("." + data.FileContentType) == loc->cgi_extension && (method == "GET" || method == "POST") && isAllowed) {
 		data.FileContentType = "html";
 		if (handle_dynamic_request(data, loc->cgi_path.c_str(), this) != SUCCESS)
@@ -182,9 +126,9 @@ void Server::handleFileRequest(RequestHandlerData& data, const LocationConfig* l
 		if (isAllowed) {
 			if (handle_static_request(data) != SUCCESS)
 				errorHandling(data, srv, 500);
-		} else {
-			errorHandling(data, srv, 405);
 		}
+		else
+			errorHandling(data, srv, 405);
 	}
 	else if (method == "DELETE") {
 		if (isAllowed)
@@ -192,9 +136,8 @@ void Server::handleFileRequest(RequestHandlerData& data, const LocationConfig* l
 		else
 			errorHandling(data, srv, 405);
 	}
-	else {
+	else
 		errorHandling(data, srv, 405);
-	}
 }
 
 std::string Server::buildHttpResponse(const std::string &raw_request, const ServerConfig* serverConfig)
@@ -212,7 +155,6 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	data.requestMethod = method;
 	data.rawRequest = raw_request;
 
-	// ✅ INICIALIZAR CAMPOS DE REDIRECT
 	data.is_redirect = false;
 	data.statusCode = 200;
 	data.redirect_location = "";
@@ -242,28 +184,3 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	handleResource(data, loc, srv, method);
 	return (http_response(data, const_cast<ServerConfig&>(*srv)));
 }
-
-// if (!isMethodAllowed(loc, method)) {
-   // 	errorHandling(data, srv, 405);
-   // 	return (http_response(data, const_cast<ServerConfig&>(*srv)));
-// }
-// if (loc->has_return) {
-// 	data.is_redirect = true;
-// 	data.statusCode = loc->return_code;
-// 	data.redirect_location = loc->return_url;
-// 	data.FileContent = "";
-// }
-// else if (this->error413 == ERROR)
-// {
-// 	this->error413 = SUCCESS;
-// 	errorHandling(data, srv, 413);
-// }
-// else if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
-// {
-// 	errorHandling(data, srv, 404);
-// }
-// else {
-// 	handleResource(data, loc, srv, method);
-// }
-
-// return (http_response(data, const_cast<ServerConfig&>(*srv)));

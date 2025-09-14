@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <netdb.h>
 #include <csignal>
+#include <sys/poll.h>
 // #include <arpa/inet.h>
 
 
@@ -81,6 +82,7 @@ class Server
 		std::string processRequest(int client_fd);
 		bool sendResponse(int client_fd, const std::string& response);
 		bool hasCompleteRequest(int client_fd);
+		bool isBodyComplete(const std::string &buffer, size_t headers_end);
 
 		void cleanup();
 };

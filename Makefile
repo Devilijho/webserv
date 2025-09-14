@@ -3,6 +3,7 @@ sources =	main.cpp \
 			Requests/utils.cpp \
 			Requests/startsetup.cpp \
 			Requests/handleReadEvent.cpp \
+			Requests/utilsReadEvent.cpp \
 			Requests/handleWriteEvent.cpp \
 			RequestHandler/RequestHandler.cpp \
 			RequestHandler/RequestHandlerExtra.cpp \
@@ -19,7 +20,7 @@ OBJ_DIR = build
 objects = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(sources))
 
 cc = c++
-cflags = -Wall -Wextra -Werror -std=c++98 -fsanitize=address
+cflags = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address
 
 
 NAME = webserv
