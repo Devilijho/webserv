@@ -1,14 +1,7 @@
 <?php
-echo "Content-Type: text/html\n\n";
-echo "=== PHP CONFIGURATION PATHS ===\n";
-echo "Configuration File Path: " . php_ini_loaded_file() . "\n";
-echo "Scan directories: " . php_ini_scanned_files() . "\n";
-echo "PHPRC environment: " . ($_ENV["PHPRC"] ?? "not set") . "\n";
 
-echo "\n=== CURRENT LIMITS ===\n";
-echo "upload_max_filesize: " . ini_get("upload_max_filesize") . "\n";
-echo "post_max_size: " . ini_get("post_max_size") . "\n";
-echo "memory_limit: " . ini_get("memory_limit") . "\n";
+$mi_variable = getenv("UPLOAD_DIR");
+echo $mi_variable;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 	echo " | POST request recieved";

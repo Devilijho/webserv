@@ -15,6 +15,7 @@ Server::~Server()
 
 bool Server::start(const std::vector<ServerConfig*>& servers, const std::string& configFile)
 {
+	this->error413 = 0;
 	if (!servers.empty())
 		configs = servers;
 	else

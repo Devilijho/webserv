@@ -12,6 +12,11 @@ std::string Server::toString(int value) {
 
 bool Server::hasCompleteRequest(int client_fd)
 {
+	size_t headers_end;
+	std::string header;
+	std::string method, path, protocol;
+	size_t max_size;
+	const LocationConfig *loc;
 	RequestHandlerData* data = clientSockets[client_fd];
 	if (!data)
 		return false;
@@ -19,7 +24,25 @@ bool Server::hasCompleteRequest(int client_fd)
 	std::string& buffer = data->requestBuffer;
 
 	// Look for end of headers
-	size_t headers_end = buffer.find("\r\n\r\n");
+	headers_end = buffer.find("\r\n");
+	header = buffer.substr(0, headers_end);
+	std::istringstream req_stream(header);
+	req_stream >> method >> path >> protocol;
+	if (client_to_server_config[client_fd] != NULL)
+		loc = client_to_server_config[client_fd]->findLocation(path);
+	else
+		loc = NULL;
+	if (loc != NULL)
+		max_size = loc->client_max_body_size;
+	else
+		max_size = client_to_server_config[client_fd]->client_max_body_size;
+	// std::cout << data->requestBuffer.size() << "---" << max_size << std::endl;
+	if (data->requestBuffer.size() > max_size)
+	{
+		data->requestBuffer = header;
+		this->error413 = ERROR;
+		return true;
+	}
 	if (headers_end == std::string::npos)
 		return false; // headers not complete yet
 
@@ -50,7 +73,6 @@ bool Server::handleReadEvent(int client_fd)
 			std::cout << "[INFO] Client disconnected on fd " << client_fd << std::endl;
 		else
 			perror("read");
-
 		closeConnection(client_fd);
 		return false;
 	}
@@ -62,10 +84,10 @@ bool Server::handleReadEvent(int client_fd)
 	if (!hasCompleteRequest(client_fd))
 		return true; // wait for more data
 
+	std::cout << "DONE READING" << std::endl;
 	// Process request and prepare response
 	std::string response = buildHttpResponse(clientSockets[client_fd]->requestBuffer,
 											 client_to_server_config[client_fd]);
-
 	RequestHandlerData* data = clientSockets[client_fd];
 	data->responseBuffer = response;
 	data->bytesSent = 0;
@@ -198,23 +220,50 @@ std::string Server::buildHttpResponse(const std::string &raw_request, const Serv
 	setData(data, *srv, loc);
 
 	if (!isMethodAllowed(loc, method)) {
-    errorHandling(data, srv, 405);  // ✅ 405 Method Not Allowed
-    return (http_response(data, const_cast<ServerConfig&>(*srv)));
-    }
-
-	// ✅ VERIFICAR REDIRECT ANTES DE CHECK FILE ACCESS
+		errorHandling(data, srv, 405);
+		return (http_response(data, const_cast<ServerConfig&>(*srv)));
+	}
+	if (this->error413 == ERROR) {
+		this->error413 = SUCCESS;
+		errorHandling(data, srv, 413);
+		return (http_response(data, const_cast<ServerConfig&>(*srv)));
+	}
 	if (loc->has_return) {
 		data.is_redirect = true;
 		data.statusCode = loc->return_code;
 		data.redirect_location = loc->return_url;
 		data.FileContent = "";
+		return (http_response(data, const_cast<ServerConfig&>(*srv)));
 	}
-	else if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS) {
+	if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS) {
 		errorHandling(data, srv, 404);
+		return (http_response(data, const_cast<ServerConfig&>(*srv)));
 	}
-	else {
-		handleResource(data, loc, srv, method);
-	}
-
+	handleResource(data, loc, srv, method);
 	return (http_response(data, const_cast<ServerConfig&>(*srv)));
 }
+
+// if (!isMethodAllowed(loc, method)) {
+   // 	errorHandling(data, srv, 405);
+   // 	return (http_response(data, const_cast<ServerConfig&>(*srv)));
+// }
+// if (loc->has_return) {
+// 	data.is_redirect = true;
+// 	data.statusCode = loc->return_code;
+// 	data.redirect_location = loc->return_url;
+// 	data.FileContent = "";
+// }
+// else if (this->error413 == ERROR)
+// {
+// 	this->error413 = SUCCESS;
+// 	errorHandling(data, srv, 413);
+// }
+// else if (access(data.FileName.c_str(), R_OK | F_OK) != SUCCESS)
+// {
+// 	errorHandling(data, srv, 404);
+// }
+// else {
+// 	handleResource(data, loc, srv, method);
+// }
+
+// return (http_response(data, const_cast<ServerConfig&>(*srv)));

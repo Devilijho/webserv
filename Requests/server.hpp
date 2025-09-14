@@ -40,6 +40,7 @@ class Server
 
 		std::vector<struct pollfd> poll_fds;				// poll() structures for event loop
 		std::map<int, RequestHandlerData*> clientSockets;	// Client FD -> state/data
+		int error413;
 	private:
 		// --- Server Configuration ---
 		std::vector<ServerConfig*> configs;					// List of server configs
