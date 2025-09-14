@@ -118,7 +118,6 @@ std::string getRequestContentType(RequestHandlerData &data)
 std::string getStatusMessage(int code)
 {
 	switch (code) {
-		case 400: return "HTTP/1.1 400 Bad Request";
 		case 403: return "HTTP/1.1 403 Forbidden";
 		case 404: return "HTTP/1.1 404 Not Found";
 		case 405: return "HTTP/1.1 405 Method Not Allowed";
