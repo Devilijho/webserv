@@ -11,11 +11,18 @@ bool Server::handleWriteEvent(int client_fd)
 
 	if (sent > 0)
 		data->bytesSent += sent;
-	else // Either socket temporarily not writable or connection closed
-		return true; // just wait for the next POLLOUT event
-
-	// data->bytesSent += sent;
-
+	else if (sent == 0) // Unusual: peer closed connection while writing
+	{
+		std::cout << "[INFO] Client closed connection on fd " << client_fd << std::endl;
+		closeConnection(client_fd);
+		return false;
+	}
+	else  //Some error occurred
+    {
+        std::cout << "[ERROR] send() failed on fd " << client_fd << std::endl;
+        closeConnection(client_fd);
+        return false;
+    }
 
 	if (data->bytesSent >= data->responseBuffer.size())
 	{
